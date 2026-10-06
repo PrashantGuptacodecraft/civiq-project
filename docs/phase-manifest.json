@@ -1,0 +1,1207 @@
+[
+  {
+    "number": 1,
+    "title": "Freeze product vision and acceptance criteria",
+    "goal": "Create docs/product/PRD.md with personas, problem, goals, boundaries, KPIs and non-goals.",
+    "implementation": [
+      "Create docs/product/PRD.md with personas, problem, goals, boundaries, KPIs and non-goals.",
+      "Define the core CivIQ promise: identity \u2192 evidence \u2192 verification \u2192 action \u2192 proof \u2192 learning.",
+      "Define the first pilot jurisdiction and the India-wide capability target."
+    ],
+    "primary_files": [
+      "docs/product/PRD.md",
+      "docs/product/acceptance-criteria.md"
+    ],
+    "exit_checks": "Docs only; lint markdown if configured.",
+    "required_commit": "docs(phase-01): freeze product baseline",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 2,
+    "title": "Create ADR baseline and engineering principles",
+    "goal": "Record monorepo choice, API-first design, modular backend, AI gateway, RBAC, auditability and human-in-the-loop rules.",
+    "implementation": [
+      "Record monorepo choice, API-first design, modular backend, AI gateway, RBAC, auditability and human-in-the-loop rules.",
+      "Record \u201cno replacement of 112/SACHET/CPGRAMS/iRAD\u201d boundary.",
+      "Define change-control rule for future architecture changes."
+    ],
+    "primary_files": [
+      "docs/adr/0001-architecture-baseline.md",
+      "docs/adr/0002-safety-boundaries.md"
+    ],
+    "exit_checks": "Validate ADR format; no app tests yet.",
+    "required_commit": "docs(phase-02): record architecture decisions",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 3,
+    "title": "Bootstrap monorepo",
+    "goal": "Initialize workspace with apps/web, apps/api, apps/worker, services/ai and packages.",
+    "implementation": [
+      "Initialize workspace with apps/web, apps/api, apps/worker, services/ai and packages.",
+      "Add package manager, shared scripts and basic README.",
+      "Pin current compatible runtime versions and record them."
+    ],
+    "primary_files": [
+      "package.json",
+      "pnpm-workspace.yaml",
+      "apps/*",
+      "packages/*",
+      "services/ai/*"
+    ],
+    "exit_checks": "Install; workspace build/typecheck; verify directory contracts.",
+    "required_commit": "chore(phase-03): bootstrap monorepo",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 4,
+    "title": "Establish coding standards and quality gates",
+    "goal": "Add ESLint, Prettier, TypeScript strict mode and Python formatting/linting.",
+    "implementation": [
+      "Add ESLint, Prettier, TypeScript strict mode and Python formatting/linting.",
+      "Create shared scripts for lint, typecheck, test and build.",
+      "Add basic pre-commit guidance without blocking local work unexpectedly."
+    ],
+    "primary_files": [
+      "eslint.config.*",
+      "prettier.config.*",
+      "tsconfig.*",
+      "pyproject.toml"
+    ],
+    "exit_checks": "Run lint/typecheck across active packages.",
+    "required_commit": "chore(phase-04): establish quality gates",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 5,
+    "title": "Add CI foundation",
+    "goal": "Create GitHub Actions for install, lint, typecheck, test and build.",
+    "implementation": [
+      "Create GitHub Actions for install, lint, typecheck, test and build.",
+      "Cache dependencies safely and pin action major versions.",
+      "Fail on security-sensitive quality regressions where practical."
+    ],
+    "primary_files": [
+      ".github/workflows/ci.yml"
+    ],
+    "exit_checks": "Run CI-equivalent commands locally.",
+    "required_commit": "ci(phase-05): add continuous integration",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 6,
+    "title": "Add observability foundation",
+    "goal": "Create request correlation IDs, structured JSON logging and error boundaries.",
+    "implementation": [
+      "Create request correlation IDs, structured JSON logging and error boundaries.",
+      "Define event naming and sensitive-data redaction rules.",
+      "Add health/readiness endpoint contracts for API and AI service."
+    ],
+    "primary_files": [
+      "packages/observability/*",
+      "apps/api/src/observability/*",
+      "services/ai/app/observability/*"
+    ],
+    "exit_checks": "Unit-test redaction and health endpoints.",
+    "required_commit": "feat(phase-06): add observability foundation",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 7,
+    "title": "Create database foundation",
+    "goal": "Initialize PostgreSQL/Prisma and migration workflow.",
+    "implementation": [
+      "Initialize PostgreSQL/Prisma and migration workflow.",
+      "Create base schema conventions: UUID/ULID strategy, createdAt/updatedAt, soft-delete policy, optimistic version field where needed.",
+      "Add local development seed framework."
+    ],
+    "primary_files": [
+      "packages/db/*"
+    ],
+    "exit_checks": "Migration apply/reset/seed; schema validation.",
+    "required_commit": "feat(phase-07): initialize database foundation",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 8,
+    "title": "Build India jurisdiction model",
+    "goal": "Model country, state/UT, district, local body, block, ward/village and jurisdiction types.",
+    "implementation": [
+      "Model country, state/UT, district, local body, block, ward/village and jurisdiction types.",
+      "Support LGD code fields and external references without hard dependency.",
+      "Create sample India hierarchy data for the pilot."
+    ],
+    "primary_files": [
+      "packages/db/schema/*",
+      "scripts/seeds/jurisdiction.*"
+    ],
+    "exit_checks": "Seed hierarchy; test parent/child integrity.",
+    "required_commit": "feat(phase-08): add jurisdiction model",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 9,
+    "title": "Add organization and department model",
+    "goal": "Create organizations with type, verification status and jurisdiction scope.",
+    "implementation": [
+      "Create organizations with type, verification status and jurisdiction scope.",
+      "Create departments and allowed issue categories.",
+      "Implement organization/dept relationships."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/organizations/*",
+      "apps/api/src/modules/departments/*"
+    ],
+    "exit_checks": "Service tests for jurisdiction scoping and CRUD.",
+    "required_commit": "feat(phase-09): add organizations and departments",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 10,
+    "title": "Add permission/RBAC model",
+    "goal": "Create roles, permissions, role assignments and scoped permissions.",
+    "implementation": [
+      "Create roles, permissions, role assignments and scoped permissions.",
+      "Define deny-by-default authorization helper.",
+      "Add permission matrix tests for every planned role."
+    ],
+    "primary_files": [
+      "packages/auth/*",
+      "apps/api/src/modules/access/*"
+    ],
+    "exit_checks": "Authorization unit/integration tests.",
+    "required_commit": "feat(phase-10): implement RBAC model",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 11,
+    "title": "Add audit-log model and writer",
+    "goal": "Create append-only audit log entity.",
+    "implementation": [
+      "Create append-only audit log entity.",
+      "Record actor, action, object, jurisdiction, request ID and timestamp; never store secrets.",
+      "Add helper for system vs human actors."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/audit/*",
+      "packages/db/*"
+    ],
+    "exit_checks": "Audit write/read tests; access control tests.",
+    "required_commit": "feat(phase-11): add audit trail",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 12,
+    "title": "Create external-reference and integration-source model",
+    "goal": "Model provider/source, external IDs, sync cursor, last-success, error state and data provenance.",
+    "implementation": [
+      "Model provider/source, external IDs, sync cursor, last-success, error state and data provenance.",
+      "Support source confidence and source type.",
+      "Prepare adapter contract interfaces."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/integrations/*",
+      "packages/contracts/*"
+    ],
+    "exit_checks": "Schema/service tests.",
+    "required_commit": "feat(phase-12): add provenance and integration contracts",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 13,
+    "title": "Build citizen account model",
+    "goal": "Create user profile, contact methods, verification states and privacy preferences.",
+    "implementation": [
+      "Create user profile, contact methods, verification states and privacy preferences.",
+      "Separate public profile fields from private contact data.",
+      "Add account status and consent timestamps."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/users/*"
+    ],
+    "exit_checks": "Unit/integration tests; migration.",
+    "required_commit": "feat(phase-13): add user accounts",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 14,
+    "title": "Implement mobile OTP authentication",
+    "goal": "Implement OTP challenge, expiry, attempt limit, resend cooldown and rate limiting.",
+    "implementation": [
+      "Implement OTP challenge, expiry, attempt limit, resend cooldown and rate limiting.",
+      "Store only safe verification artifacts; do not log OTP values.",
+      "Create session issuance after successful verification."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/auth/otp/*"
+    ],
+    "exit_checks": "Auth integration tests including brute-force and replay cases.",
+    "required_commit": "feat(phase-14): implement mobile OTP auth",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 15,
+    "title": "Implement Google sign-in",
+    "goal": "Add Google OAuth/OIDC login through a backend-controlled callback.",
+    "implementation": [
+      "Add Google OAuth/OIDC login through a backend-controlled callback.",
+      "Link verified provider identity to an existing user safely.",
+      "Require mobile verification before report submission."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/auth/google/*",
+      "apps/web/app/auth/*"
+    ],
+    "exit_checks": "OAuth callback tests and account-linking tests.",
+    "required_commit": "feat(phase-15): add Google authentication",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 16,
+    "title": "Implement email/password authentication",
+    "goal": "Secure password hashing; verification flow; reset flow.",
+    "implementation": [
+      "Secure password hashing; verification flow; reset flow.",
+      "Add rate limiting and suspicious-attempt monitoring.",
+      "Prevent account enumeration in public responses."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/auth/password/*"
+    ],
+    "exit_checks": "Auth/security tests.",
+    "required_commit": "feat(phase-16): add email authentication",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 17,
+    "title": "Implement session/device security",
+    "goal": "Add refresh/session rotation, revocation, device/session listing and logout-all.",
+    "implementation": [
+      "Add refresh/session rotation, revocation, device/session listing and logout-all.",
+      "Add re-authentication requirement for sensitive actions.",
+      "Log auth and authorization events."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/auth/session/*"
+    ],
+    "exit_checks": "Session security tests.",
+    "required_commit": "feat(phase-17): harden sessions and devices",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 18,
+    "title": "Build government organization onboarding",
+    "goal": "Create invite flow from an organization admin to employee.",
+    "implementation": [
+      "Create invite flow from an organization admin to employee.",
+      "Require official email/employee identifier and department scope.",
+      "Store who approved the official role and when."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/officials/onboarding/*",
+      "apps/web/features/official-onboarding/*"
+    ],
+    "exit_checks": "Invitation, expiry, replay and approval tests.",
+    "required_commit": "feat(phase-18): add official onboarding",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 19,
+    "title": "Create user trust profile",
+    "goal": "Define trust levels and transparent factors: verification status, valid report history, confirmed abuse history.",
+    "implementation": [
+      "Define trust levels and transparent factors: verification status, valid report history, confirmed abuse history.",
+      "Keep trust separate from report truth.",
+      "Create safe score recalculation job design."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/trust/*"
+    ],
+    "exit_checks": "Deterministic scoring tests.",
+    "required_commit": "feat(phase-19): add user trust profiles",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 20,
+    "title": "Build report verification state machine",
+    "goal": "Implement submitted \u2192 verification \u2192 verified/rejected/needs evidence/duplicate transitions.",
+    "implementation": [
+      "Implement submitted \u2192 verification \u2192 verified/rejected/needs evidence/duplicate transitions.",
+      "Enforce allowed transitions and role permissions.",
+      "Write status history on every transition."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/verification/*",
+      "packages/contracts/verification.*"
+    ],
+    "exit_checks": "State-machine tests for every transition.",
+    "required_commit": "feat(phase-20): implement verification workflow",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 21,
+    "title": "Implement evidence intake and metadata checks",
+    "goal": "Build secure media metadata extraction pipeline.",
+    "implementation": [
+      "Build secure media metadata extraction pipeline.",
+      "Record capture time/location when provided without trusting metadata as proof.",
+      "Add image hash/perceptual hash placeholder contract."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/evidence/*",
+      "apps/worker/src/jobs/evidence/*"
+    ],
+    "exit_checks": "Media-security tests, metadata parsing tests.",
+    "required_commit": "feat(phase-21): add evidence processing pipeline",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 22,
+    "title": "Implement duplicate detection engine v1",
+    "goal": "Combine geo distance, time window and normalized text similarity.",
+    "implementation": [
+      "Combine geo distance, time window and normalized text similarity.",
+      "Return candidate duplicates, similarity explanation and threshold.",
+      "Require human confirmation before merging high-impact cases."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/duplicates/*"
+    ],
+    "exit_checks": "Unit tests with false-positive and false-negative fixtures.",
+    "required_commit": "feat(phase-22): add duplicate detection v1",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 23,
+    "title": "Add abuse/fraud controls",
+    "goal": "Detect burst reporting, repeated media, suspicious device/account patterns and API abuse.",
+    "implementation": [
+      "Detect burst reporting, repeated media, suspicious device/account patterns and API abuse.",
+      "Implement temporary throttles and verification escalation.",
+      "Do not automatically label a person criminal/fraudulent; store risk signal and reviewer decision."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/abuse/*",
+      "apps/api/src/modules/risk/*"
+    ],
+    "exit_checks": "Abuse scenario tests.",
+    "required_commit": "feat(phase-23): add anti-abuse controls",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 24,
+    "title": "Build verification officer console",
+    "goal": "Create queue for pending, suspicious, duplicate and evidence-needed reports.",
+    "implementation": [
+      "Create queue for pending, suspicious, duplicate and evidence-needed reports.",
+      "Show evidence, user trust, location checks, AI recommendations and provenance.",
+      "Add verify/request evidence/reject actions with mandatory reason codes."
+    ],
+    "primary_files": [
+      "apps/web/features/verification/*"
+    ],
+    "exit_checks": "E2E tests for verification workflow.",
+    "required_commit": "feat(phase-24): build verification console",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 25,
+    "title": "Define civic issue taxonomy",
+    "goal": "Create categories for roads, drainage, sanitation, electrical, water, waste, public facilities and other civic services.",
+    "implementation": [
+      "Create categories for roads, drainage, sanitation, electrical, water, waste, public facilities and other civic services.",
+      "Attach default department/SLA metadata.",
+      "Keep taxonomy versioned."
+    ],
+    "primary_files": [
+      "packages/contracts/issue-taxonomy/*",
+      "packages/db/seeds/taxonomy.*"
+    ],
+    "exit_checks": "Taxonomy validation tests.",
+    "required_commit": "feat(phase-25): add civic issue taxonomy",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 26,
+    "title": "Implement issue creation API",
+    "goal": "Create issue with description, category, jurisdiction, location and source.",
+    "implementation": [
+      "Create issue with description, category, jurisdiction, location and source.",
+      "Require authenticated user for public submission.",
+      "Return immutable issue ID and submission status."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/issues/*"
+    ],
+    "exit_checks": "API integration tests and validation tests.",
+    "required_commit": "feat(phase-26): add civic issue API",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 27,
+    "title": "Build citizen report UI",
+    "goal": "Mobile-first report form, category selection, location picker, draft/save and upload.",
+    "implementation": [
+      "Mobile-first report form, category selection, location picker, draft/save and upload.",
+      "Show explicit verification expectations and emergency warning.",
+      "Handle network errors and retries."
+    ],
+    "primary_files": [
+      "apps/web/features/reporting/*"
+    ],
+    "exit_checks": "Component tests + E2E submission test.",
+    "required_commit": "feat(phase-27): build citizen reporting",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 28,
+    "title": "Add secure media storage",
+    "goal": "Use object storage with private-by-default media.",
+    "implementation": [
+      "Use object storage with private-by-default media.",
+      "Generate signed upload/download URLs.",
+      "Validate type/size and quarantine unsafe content."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/media/*",
+      "apps/worker/src/jobs/media/*"
+    ],
+    "exit_checks": "Upload security tests.",
+    "required_commit": "feat(phase-28): add secure media storage",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 29,
+    "title": "Add geolocation and jurisdiction resolution",
+    "goal": "Capture user-selected/available GPS and map point.",
+    "implementation": [
+      "Capture user-selected/available GPS and map point.",
+      "Resolve point to jurisdiction and store resolver version/source.",
+      "Handle ambiguous boundaries and manual correction."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/geography/*",
+      "apps/web/features/map/*"
+    ],
+    "exit_checks": "Geospatial resolution tests with boundary fixtures.",
+    "required_commit": "feat(phase-29): add geolocation resolution",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 30,
+    "title": "Add issue lifecycle and notifications",
+    "goal": "Connect status changes to notification events.",
+    "implementation": [
+      "Connect status changes to notification events.",
+      "Implement in-app notification and email adapter.",
+      "Keep notification delivery idempotent."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/notifications/*",
+      "apps/worker/src/jobs/notifications/*"
+    ],
+    "exit_checks": "Event/idempotency tests.",
+    "required_commit": "feat(phase-30): add issue lifecycle notifications",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 31,
+    "title": "Create AI gateway contract",
+    "goal": "Define versioned AI operations: classify, evidence-check, duplicate-score, priority-score, route, summarize, predict.",
+    "implementation": [
+      "Define versioned AI operations: classify, evidence-check, duplicate-score, priority-score, route, summarize, predict.",
+      "Create provider-agnostic request/response schemas.",
+      "Return confidence, model/version, explanations and latency."
+    ],
+    "primary_files": [
+      "services/ai/app/api/*",
+      "packages/contracts/ai/*"
+    ],
+    "exit_checks": "Contract tests and schema validation.",
+    "required_commit": "feat(phase-31): add AI gateway contract",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 32,
+    "title": "Build AI classification service",
+    "goal": "Implement text classification baseline using a pluggable model/provider.",
+    "implementation": [
+      "Implement text classification baseline using a pluggable model/provider.",
+      "Return category/subcategory confidence and top alternatives.",
+      "Allow human correction to be stored as labeled feedback."
+    ],
+    "primary_files": [
+      "services/ai/app/pipelines/classification/*"
+    ],
+    "exit_checks": "Evaluation fixture set; precision/recall smoke test.",
+    "required_commit": "feat(phase-32): add issue classification",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 33,
+    "title": "Build image relevance/evidence service",
+    "goal": "Implement image relevance classifier for supported civic categories.",
+    "implementation": [
+      "Implement image relevance classifier for supported civic categories.",
+      "Record confidence and uncertainty; low confidence routes to review.",
+      "Document limitations and supported classes."
+    ],
+    "primary_files": [
+      "services/ai/app/pipelines/vision/*",
+      "docs/ai/model-card-vision.md"
+    ],
+    "exit_checks": "Evaluation on held-out sample; no unsafe auto-reject.",
+    "required_commit": "feat(phase-33): add vision evidence analysis",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 34,
+    "title": "Upgrade duplicate detection with embeddings",
+    "goal": "Add text embeddings and image embeddings where available.",
+    "implementation": [
+      "Add text embeddings and image embeddings where available.",
+      "Combine with geo/time signals in a transparent ensemble score.",
+      "Store candidate pairs and decision evidence."
+    ],
+    "primary_files": [
+      "services/ai/app/pipelines/dedup/*",
+      "apps/api/src/modules/duplicates/*"
+    ],
+    "exit_checks": "Offline evaluation set and threshold report.",
+    "required_commit": "feat(phase-34): add embedding-based deduplication",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 35,
+    "title": "Build explainable priority engine",
+    "goal": "Implement deterministic feature extraction for severity, safety risk, impact, corroboration, age and location context.",
+    "implementation": [
+      "Implement deterministic feature extraction for severity, safety risk, impact, corroboration, age and location context.",
+      "Use configurable weights/rules and optionally a model behind the same contract.",
+      "Return reasons alongside score."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/priority/*",
+      "services/ai/app/pipelines/priority/*"
+    ],
+    "exit_checks": "Unit tests with explainability assertions.",
+    "required_commit": "feat(phase-35): add explainable priority engine",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 36,
+    "title": "Build AI recommendation/audit pipeline",
+    "goal": "Persist AI inference results, model version, prompts/config hash where relevant and human decision.",
+    "implementation": [
+      "Persist AI inference results, model version, prompts/config hash where relevant and human decision.",
+      "Create evaluation record format.",
+      "Add admin view for AI recommendations vs final decisions."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/ai-audit/*",
+      "packages/db/*"
+    ],
+    "exit_checks": "Auditability tests; redaction tests.",
+    "required_commit": "feat(phase-36): add AI audit trail",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 37,
+    "title": "Implement smart department routing",
+    "goal": "Map taxonomy + jurisdiction to allowed departments.",
+    "implementation": [
+      "Map taxonomy + jurisdiction to allowed departments.",
+      "Add AI recommendation but enforce policy rules and jurisdiction constraints.",
+      "Route only after verification gate except configured low-risk classes."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/routing/*"
+    ],
+    "exit_checks": "Routing matrix tests.",
+    "required_commit": "feat(phase-37): add department routing",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 38,
+    "title": "Implement worker eligibility and assignment",
+    "goal": "Model worker skills, coverage area, availability and workload.",
+    "implementation": [
+      "Model worker skills, coverage area, availability and workload.",
+      "Create assignment recommendation: skill + jurisdiction + proximity + workload.",
+      "Allow officer override with reason."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/assignments/*"
+    ],
+    "exit_checks": "Deterministic assignment tests.",
+    "required_commit": "feat(phase-38): add worker assignment",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 39,
+    "title": "Implement SLA rules",
+    "goal": "Create configurable SLA by issue category, priority, jurisdiction and working-hours policy.",
+    "implementation": [
+      "Create configurable SLA by issue category, priority, jurisdiction and working-hours policy.",
+      "Compute due times and aging.",
+      "Show countdown and overdue state."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/sla/*"
+    ],
+    "exit_checks": "Time-zone and boundary tests.",
+    "required_commit": "feat(phase-39): add SLA engine",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 40,
+    "title": "Implement escalation workflow",
+    "goal": "Warn at configurable thresholds; escalate to supervisor/department officer when breached.",
+    "implementation": [
+      "Warn at configurable thresholds; escalate to supervisor/department officer when breached.",
+      "Prevent duplicate escalation storms.",
+      "Audit every escalation."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/escalation/*"
+    ],
+    "exit_checks": "Escalation/idempotency tests.",
+    "required_commit": "feat(phase-40): add SLA escalation",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 41,
+    "title": "Build field worker PWA experience",
+    "goal": "Create installable/mobile-first task list, task detail, status updates and navigation handoff.",
+    "implementation": [
+      "Create installable/mobile-first task list, task detail, status updates and navigation handoff.",
+      "Restrict data to assigned jurisdiction/tasks.",
+      "Add retry-safe mutations."
+    ],
+    "primary_files": [
+      "apps/web/features/field/*"
+    ],
+    "exit_checks": "PWA smoke test + authz E2E.",
+    "required_commit": "feat(phase-41): build field worker workflow",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 42,
+    "title": "Add before/after proof and field verification",
+    "goal": "Require configurable evidence for task completion.",
+    "implementation": [
+      "Require configurable evidence for task completion.",
+      "Capture GPS/time context and bind evidence to assignment.",
+      "Supervisor verifies completion; reject/reopen if evidence is insufficient."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/field-verification/*",
+      "apps/web/features/field/*"
+    ],
+    "exit_checks": "Evidence-chain tests.",
+    "required_commit": "feat(phase-42): add field verification",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 43,
+    "title": "Add citizen resolution verification",
+    "goal": "Notify citizen after proposed resolution.",
+    "implementation": [
+      "Notify citizen after proposed resolution.",
+      "Allow confirm/reopen with reason and optional evidence.",
+      "Feed confirmed/unconfirmed outcomes into quality metrics."
+    ],
+    "primary_files": [
+      "apps/web/features/resolution-review/*",
+      "apps/api/src/modules/feedback/*"
+    ],
+    "exit_checks": "E2E resolution and reopen tests.",
+    "required_commit": "feat(phase-43): add citizen resolution verification",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 44,
+    "title": "Build operational map",
+    "goal": "Show issue points by status, priority, department and verification state.",
+    "implementation": [
+      "Show issue points by status, priority, department and verification state.",
+      "Implement clustering, filters, pagination and privacy-safe public view.",
+      "Keep exact evidence private to authorized roles."
+    ],
+    "primary_files": [
+      "apps/web/features/operations-map/*"
+    ],
+    "exit_checks": "Map and authorization tests.",
+    "required_commit": "feat(phase-44): build operational map",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 45,
+    "title": "Build authority command dashboard",
+    "goal": "KPIs: open, verified, SLA-breached, average resolution, reopened, duplicate rate.",
+    "implementation": [
+      "KPIs: open, verified, SLA-breached, average resolution, reopened, duplicate rate.",
+      "Department/ward filters and drill-down.",
+      "Show data freshness and source labels."
+    ],
+    "primary_files": [
+      "apps/web/features/dashboard/*"
+    ],
+    "exit_checks": "Dashboard data correctness tests.",
+    "required_commit": "feat(phase-45): build command dashboard",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 46,
+    "title": "Implement hotspot analytics",
+    "goal": "Detect geographic concentration of incidents using configurable spatial windows/clustering.",
+    "implementation": [
+      "Detect geographic concentration of incidents using configurable spatial windows/clustering.",
+      "Show trends by time/category.",
+      "Label analytics as analytical, not causal proof."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/analytics/hotspots/*",
+      "apps/web/features/analytics/*"
+    ],
+    "exit_checks": "Synthetic hotspot fixtures and correctness tests.",
+    "required_commit": "feat(phase-46): add hotspot analytics",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 47,
+    "title": "Implement recurring issue analytics",
+    "goal": "Link issues to assets where available.",
+    "implementation": [
+      "Link issues to assets where available.",
+      "Detect repeated failures by asset/category/location/time.",
+      "Generate maintenance-review candidates."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/analytics/recurrence/*"
+    ],
+    "exit_checks": "Recurrence tests.",
+    "required_commit": "feat(phase-47): add recurring issue intelligence",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 48,
+    "title": "Add operational reports and exports",
+    "goal": "Export jurisdiction-scoped issue lists, SLA reports, performance and audit summaries.",
+    "implementation": [
+      "Export jurisdiction-scoped issue lists, SLA reports, performance and audit summaries.",
+      "Apply redaction rules and export authorization.",
+      "Add asynchronous generation for larger reports."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/reports/*",
+      "apps/worker/src/jobs/reports/*"
+    ],
+    "exit_checks": "Authorization and export tests.",
+    "required_commit": "feat(phase-48): add operational reporting",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 49,
+    "title": "Build asset registry",
+    "goal": "Model road segments, streetlights, drains, water assets, public facilities and other maintainable assets.",
+    "implementation": [
+      "Model road segments, streetlights, drains, water assets, public facilities and other maintainable assets.",
+      "Support asset owner department and jurisdiction.",
+      "Add lifecycle status."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/assets/*"
+    ],
+    "exit_checks": "CRUD/authz tests.",
+    "required_commit": "feat(phase-49): add asset registry",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 50,
+    "title": "Link issues to assets",
+    "goal": "Allow confirmed issues to be linked to one or more assets.",
+    "implementation": [
+      "Allow confirmed issues to be linked to one or more assets.",
+      "Maintain link history and confidence.",
+      "Use nearest-asset candidate suggestions."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/assets-links/*"
+    ],
+    "exit_checks": "Geospatial candidate tests.",
+    "required_commit": "feat(phase-50): link issues to assets",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 51,
+    "title": "Add maintenance history and cost tracking",
+    "goal": "Record maintenance actions, parts/labor cost, downtime and outcomes.",
+    "implementation": [
+      "Record maintenance actions, parts/labor cost, downtime and outcomes.",
+      "Ensure financial fields are controlled and auditable.",
+      "Build asset timeline."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/maintenance/*"
+    ],
+    "exit_checks": "Timeline and access tests.",
+    "required_commit": "feat(phase-51): add maintenance history",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 52,
+    "title": "Build predictive maintenance baseline",
+    "goal": "Create baseline model using failure frequency, age, maintenance history and recurrence.",
+    "implementation": [
+      "Create baseline model using failure frequency, age, maintenance history and recurrence.",
+      "Return risk score + reason codes.",
+      "Keep action as \u201cmaintenance review recommended\u201d, not automatic replacement."
+    ],
+    "primary_files": [
+      "services/ai/app/pipelines/maintenance/*"
+    ],
+    "exit_checks": "Offline evaluation with synthetic/seeded data.",
+    "required_commit": "feat(phase-52): add predictive maintenance baseline",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 53,
+    "title": "Add asset intelligence dashboard",
+    "goal": "Show high-recurrence/high-downtime assets, failure trend and maintenance candidates.",
+    "implementation": [
+      "Show high-recurrence/high-downtime assets, failure trend and maintenance candidates.",
+      "Link dashboard to source issues and proof.",
+      "Add drill-down to asset timeline."
+    ],
+    "primary_files": [
+      "apps/web/features/assets/*"
+    ],
+    "exit_checks": "Dashboard correctness tests.",
+    "required_commit": "feat(phase-53): add asset intelligence dashboard",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 54,
+    "title": "Add cost/benefit decision support",
+    "goal": "Estimate cumulative repair cost vs replacement-review threshold.",
+    "implementation": [
+      "Estimate cumulative repair cost vs replacement-review threshold.",
+      "Allow policy-configured thresholds per asset category.",
+      "Provide explainable recommendations."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/asset-decisions/*",
+      "services/ai/app/pipelines/asset-decision/*"
+    ],
+    "exit_checks": "Decision-rule tests.",
+    "required_commit": "feat(phase-54): add asset decision support",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 55,
+    "title": "Build accident/incident reporting model",
+    "goal": "Create incident entity separate from ordinary civic issues.",
+    "implementation": [
+      "Create incident entity separate from ordinary civic issues.",
+      "Capture location, time, evidence, incident type, possible hazards and status.",
+      "Keep sensitive details protected."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/incidents/*"
+    ],
+    "exit_checks": "Incident model/API tests.",
+    "required_commit": "feat(phase-55): add incident model",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 56,
+    "title": "Build accident response workflow",
+    "goal": "Add rapid incident submission, unverified state, responder confirmation and closure.",
+    "implementation": [
+      "Add rapid incident submission, unverified state, responder confirmation and closure.",
+      "Show Call 112 handoff prominently for actual emergencies.",
+      "Create incident timeline and notifications."
+    ],
+    "primary_files": [
+      "apps/web/features/incidents/*",
+      "apps/api/src/modules/incidents/*"
+    ],
+    "exit_checks": "Emergency UX and safety-path tests.",
+    "required_commit": "feat(phase-56): add accident response workflow",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 57,
+    "title": "Add road-safety correlation analytics",
+    "goal": "Correlate incident clusters with civic issue/asset history and official accident data when legally/technically available.",
+    "implementation": [
+      "Correlate incident clusters with civic issue/asset history and official accident data when legally/technically available.",
+      "Avoid claiming causality.",
+      "Produce \u201cinvestigation recommended\u201d hotspots."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/analytics/safety/*"
+    ],
+    "exit_checks": "Correlation correctness tests.",
+    "required_commit": "feat(phase-57): add road safety analytics",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 58,
+    "title": "Add official-source incident adapter contract",
+    "goal": "Create adapter interface for iRAD/eDAR-like or future official accident feeds.",
+    "implementation": [
+      "Create adapter interface for iRAD/eDAR-like or future official accident feeds.",
+      "Normalize external IDs and provenance.",
+      "Default to mock/sandbox adapter for college deployment."
+    ],
+    "primary_files": [
+      "apps/api/src/integrations/incident-source/*"
+    ],
+    "exit_checks": "Adapter contract tests.",
+    "required_commit": "feat(phase-58): add accident data adapter contract",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 59,
+    "title": "Add emergency responder/agency role model",
+    "goal": "Model authorized responder organizations and scoped access.",
+    "implementation": [
+      "Model authorized responder organizations and scoped access.",
+      "Add dispatch recommendation without pretending CivIQ is the official emergency dispatch center.",
+      "Audit sensitive incident access."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/responders/*"
+    ],
+    "exit_checks": "RBAC/incident data access tests.",
+    "required_commit": "feat(phase-59): add responder roles",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 60,
+    "title": "Add public safety communication templates",
+    "goal": "Create approved templates for verified issue alerts, incident updates and official-source notices.",
+    "implementation": [
+      "Create approved templates for verified issue alerts, incident updates and official-source notices.",
+      "Include emergency disclaimer/handoff.",
+      "Prevent unreviewed AI text from becoming an official warning."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/communications/*",
+      "docs/operations/communications-policy.md"
+    ],
+    "exit_checks": "Template safety tests.",
+    "required_commit": "feat(phase-60): add safety communications",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 61,
+    "title": "Build disaster event model",
+    "goal": "Model disaster types, official alert references, affected polygons, severity, state and lifecycle.",
+    "implementation": [
+      "Model disaster types, official alert references, affected polygons, severity, state and lifecycle.",
+      "Store source provenance and official-vs-user signal distinction.",
+      "Support concurrent disasters."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/disasters/*"
+    ],
+    "exit_checks": "Event model tests.",
+    "required_commit": "feat(phase-61): add disaster event model",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 62,
+    "title": "Build official alert ingestion adapter",
+    "goal": "Implement CAP/RSS-style alert parser and source adapter contract.",
+    "implementation": [
+      "Implement CAP/RSS-style alert parser and source adapter contract.",
+      "Validate source signature/provenance where the source supports it.",
+      "Never rewrite official alert content without clear source labeling."
+    ],
+    "primary_files": [
+      "apps/api/src/integrations/alerts/*",
+      "apps/worker/src/jobs/alerts/*"
+    ],
+    "exit_checks": "Parser fixtures, idempotency tests.",
+    "required_commit": "feat(phase-62): add disaster alert ingestion",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 63,
+    "title": "Build disaster impact reporting",
+    "goal": "Citizen/field reports for flooding, blocked roads, utility outage, stranded people, damage and needs.",
+    "implementation": [
+      "Citizen/field reports for flooding, blocked roads, utility outage, stranded people, damage and needs.",
+      "Bind reports to disaster event and geography.",
+      "Use emergency-fast path with unverified status."
+    ],
+    "primary_files": [
+      "apps/web/features/disaster-reporting/*",
+      "apps/api/src/modules/disaster-impact/*"
+    ],
+    "exit_checks": "Impact reporting E2E tests.",
+    "required_commit": "feat(phase-63): add disaster impact reporting",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 64,
+    "title": "Build resource and shelter registry",
+    "goal": "Model shelters, medical camps, relief centers, volunteers, vehicles and supplies as verified resource records.",
+    "implementation": [
+      "Model shelters, medical camps, relief centers, volunteers, vehicles and supplies as verified resource records.",
+      "Track capacity with source and timestamp.",
+      "Support jurisdiction scoping."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/resources/*"
+    ],
+    "exit_checks": "Capacity and authorization tests.",
+    "required_commit": "feat(phase-64): add disaster resources",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 65,
+    "title": "Build need-to-resource matching",
+    "goal": "Match requests to verified resources using distance, capacity, type and status.",
+    "implementation": [
+      "Match requests to verified resources using distance, capacity, type and status.",
+      "Provide recommended matches; authorized coordinator accepts assignment.",
+      "Track fulfilment and confirmation."
+    ],
+    "primary_files": [
+      "apps/api/src/modules/resource-matching/*",
+      "services/ai/app/pipelines/resource-matching/*"
+    ],
+    "exit_checks": "Deterministic matching tests.",
+    "required_commit": "feat(phase-65): add resource matching",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 66,
+    "title": "Build disaster situation room and after-action review",
+    "goal": "Create event command dashboard: alerts, impact clusters, blocked routes, needs, resources, response tasks.",
+    "implementation": [
+      "Create event command dashboard: alerts, impact clusters, blocked routes, needs, resources, response tasks.",
+      "Add event timeline and post-event metrics.",
+      "Generate AI-assisted after-action summary with source labels."
+    ],
+    "primary_files": [
+      "apps/web/features/situation-room/*",
+      "apps/api/src/modules/disaster-ops/*"
+    ],
+    "exit_checks": "End-to-end disaster simulation test.",
+    "required_commit": "feat(phase-66): build disaster situation room",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 67,
+    "title": "Add multilingual architecture",
+    "goal": "Create locale keys, language preferences and translation adapter.",
+    "implementation": [
+      "Create locale keys, language preferences and translation adapter.",
+      "Integrate text/voice translation provider behind an adapter; BHASHINI-compatible path is preferred for Indian-language support.",
+      "Start with English + Hindi and make additional languages configuration-driven."
+    ],
+    "primary_files": [
+      "apps/web/lib/i18n/*",
+      "apps/api/src/modules/i18n/*",
+      "apps/api/src/integrations/bhashini/*"
+    ],
+    "exit_checks": "Translation key completeness tests.",
+    "required_commit": "feat(phase-67): add multilingual foundation",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 68,
+    "title": "Add voice reporting",
+    "goal": "Implement speech-to-text adapter for citizen reports.",
+    "implementation": [
+      "Implement speech-to-text adapter for citizen reports.",
+      "Normalize transcript, keep original audio privacy-safe and optional.",
+      "Add confirmation step before submission."
+    ],
+    "primary_files": [
+      "apps/web/features/voice/*",
+      "apps/api/src/integrations/speech/*"
+    ],
+    "exit_checks": "Voice pipeline integration tests with mocked provider.",
+    "required_commit": "feat(phase-68): add voice reporting",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 69,
+    "title": "Add offline field sync",
+    "goal": "Create local task cache, mutation queue and sync conflict strategy.",
+    "implementation": [
+      "Create local task cache, mutation queue and sync conflict strategy.",
+      "Use idempotency keys for field updates.",
+      "Show sync state clearly to workers."
+    ],
+    "primary_files": [
+      "apps/web/features/offline/*",
+      "apps/api/src/modules/sync/*"
+    ],
+    "exit_checks": "Offline/online E2E simulation.",
+    "required_commit": "feat(phase-69): add offline field sync",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 70,
+    "title": "Security hardening and threat-model closure",
+    "goal": "Run threat-model review across auth, uploads, RBAC, AI prompt/data paths, webhooks and integrations.",
+    "implementation": [
+      "Run threat-model review across auth, uploads, RBAC, AI prompt/data paths, webhooks and integrations.",
+      "Add security headers, rate limiting, authorization tests, secret scanning and dependency audit.",
+      "Document incident response and account recovery."
+    ],
+    "primary_files": [
+      "docs/security/threat-model.md",
+      "docs/security/controls.md",
+      ".github/workflows/security.yml"
+    ],
+    "exit_checks": "Security test suite; dependency and secret checks.",
+    "required_commit": "security(phase-70): harden production security",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 71,
+    "title": "Performance, resilience and observability closure",
+    "goal": "Add caching where safe, DB indexes, query budgets and async jobs for slow work.",
+    "implementation": [
+      "Add caching where safe, DB indexes, query budgets and async jobs for slow work.",
+      "Add metrics for API latency, verification backlog, SLA backlog, queue age and AI latency.",
+      "Test backup/restore and failure behavior for external integrations."
+    ],
+    "primary_files": [
+      "apps/api/src/observability/*",
+      "docs/operations/sre.md",
+      "tests/load/*"
+    ],
+    "exit_checks": "Load test baseline + backup/restore drill.",
+    "required_commit": "perf(phase-71): harden performance and resilience",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  },
+  {
+    "number": 72,
+    "title": "Production pilot, documentation and release",
+    "goal": "Seed a realistic pilot dataset; complete UAT scenarios for every role.",
+    "implementation": [
+      "Seed a realistic pilot dataset; complete UAT scenarios for every role.",
+      "Finalize runbooks, API docs, security checklist, model cards, demo script and project report.",
+      "Deploy the pilot, verify monitoring, create release tag and final architecture snapshot."
+    ],
+    "primary_files": [
+      "docs/operations/*",
+      "docs/product/*",
+      "docs/api/*",
+      "docs/ai/*",
+      "CHANGELOG.md"
+    ],
+    "exit_checks": "Full regression, UAT sign-off and production smoke test.",
+    "required_commit": "release(phase-72): publish pilot-ready CivIQ",
+    "stop_condition": "After the commit, stop and return the commit hash, tests executed, files changed and any unresolved limitations. Do not implement future phases."
+  }
+]

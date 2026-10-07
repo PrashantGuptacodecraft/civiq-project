@@ -38,6 +38,25 @@ Interpret that as permission to execute **only that phase**.
 - Do not claim a government integration is live unless credentials and a real authorized endpoint exist.
 - Do not use mocked integrations in production paths without explicit feature flags/source labels.
 
+## Frontend rules
+
+Every AI coding agent implementing a frontend phase MUST:
+
+1. Read the relevant `docs/ux/` documentation before changing frontend code.
+2. Build mobile-first. Design for 320px–430px first, then scale up to tablet and desktop.
+3. Reuse design tokens from `docs/ux/DESIGN-SYSTEM.md`. No arbitrary color, spacing or typography values.
+4. Reuse shared components from `packages/ui/`. Do not duplicate existing components.
+5. Respect the motion system in `docs/ux/MOTION-SYSTEM.md`. Use duration and easing tokens.
+6. Respect `prefers-reduced-motion`. Wrap non-essential animations in a motion preference check.
+7. Implement loading, empty, error and success states for every view. See `docs/ux/UI-STATE-SPECIFICATION.md`.
+8. Test mobile (360px, 390px) and desktop (1280px, 1440px) layouts.
+9. Never hide important information behind hover. All data must be accessible on touch devices.
+10. Never present AI recommendations as unquestionable truth. Label AI outputs clearly.
+11. Keep emergency actions accessible and fast. No animation delays on emergency workflows.
+12. Avoid UI scope creep beyond the current phase.
+13. Never redesign the architecture.
+14. Pass the quality gate checks in `docs/ux/UI-QUALITY-GATES.md`.
+
 ## Required completion report
 
 After the commit, report only:

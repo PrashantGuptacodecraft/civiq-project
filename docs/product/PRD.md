@@ -62,3 +62,35 @@ The architecture is national-ready: India → State/UT → District → Local Bo
 - Autonomous emergency dispatch.
 - Government employee identity issuance.
 - Nationwide production integration without authorization.
+
+## UX vision
+
+CivIQ is a modern, trustworthy, mobile-first civic technology platform. The experience must feel premium, fast, clear, professional and human. All user-facing features must be designed mobile-first, targeting Android phones and iPhones as the primary devices, then scaling up to tablet, laptop and desktop. See `docs/ux/README.md` for the complete UX documentation.
+
+## Responsive requirement
+
+Every screen must work correctly across the target viewports (320px–1440px) defined in `docs/ux/RESPONSIVE-SYSTEM.md`. No horizontal overflow, no unreachable content, no unusable touch targets.
+
+## Design-system requirement
+
+All frontend implementation must use the semantic design tokens defined in `docs/ux/DESIGN-SYSTEM.md`. Arbitrary color values, spacing values and typography are not permitted. This ensures visual consistency across all 72 phases.
+
+## Accessibility target
+
+Target WCAG 2.2 AA compliance. All interactive elements must be keyboard accessible, have visible focus states, and meet minimum contrast ratios. Status must never be conveyed by color alone. See `docs/ux/ACCESSIBILITY.md`.
+
+## Motion philosophy
+
+Animation must be purposeful: aiding understanding, providing feedback and creating continuity. Use the duration and easing tokens from `docs/ux/MOTION-SYSTEM.md`. Support `prefers-reduced-motion`. Emergency actions must never be delayed by animation.
+
+## Role-specific UX
+
+Each persona has a tailored mobile-first navigation and workflow. Citizen, field worker, verification officer, department officer, disaster coordinator and platform administrator each have defined navigation patterns and primary actions. See `docs/ux/ROLE-BASED-UX.md`.
+
+## Emergency-first UX
+
+Emergency workflows must remain immediately accessible. Emergency reports use a simplified form, display the official emergency handoff prominently, and record as `UNVERIFIED`. CivIQ must never suggest it replaces official emergency dispatch. See `docs/ux/EMERGENCY-UX.md`.
+
+## AI transparency UX
+
+AI outputs must be clearly labeled as recommendations. Confidence, explanation and timestamps must be shown where meaningful. AI recommendation must be visually distinct from official decision. High-impact AI output requires human confirmation. AI must never be presented as unquestionable truth. See `docs/ux/UI-STATE-SPECIFICATION.md`.

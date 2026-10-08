@@ -28,6 +28,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
+      - name: Validate Prisma schema
+        run: pnpm --filter @civiq/db exec -- prisma validate --schema=./prisma/schema.prisma
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/civiq_dev"
+
       - name: Check for security vulnerabilities
         run: pnpm audit --prod
 

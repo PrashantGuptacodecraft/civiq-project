@@ -1,0 +1,193 @@
+// CivIQ Database Schema — Foundation
+// Conventions:
+//   - Primary keys: CUID2 (string, @default(cuid()))
+//   - Timestamps: createdAt / updatedAt on every table
+//   - Soft-delete: deletedAt (nullable DateTime) on entities that require it
+//   - Optimistic locking: version Int @default(0) on mutable aggregates
+//   - All timestamps stored as UTC (default Prisma behavior with PostgreSQL)
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// ENUMERATIONS
+// ─────────────────────────────────────────────
+
+enum Role {
+  PLATFORM_SUPER_ADMIN
+  NATIONAL_ADMIN
+  STATE_ADMIN
+  DISTRICT_ULB_ADMIN
+  DEPARTMENT_OFFICER
+  VERIFICATION_OFFICER
+  FIELD_SUPERVISOR
+  FIELD_WORKER
+  DISASTER_COORDINATOR
+  AUDITOR
+  CITIZEN
+}
+
+enum VerificationStatus {
+  PENDING
+  IN_REVIEW
+  VERIFIED
+  REJECTED
+  SUSPICIOUS
+}
+
+enum IssueStatus {
+  DRAFT
+  SUBMITTED
+  ASSIGNED
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+  REOPENED
+}
+
+enum IssueSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// ─────────────────────────────────────────────
+// USERS & IDENTITY
+// ─────────────────────────────────────────────
+
+/// Platform user — represents any authenticated principal.
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  phone     String?   @unique
+  /// Hashed; never store plaintext or Aadhaar numbers.
+  role      Role      @default(CITIZEN)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  version   Int       @default(0)
+
+  profile   UserProfile?
+  issues    Issue[]       @relation("ReportedBy")
+  assigned  Issue[]       @relation("AssignedTo")
+
+  @@index([email])
+  @@index([role])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+/// Extended profile — kept separate to allow selective loading.
+model UserProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  displayName String
+  avatarUrl   String?
+  state       String?
+  district    String?
+  city        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+// ─────────────────────────────────────────────
+// ISSUES
+// ─────────────────────────────────────────────
+
+/// A civic issue reported by a citizen or field worker.
+model Issue {
+  id               String             @id @default(cuid())
+  title            String
+  description      String
+  status           IssueStatus        @default(SUBMITTED)
+  severity         IssueSeverity      @default(MEDIUM)
+  verificationStatus VerificationStatus @default(PENDING)
+  /// WGS-84 latitude
+  latitude         Float?
+  /// WGS-84 longitude
+  longitude        Float?
+  address          String?
+  state            String?
+  district         String?
+  city             String?
+  reportedById     String
+  assignedToId     String?
+  /// Optimistic lock — increment on every state change.
+  version          Int                @default(0)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  deletedAt        DateTime?
+
+  reportedBy User  @relation("ReportedBy", fields: [reportedById], references: [id])
+  assignedTo User? @relation("AssignedTo", fields: [assignedToId], references: [id])
+
+  evidence IssueEvidence[]
+  audit    AuditLog[]
+
+  @@index([status])
+  @@index([severity])
+  @@index([verificationStatus])
+  @@index([reportedById])
+  @@index([state, district])
+  @@index([deletedAt])
+  @@map("issues")
+}
+
+// ─────────────────────────────────────────────
+// EVIDENCE
+// ─────────────────────────────────────────────
+
+/// File or media evidence attached to an issue.
+model IssueEvidence {
+  id          String   @id @default(cuid())
+  issueId     String
+  /// Relative path or object-store key — never a public URL by default.
+  storageKey  String
+  mimeType    String
+  sizeBytes   Int
+  uploadedById String?
+  capturedAt  DateTime?
+  createdAt   DateTime @default(now())
+
+  issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@index([issueId])
+  @@map("issue_evidence")
+}
+
+// ─────────────────────────────────────────────
+// AUDIT LOG
+// ─────────────────────────────────────────────
+
+/// Immutable append-only audit trail.
+model AuditLog {
+  id         String   @id @default(cuid())
+  issueId    String?
+  actorId    String?
+  action     String
+  /// JSON snapshot of changed fields — no PII stored directly.
+  payload    Json     @default("{}")
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  issue Issue? @relation(fields: [issueId], references: [id])
+
+  @@index([issueId])
+  @@index([actorId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

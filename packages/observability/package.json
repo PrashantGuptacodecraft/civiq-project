@@ -1,5 +1,18 @@
 {
-  "name": "@civiq/observability",
-  "version": "0.1.0",
-  "private": true
+    "name":  "@civiq/observability",
+    "version":  "0.1.0",
+    "private":  true,
+    "dependencies":  {
+                         "pino":  "^10.4.0",
+                         "uuid":  "^14.0.2"
+                     },
+    "devDependencies":  {
+                            "@types/uuid":  "^11.0.0",
+                            "tsx":  "^4.23.15",
+                            "typescript":  "^7.0.2",
+                            "vitest":  "^5.0.3"
+                        },
+    "scripts":  {
+                    "test":  "vitest run"
+                }
 }

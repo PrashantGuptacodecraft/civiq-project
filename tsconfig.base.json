@@ -4,8 +4,12 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "isolatedModules": true,
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-    "skipLibCheck": true
+    "exactOptionalPropertyTypes": true
   }
 }

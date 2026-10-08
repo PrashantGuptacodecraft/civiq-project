@@ -136,7 +136,6 @@ model Issue {
   assignedTo User? @relation("AssignedTo", fields: [assignedToId], references: [id])
 
   evidence IssueEvidence[]
-  audit    AuditLog[]
 
   @@index([status])
   @@index([severity])
@@ -175,20 +174,27 @@ model IssueEvidence {
 
 /// Immutable append-only audit trail.
 model AuditLog {
-  id        String   @id @default(cuid())
-  issueId   String?
-  actorId   String?
-  action    String
-  /// JSON snapshot of changed fields — no PII stored directly.
-  payload   Json     @default("{}")
-  ipAddress String?
-  userAgent String?
-  createdAt DateTime @default(now())
+  id             String   @id @default(cuid())
+  actorId        String?
+  actorType      String   @default("HUMAN") // "HUMAN" or "SYSTEM"
+  action         String
+  objectType     String?
+  objectId       String?
+  jurisdictionId String?
+  requestId      String?
+  /// JSON snapshot of changed fields — no PII/secrets stored directly.
+  payload        Json     @default("{}")
+  ipAddress      String?
+  userAgent      String?
+  createdAt      DateTime @default(now())
 
-  issue Issue? @relation(fields: [issueId], references: [id])
+  // Note: We avoid strict foreign keys for objectId to allow polymorphic logging 
+  // and prevent audit logs from blocking deletions of objects (though soft-delete is preferred).
 
-  @@index([issueId])
   @@index([actorId])
+  @@index([objectType, objectId])
+  @@index([jurisdictionId])
+  @@index([requestId])
   @@index([createdAt])
   @@map("audit_logs")
 }

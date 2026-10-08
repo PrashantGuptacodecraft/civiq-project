@@ -220,9 +220,66 @@ model Jurisdiction {
 
   parent   Jurisdiction?  @relation("JurisdictionHierarchy", fields: [parentId], references: [id])
   children Jurisdiction[] @relation("JurisdictionHierarchy")
+  organizations Organization[]
 
   @@index([type])
   @@index([parentId])
   @@index([deletedAt])
   @@map("jurisdictions")
+}
+
+// ─────────────────────────────────────────────
+// ORGANIZATIONS & DEPARTMENTS
+// ─────────────────────────────────────────────
+
+enum OrganizationType {
+  GOVERNMENT
+  NGO
+  CONTRACTOR
+  CIVIC_GROUP
+}
+
+enum OrgVerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+/// A structured body (Government, NGO, Contractor) operating within a jurisdiction
+model Organization {
+  id                 String                @id @default(cuid())
+  name               String
+  type               OrganizationType
+  verificationStatus OrgVerificationStatus @default(PENDING)
+  jurisdictionId     String
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  deletedAt          DateTime?
+  version            Int                   @default(0)
+
+  jurisdiction       Jurisdiction          @relation(fields: [jurisdictionId], references: [id])
+  departments        Department[]
+
+  @@index([jurisdictionId])
+  @@index([type])
+  @@index([verificationStatus])
+  @@index([deletedAt])
+  @@map("organizations")
+}
+
+/// A subdivision of an organization that handles specific categories of issues
+model Department {
+  id               String       @id @default(cuid())
+  name             String
+  organizationId   String
+  /// Array of issue categories this department handles
+  issueCategories  String[]
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  deletedAt        DateTime?
+
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("departments")
 }

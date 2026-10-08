@@ -1,0 +1,10 @@
+[project]
+name = "civiq-ai"
+version = "0.1.0"
+description = "CivIQ AI Gateway"
+requires-python = ">=3.10"
+
+dependencies = [
+  "fastapi",
+  "uvicorn"
+]

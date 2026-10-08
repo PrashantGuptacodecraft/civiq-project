@@ -76,9 +76,9 @@ model User {
   deletedAt DateTime?
   version   Int       @default(0)
 
-  profile   UserProfile?
-  issues    Issue[]       @relation("ReportedBy")
-  assigned  Issue[]       @relation("AssignedTo")
+  profile  UserProfile?
+  issues   Issue[]      @relation("ReportedBy")
+  assigned Issue[]      @relation("AssignedTo")
 
   @@index([email])
   @@index([role])
@@ -109,27 +109,27 @@ model UserProfile {
 
 /// A civic issue reported by a citizen or field worker.
 model Issue {
-  id               String             @id @default(cuid())
-  title            String
-  description      String
-  status           IssueStatus        @default(SUBMITTED)
-  severity         IssueSeverity      @default(MEDIUM)
+  id                 String             @id @default(cuid())
+  title              String
+  description        String
+  status             IssueStatus        @default(SUBMITTED)
+  severity           IssueSeverity      @default(MEDIUM)
   verificationStatus VerificationStatus @default(PENDING)
   /// WGS-84 latitude
-  latitude         Float?
+  latitude           Float?
   /// WGS-84 longitude
-  longitude        Float?
-  address          String?
-  state            String?
-  district         String?
-  city             String?
-  reportedById     String
-  assignedToId     String?
+  longitude          Float?
+  address            String?
+  state              String?
+  district           String?
+  city               String?
+  reportedById       String
+  assignedToId       String?
   /// Optimistic lock — increment on every state change.
-  version          Int                @default(0)
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  deletedAt        DateTime?
+  version            Int                @default(0)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  deletedAt          DateTime?
 
   reportedBy User  @relation("ReportedBy", fields: [reportedById], references: [id])
   assignedTo User? @relation("AssignedTo", fields: [assignedToId], references: [id])
@@ -152,15 +152,15 @@ model Issue {
 
 /// File or media evidence attached to an issue.
 model IssueEvidence {
-  id          String   @id @default(cuid())
-  issueId     String
+  id           String    @id @default(cuid())
+  issueId      String
   /// Relative path or object-store key — never a public URL by default.
-  storageKey  String
-  mimeType    String
-  sizeBytes   Int
+  storageKey   String
+  mimeType     String
+  sizeBytes    Int
   uploadedById String?
-  capturedAt  DateTime?
-  createdAt   DateTime @default(now())
+  capturedAt   DateTime?
+  createdAt    DateTime  @default(now())
 
   issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
 
@@ -174,15 +174,15 @@ model IssueEvidence {
 
 /// Immutable append-only audit trail.
 model AuditLog {
-  id         String   @id @default(cuid())
-  issueId    String?
-  actorId    String?
-  action     String
+  id        String   @id @default(cuid())
+  issueId   String?
+  actorId   String?
+  action    String
   /// JSON snapshot of changed fields — no PII stored directly.
-  payload    Json     @default("{}")
-  ipAddress  String?
-  userAgent  String?
-  createdAt  DateTime @default(now())
+  payload   Json     @default("{}")
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
 
   issue Issue? @relation(fields: [issueId], references: [id])
 
@@ -190,4 +190,39 @@ model AuditLog {
   @@index([actorId])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// ─────────────────────────────────────────────
+// JURISDICTIONS
+// ─────────────────────────────────────────────
+
+enum JurisdictionType {
+  COUNTRY
+  STATE_UT
+  DISTRICT
+  LOCAL_BODY
+  BLOCK
+  WARD_VILLAGE
+}
+
+/// Administrative boundaries and hierarchies for routing and reporting
+model Jurisdiction {
+  id        String           @id @default(cuid())
+  name      String
+  type      JurisdictionType
+  /// Local Government Directory code or other external reference ID
+  lgdCode   String?          @unique
+  parentId  String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  deletedAt DateTime?
+  version   Int              @default(0)
+
+  parent   Jurisdiction?  @relation("JurisdictionHierarchy", fields: [parentId], references: [id])
+  children Jurisdiction[] @relation("JurisdictionHierarchy")
+
+  @@index([type])
+  @@index([parentId])
+  @@index([deletedAt])
+  @@map("jurisdictions")
 }

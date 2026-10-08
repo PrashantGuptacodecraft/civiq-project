@@ -11,10 +11,15 @@
     "db:reset": "prisma migrate reset --schema=./prisma/schema.prisma",
     "db:seed": "tsx seed/seed.ts",
     "db:studio": "prisma studio --schema=./prisma/schema.prisma",
-    "db:validate": "prisma validate --schema=./prisma/schema.prisma"
+    "db:validate": "prisma validate --schema=./prisma/schema.prisma",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@prisma/client": "5.22.0",
     "prisma": "5.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "typescript": "^7.0.2"
   }
 }

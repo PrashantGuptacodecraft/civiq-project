@@ -1,0 +1,40 @@
+[
+  {
+    "id": "ind",
+    "name": "India",
+    "type": "COUNTRY",
+    "lgdCode": "IND",
+    "children": [
+      {
+        "id": "mh",
+        "name": "Maharashtra",
+        "type": "STATE_UT",
+        "lgdCode": "27",
+        "children": [
+          {
+            "id": "mh-pune",
+            "name": "Pune",
+            "type": "DISTRICT",
+            "lgdCode": "504",
+            "children": [
+              {
+                "id": "mh-pune-pmc",
+                "name": "Pune Municipal Corporation",
+                "type": "LOCAL_BODY",
+                "lgdCode": "250529",
+                "children": [
+                  {
+                    "id": "mh-pune-pmc-aundh",
+                    "name": "Aundh-Baner Ward",
+                    "type": "WARD_VILLAGE",
+                    "lgdCode": "PMC-08"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

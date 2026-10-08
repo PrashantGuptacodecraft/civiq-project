@@ -3,6 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "dependencies": {
+        "@civiq/auth": "workspace:*",
         "express": "^5.2.1"
     },
     "devDependencies": {

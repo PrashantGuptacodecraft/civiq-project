@@ -79,6 +79,7 @@ model User {
   profile  UserProfile?
   issues   Issue[]      @relation("ReportedBy")
   assigned Issue[]      @relation("AssignedTo")
+  roleAssignments RoleAssignment[]
 
   @@index([email])
   @@index([role])
@@ -221,6 +222,7 @@ model Jurisdiction {
   parent   Jurisdiction?  @relation("JurisdictionHierarchy", fields: [parentId], references: [id])
   children Jurisdiction[] @relation("JurisdictionHierarchy")
   organizations Organization[]
+  roleAssignments RoleAssignment[]
 
   @@index([type])
   @@index([parentId])
@@ -259,6 +261,7 @@ model Organization {
 
   jurisdiction       Jurisdiction          @relation(fields: [jurisdictionId], references: [id])
   departments        Department[]
+  roleAssignments    RoleAssignment[]
 
   @@index([jurisdictionId])
   @@index([type])
@@ -279,7 +282,36 @@ model Department {
   deletedAt        DateTime?
 
   organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  roleAssignments  RoleAssignment[]
 
   @@index([organizationId])
   @@map("departments")
+}
+
+// ─────────────────────────────────────────────
+// RBAC / ACCESS CONTROL
+// ─────────────────────────────────────────────
+
+/// Represents a specific role granted to a user, optionally scoped to a jurisdiction, organization, or department.
+model RoleAssignment {
+  id             String    @id @default(cuid())
+  userId         String
+  role           Role
+  
+  // Scopes (all optional, if all null => global scope)
+  jurisdictionId String?
+  organizationId String?
+  departmentId   String?
+  
+  createdAt      DateTime  @default(now())
+
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jurisdiction   Jurisdiction? @relation(fields: [jurisdictionId], references: [id])
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  department     Department?   @relation(fields: [departmentId], references: [id])
+
+  @@unique([userId, role, jurisdictionId, organizationId, departmentId], name: "unique_role_assignment")
+  @@index([userId])
+  @@index([role])
+  @@map("role_assignments")
 }

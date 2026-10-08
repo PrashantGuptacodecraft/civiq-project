@@ -1,23 +1,34 @@
-import logging
-import json
-import uuid
 import datetime
+import json
+import logging
+import uuid
+from typing import Any
 
-REDACT_KEYS = {"password", "token", "authorization", "cookie", "aadhar", "aadhar_number", "pan", "upi_id"}
+REDACT_KEYS = {
+    "password",
+    "token",
+    "authorization",
+    "cookie",
+    "aadhar",
+    "aadhar_number",
+    "pan",
+    "upi_id",
+}
+
 
 class JSONFormatter(logging.Formatter):
-    def format(self, record):
-        log_obj = {
+    def format(self, record: logging.LogRecord) -> str:
+        log_obj: dict[str, Any] = {
             "level": record.levelname,
             "message": record.getMessage(),
             "time": datetime.datetime.fromtimestamp(record.created).isoformat(),
         }
-        
+
         # Add correlation_id if present
         if hasattr(record, "correlation_id"):
             log_obj["correlation_id"] = record.correlation_id
 
-        # Merge extra fields
+        # Merge extra fields, redacting sensitive keys
         if hasattr(record, "extra_fields") and isinstance(record.extra_fields, dict):
             for k, v in record.extra_fields.items():
                 if k.lower() in REDACT_KEYS:
@@ -27,7 +38,8 @@ class JSONFormatter(logging.Formatter):
 
         return json.dumps(log_obj)
 
-def get_logger(name="civiq_ai"):
+
+def get_logger(name: str = "civiq_ai") -> logging.Logger:
     logger = logging.getLogger(name)
     if not logger.handlers:
         handler = logging.StreamHandler()
@@ -35,6 +47,7 @@ def get_logger(name="civiq_ai"):
         logger.addHandler(handler)
         logger.setLevel(logging.INFO)
     return logger
+
 
 def generate_correlation_id() -> str:
     return str(uuid.uuid4())

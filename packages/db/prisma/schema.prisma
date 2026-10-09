@@ -321,3 +321,58 @@ model RoleAssignment {
   @@index([role])
   @@map("role_assignments")
 }
+
+// ─────────────────────────────────────────────
+// INTEGRATIONS & PROVENANCE
+// ─────────────────────────────────────────────
+
+enum IntegrationType {
+  GOVERNMENT_API
+  SENSOR_NETWORK
+  SCRAPER
+  MANUAL_IMPORT
+  THIRD_PARTY_SERVICE
+}
+
+/// A data source or remote system providing data into CivIQ
+model IntegrationSource {
+  id            String          @id @default(cuid())
+  name          String
+  type          IntegrationType
+  isActive      Boolean         @default(true)
+  /// 0-100 score indicating trustworthiness of this source
+  confidence    Int             @default(50)
+  syncCursor    String?
+  lastSyncAt    DateTime?
+  lastSuccessAt DateTime?
+  errorState    Json?           // Structured error info if the last sync failed
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  references    ExternalReference[]
+
+  @@map("integration_sources")
+}
+
+/// Links local records (Issues, Jurisdictions, Users) to remote IDs and tracks provenance
+model ExternalReference {
+  id            String   @id @default(cuid())
+  integrationId String
+  /// e.g. "Jurisdiction", "Issue", "User"
+  objectType    String
+  /// The local ID of the record
+  objectId      String
+  /// The ID of this record in the remote integration system
+  externalId    String
+  /// Any additional provenance metadata from the source
+  metadata      Json?    @default("{}")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  integration   IntegrationSource @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  @@unique([integrationId, objectType, externalId])
+  @@index([objectType, objectId])
+  @@index([integrationId])
+  @@map("external_references")
+}

@@ -4,6 +4,7 @@
     "private": true,
     "dependencies": {
         "@civiq/auth": "workspace:*",
+        "@civiq/contracts": "workspace:*",
         "express": "^5.2.1"
     },
     "devDependencies": {

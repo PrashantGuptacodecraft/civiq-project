@@ -320,19 +320,28 @@ model VerificationHistory {
 
 /// File or media evidence attached to an issue.
 model IssueEvidence {
-  id           String    @id @default(cuid())
-  issueId      String
+  id               String    @id @default(cuid())
+  issueId          String
   /// Relative path or object-store key — never a public URL by default.
-  storageKey   String
-  mimeType     String
-  sizeBytes    Int
-  uploadedById String?
-  capturedAt   DateTime?
-  createdAt    DateTime  @default(now())
+  storageKey       String
+  mimeType         String
+  sizeBytes        Int
+  
+  // Security & verification metadata
+  fileHash         String?
+  perceptualHash   String?
+  captureLatitude  Float?
+  captureLongitude Float?
+  metadataTrusted  Boolean   @default(false)
+  
+  uploadedById     String?
+  capturedAt       DateTime?
+  createdAt        DateTime  @default(now())
 
   issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
 
   @@index([issueId])
+  @@index([fileHash])
   @@map("issue_evidence")
 }
 

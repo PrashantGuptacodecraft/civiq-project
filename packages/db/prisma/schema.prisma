@@ -92,6 +92,10 @@ model User {
   termsAcceptedAt       DateTime?
   privacyPolicyAcceptedAt DateTime?
 
+  passwordHash          String?
+  failedLoginAttempts   Int                @default(0)
+  lockedUntil           DateTime?
+
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
   deletedAt             DateTime?
@@ -100,6 +104,7 @@ model User {
   profile               UserProfile?
   privacyPreferences    PrivacyPreference?
   sessions              Session[]
+  passwordResetTokens   PasswordResetToken[]
   oauthAccounts         OAuthAccount[]
   issues                Issue[]            @relation("ReportedBy")
   assigned              Issue[]            @relation("AssignedTo")
@@ -189,6 +194,22 @@ model Session {
   @@index([userId])
   @@index([tokenHash])
   @@map("sessions")
+}
+
+/// Password reset tokens
+model PasswordResetToken {
+  id          String   @id @default(cuid())
+  userId      String
+  tokenHash   String   @unique
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@map("password_reset_tokens")
 }
 
 // ─────────────────────────────────────────────

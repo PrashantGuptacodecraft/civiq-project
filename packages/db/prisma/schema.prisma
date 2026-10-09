@@ -115,6 +115,8 @@ model User {
   invitesAccepted       OfficialInvite[]   @relation("AcceptedBy")
   verificationHistory   VerificationHistory[]
   trustProfile          TrustProfile?
+  riskSignals           RiskSignal[]
+  riskSignalsReviewed   RiskSignal[]       @relation("SignalReviewer")
 
   @@index([email])
   @@index([phone])
@@ -287,6 +289,7 @@ model Issue {
 
   evidence            IssueEvidence[]
   verificationHistory VerificationHistory[]
+  riskSignals         RiskSignal[]
 
   @@index([status])
   @@index([severity])
@@ -590,4 +593,51 @@ model ExternalReference {
   @@index([objectType, objectId])
   @@index([integrationId])
   @@map("external_references")
+}
+
+// ─────────────────────────────────────────────
+// RISK & ABUSE CONTROL
+// ─────────────────────────────────────────────
+
+enum SignalType {
+  BURST_REPORTING
+  REPEATED_MEDIA
+  API_ABUSE
+  SUSPICIOUS_DEVICE
+}
+
+enum ReviewDecision {
+  PENDING
+  DISMISSED
+  ACTIONED
+}
+
+/// Tracks suspicious patterns for human review or automated throttling without prematurely banning users
+model RiskSignal {
+  id               String         @id @default(cuid())
+  userId           String?
+  issueId          String?
+  ipAddress        String?
+  deviceInfo       String?
+  fileHash         String?
+  
+  signalType       SignalType
+  severity         IssueSeverity  @default(MEDIUM)
+  decision         ReviewDecision @default(PENDING)
+  
+  metadata         Json?          @default("{}") // e.g. request frequency
+  createdAt        DateTime       @default(now())
+  reviewedAt       DateTime?
+  reviewedById     String?
+
+  user             User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  issue            Issue?         @relation(fields: [issueId], references: [id], onDelete: SetNull)
+  reviewedBy       User?          @relation("SignalReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([issueId])
+  @@index([ipAddress])
+  @@index([fileHash])
+  @@index([decision])
+  @@map("risk_signals")
 }

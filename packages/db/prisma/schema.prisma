@@ -100,6 +100,7 @@ model User {
   profile               UserProfile?
   privacyPreferences    PrivacyPreference?
   sessions              Session[]
+  oauthAccounts         OAuthAccount[]
   issues                Issue[]            @relation("ReportedBy")
   assigned              Issue[]            @relation("AssignedTo")
   roleAssignments       RoleAssignment[]
@@ -110,6 +111,21 @@ model User {
   @@index([status])
   @@index([deletedAt])
   @@map("users")
+}
+
+/// Linked external identity providers (Google, Apple, etc)
+model OAuthAccount {
+  id                String   @id @default(cuid())
+  userId            String
+  provider          String
+  providerAccountId String
+  createdAt         DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("oauth_accounts")
 }
 
 /// Extended profile — kept separate to allow selective loading. Public/semi-public fields.

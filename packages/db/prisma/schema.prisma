@@ -109,6 +109,8 @@ model User {
   issues                Issue[]            @relation("ReportedBy")
   assigned              Issue[]            @relation("AssignedTo")
   roleAssignments       RoleAssignment[]
+  invitesSent           OfficialInvite[]   @relation("InvitedBy")
+  invitesAccepted       OfficialInvite[]   @relation("AcceptedBy")
 
   @@index([email])
   @@index([phone])
@@ -382,6 +384,7 @@ model Organization {
   jurisdiction       Jurisdiction          @relation(fields: [jurisdictionId], references: [id])
   departments        Department[]
   roleAssignments    RoleAssignment[]
+  invites            OfficialInvite[]
 
   @@index([jurisdictionId])
   @@index([type])
@@ -403,6 +406,7 @@ model Department {
 
   organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   roleAssignments  RoleAssignment[]
+  invites          OfficialInvite[]
 
   @@index([organizationId])
   @@map("departments")
@@ -434,6 +438,42 @@ model RoleAssignment {
   @@index([userId])
   @@index([role])
   @@map("role_assignments")
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  EXPIRED
+}
+
+/// Invitation for a government official or contractor to join an organization/department
+model OfficialInvite {
+  id                 String       @id @default(cuid())
+  email              String
+  employeeIdentifier String?
+  role               Role
+  tokenHash          String       @unique
+  status             InviteStatus @default(PENDING)
+  expiresAt          DateTime
+
+  organizationId     String
+  departmentId       String?
+  invitedById        String
+  acceptedById       String?
+  acceptedAt         DateTime?
+  
+  createdAt          DateTime     @default(now())
+
+  organization       Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  department         Department?  @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  invitedBy          User         @relation("InvitedBy", fields: [invitedById], references: [id])
+  acceptedBy         User?        @relation("AcceptedBy", fields: [acceptedById], references: [id])
+
+  @@index([email])
+  @@index([tokenHash])
+  @@index([organizationId])
+  @@map("official_invites")
 }
 
 // ─────────────────────────────────────────────

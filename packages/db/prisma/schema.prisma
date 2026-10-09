@@ -79,7 +79,7 @@ enum UserVerificationLevel {
 /// Platform user — represents any authenticated principal.
 model User {
   id                    String             @id @default(cuid())
-  email                 String             @unique
+  email                 String?            @unique
   phone                 String?            @unique
   /// Hashed; never store plaintext or Aadhaar numbers.
   role                  Role               @default(CITIZEN)
@@ -99,6 +99,7 @@ model User {
 
   profile               UserProfile?
   privacyPreferences    PrivacyPreference?
+  sessions              Session[]
   issues                Issue[]            @relation("ReportedBy")
   assigned              Issue[]            @relation("AssignedTo")
   roleAssignments       RoleAssignment[]
@@ -142,6 +143,36 @@ model PrivacyPreference {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("privacy_preferences")
+}
+
+/// OTP Authentication Challenges
+model OtpChallenge {
+  id          String   @id @default(cuid())
+  phone       String
+  /// Hashed OTP value for verification
+  otpHash     String
+  attempts    Int      @default(0)
+  expiresAt   DateTime
+  verifiedAt  DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([phone])
+  @@map("otp_challenges")
+}
+
+/// Active user sessions
+model Session {
+  id          String   @id @default(cuid())
+  userId      String
+  tokenHash   String   @unique
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@map("sessions")
 }
 
 // ─────────────────────────────────────────────

@@ -63,36 +63,61 @@ enum IssueSeverity {
 // USERS & IDENTITY
 // ─────────────────────────────────────────────
 
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+  DEACTIVATED
+  BANNED
+}
+
+enum UserVerificationLevel {
+  UNVERIFIED
+  BASIC_VERIFIED
+  KYC_VERIFIED
+}
+
 /// Platform user — represents any authenticated principal.
 model User {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  phone     String?   @unique
+  id                    String             @id @default(cuid())
+  email                 String             @unique
+  phone                 String?            @unique
   /// Hashed; never store plaintext or Aadhaar numbers.
-  role      Role      @default(CITIZEN)
-  isActive  Boolean   @default(true)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
-  version   Int       @default(0)
+  role                  Role               @default(CITIZEN)
+  
+  status                AccountStatus      @default(ACTIVE)
+  verificationLevel     UserVerificationLevel @default(UNVERIFIED)
+  
+  emailVerifiedAt       DateTime?
+  phoneVerifiedAt       DateTime?
+  termsAcceptedAt       DateTime?
+  privacyPolicyAcceptedAt DateTime?
 
-  profile  UserProfile?
-  issues   Issue[]      @relation("ReportedBy")
-  assigned Issue[]      @relation("AssignedTo")
-  roleAssignments RoleAssignment[]
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  deletedAt             DateTime?
+  version               Int                @default(0)
+
+  profile               UserProfile?
+  privacyPreferences    PrivacyPreference?
+  issues                Issue[]            @relation("ReportedBy")
+  assigned              Issue[]            @relation("AssignedTo")
+  roleAssignments       RoleAssignment[]
 
   @@index([email])
+  @@index([phone])
   @@index([role])
+  @@index([status])
   @@index([deletedAt])
   @@map("users")
 }
 
-/// Extended profile — kept separate to allow selective loading.
+/// Extended profile — kept separate to allow selective loading. Public/semi-public fields.
 model UserProfile {
   id          String   @id @default(cuid())
   userId      String   @unique
   displayName String
   avatarUrl   String?
+  bio         String?
   state       String?
   district    String?
   city        String?
@@ -102,6 +127,21 @@ model UserProfile {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_profiles")
+}
+
+/// User privacy and notification preferences.
+model PrivacyPreference {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  showRealName  Boolean  @default(false)
+  shareLocation Boolean  @default(false)
+  allowContact  Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("privacy_preferences")
 }
 
 // ─────────────────────────────────────────────

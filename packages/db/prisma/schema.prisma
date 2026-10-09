@@ -40,6 +40,8 @@ enum VerificationStatus {
   VERIFIED
   REJECTED
   SUSPICIOUS
+  NEEDS_EVIDENCE
+  DUPLICATE
 }
 
 enum IssueStatus {
@@ -111,6 +113,7 @@ model User {
   roleAssignments       RoleAssignment[]
   invitesSent           OfficialInvite[]   @relation("InvitedBy")
   invitesAccepted       OfficialInvite[]   @relation("AcceptedBy")
+  verificationHistory   VerificationHistory[]
   trustProfile          TrustProfile?
 
   @@index([email])
@@ -282,7 +285,8 @@ model Issue {
   reportedBy User  @relation("ReportedBy", fields: [reportedById], references: [id])
   assignedTo User? @relation("AssignedTo", fields: [assignedToId], references: [id])
 
-  evidence IssueEvidence[]
+  evidence            IssueEvidence[]
+  verificationHistory VerificationHistory[]
 
   @@index([status])
   @@index([severity])
@@ -291,6 +295,23 @@ model Issue {
   @@index([state, district])
   @@index([deletedAt])
   @@map("issues")
+}
+
+model VerificationHistory {
+  id             String             @id @default(cuid())
+  issueId        String
+  previousStatus VerificationStatus
+  newStatus      VerificationStatus
+  changedById    String
+  reason         String?
+  createdAt      DateTime           @default(now())
+
+  issue     Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  changedBy User  @relation(fields: [changedById], references: [id])
+
+  @@index([issueId])
+  @@index([changedById])
+  @@map("verification_history")
 }
 
 // ─────────────────────────────────────────────

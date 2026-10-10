@@ -5,6 +5,7 @@
     "dependencies": {
         "@civiq/auth": "workspace:*",
         "@civiq/contracts": "workspace:*",
+        "@civiq/db": "workspace:*",
         "express": "^5.2.1",
         "google-auth-library": "^11.2.0"
     },

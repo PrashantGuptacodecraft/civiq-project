@@ -33,6 +33,9 @@ jobs:
         env:
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/civiq_dev"
 
+      - name: Generate Prisma Client
+        run: pnpm --filter @civiq/db run db:generate
+
       - name: Check for security vulnerabilities
         run: pnpm audit --prod
 

@@ -7,3 +7,29 @@
     @apply bg-surface-primary text-text-primary font-sans antialiased;
   }
 }
+
+@layer utilities {
+  /* Shimmer skeleton loading — respects reduced-motion */
+  .skeleton {
+    @apply relative overflow-hidden bg-surface-tertiary rounded-md;
+  }
+  .skeleton::after {
+    content: '';
+    @apply absolute inset-0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+    animation: shimmer 2s infinite;
+  }
+
+  /* Reduced motion: disable all non-essential animations */
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton::after {
+      animation: none;
+    }
+    .animate-fade-in {
+      animation: none !important;
+    }
+    .animate-ping {
+      animation: none !important;
+    }
+  }
+}

@@ -55,10 +55,13 @@ async function seedJurisdictions() {
   console.log(`  ✓ Integrity check passed: ${pune.name} belongs to ${pune.parent.name}`);
 }
 
+import { seedTaxonomy } from './taxonomy';
+
 async function main(): Promise<void> {
   console.log('🌱  Seeding database...');
 
   await seedJurisdictions();
+  await seedTaxonomy(prisma);
 
   // ── Platform super admin ──────────────────────────────────────────────────
   const admin = await prisma.user.upsert({

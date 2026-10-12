@@ -8,7 +8,7 @@ describe('Civic Issue Taxonomy', () => {
 
   it('should contain groups and categories', () => {
     expect(CIVIC_ISSUE_TAXONOMY_V1.groups.length).toBeGreaterThan(0);
-    expect(CIVIC_ISSUE_TAXONOMY_V1.groups[0].categories.length).toBeGreaterThan(0);
+    expect(CIVIC_ISSUE_TAXONOMY_V1.groups[0]!.categories.length).toBeGreaterThan(0);
   });
 
   it('each category should have required fields and valid severity', () => {

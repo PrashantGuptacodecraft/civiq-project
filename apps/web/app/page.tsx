@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function HomePage() {
   return (
     <div className="flex-1 w-full bg-surface-primary">
@@ -24,17 +26,16 @@ export default function HomePage() {
         </p>
         
         <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-          {/* Primary Action (Placeholder for Future Phase) */}
-          <button 
-            disabled
-            title="Feature in development"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-primary text-white rounded-md h-12 px-8 font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary-hover active:bg-primary-active"
+          {/* Primary Action */}
+          <Link 
+            href="/report"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-primary text-white rounded-md h-12 px-8 font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary hover:bg-primary-hover active:bg-primary-active shadow-sm"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             Report an Issue
-          </button>
+          </Link>
           
           {/* Secondary Action (Placeholder for Future Phase) */}
           <button 

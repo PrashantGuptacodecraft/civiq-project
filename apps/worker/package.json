@@ -1,5 +1,18 @@
 {
   "name": "@civiq/worker",
   "version": "0.1.0",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "@civiq/contracts": "workspace:*",
+    "@civiq/db": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  }
 }

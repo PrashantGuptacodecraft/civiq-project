@@ -61,6 +61,12 @@ enum IssueSeverity {
   CRITICAL
 }
 
+enum MediaScanStatus {
+  PENDING_SCAN
+  CLEAN
+  QUARANTINED
+}
+
 // ─────────────────────────────────────────────
 // USERS & IDENTITY
 // ─────────────────────────────────────────────
@@ -329,8 +335,8 @@ model VerificationHistory {
 
 /// File or media evidence attached to an issue.
 model IssueEvidence {
-  id               String    @id @default(cuid())
-  issueId          String
+  id               String          @id @default(cuid())
+  issueId          String?
   /// Relative path or object-store key — never a public URL by default.
   storageKey       String
   mimeType         String
@@ -341,16 +347,21 @@ model IssueEvidence {
   perceptualHash   String?
   captureLatitude  Float?
   captureLongitude Float?
-  metadataTrusted  Boolean   @default(false)
+  metadataTrusted  Boolean         @default(false)
+  
+  // Media security & quarantine
+  scanStatus       MediaScanStatus @default(PENDING_SCAN)
+  quarantineReason String?
   
   uploadedById     String?
   capturedAt       DateTime?
-  createdAt        DateTime  @default(now())
+  createdAt        DateTime        @default(now())
 
-  issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  issue Issue? @relation(fields: [issueId], references: [id], onDelete: Cascade)
 
   @@index([issueId])
   @@index([fileHash])
+  @@index([scanStatus])
   @@map("issue_evidence")
 }
 

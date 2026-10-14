@@ -14,6 +14,7 @@ vi.mock('@civiq/db', () => ({
       create: vi.fn(),
       findUnique: vi.fn(),
       findMany: vi.fn(),
+      update: vi.fn(),
     },
     verificationHistory: {
       create: vi.fn(),
@@ -22,6 +23,8 @@ vi.mock('@civiq/db', () => ({
   },
   IssueStatus: {
     SUBMITTED: 'SUBMITTED',
+    IN_PROGRESS: 'IN_PROGRESS',
+    RESOLVED: 'RESOLVED',
   },
   VerificationStatus: {
     PENDING: 'PENDING',
@@ -384,4 +387,85 @@ describe('IssueService - Civic Issue Creation and Validation', () => {
       });
     });
   });
+
+  describe('Issue Status Update & Lifecycle Notification', () => {
+    it('updates status and records verification history', async () => {
+      const existingIssue = {
+        id: 'iss-99',
+        title: 'Water logging',
+        status: 'SUBMITTED',
+        verificationStatus: 'PENDING',
+        reportedById: 'u-1',
+        reportedBy: { id: 'u-1', email: 'citizen@civiq.dev' },
+      };
+
+      vi.mocked(prisma.issue.findUnique).mockResolvedValue(existingIssue as any);
+      vi.mocked(prisma.issue.update).mockResolvedValue({
+        ...existingIssue,
+        status: 'IN_PROGRESS',
+      } as any);
+
+      const updated = await service.updateStatus({
+        issueId: 'iss-99',
+        newStatus: 'IN_PROGRESS' as any,
+        changedById: 'staff-1',
+        reason: 'Work crew dispatched',
+      });
+
+      expect(updated.status).toBe('IN_PROGRESS');
+      expect(prisma.issue.update).toHaveBeenCalledWith({
+        where: { id: 'iss-99' },
+        data: { status: 'IN_PROGRESS' },
+        include: {
+          reportedBy: {
+            select: {
+              id: true,
+              email: true,
+            },
+          },
+        },
+      });
+      expect(prisma.verificationHistory.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          issueId: 'iss-99',
+          reason: 'Work crew dispatched',
+        }),
+      });
+    });
+
+    it('returns existing issue if status is unchanged', async () => {
+      const existingIssue = {
+        id: 'iss-99',
+        title: 'Water logging',
+        status: 'IN_PROGRESS',
+        verificationStatus: 'PENDING',
+        reportedById: 'u-1',
+        reportedBy: { id: 'u-1', email: 'citizen@civiq.dev' },
+      };
+
+      vi.mocked(prisma.issue.findUnique).mockResolvedValue(existingIssue as any);
+
+      const result = await service.updateStatus({
+        issueId: 'iss-99',
+        newStatus: 'IN_PROGRESS' as any,
+        changedById: 'staff-1',
+      });
+
+      expect(result.status).toBe('IN_PROGRESS');
+      expect(prisma.issue.update).not.toHaveBeenCalled();
+    });
+
+    it('throws error when issue not found', async () => {
+      vi.mocked(prisma.issue.findUnique).mockResolvedValue(null);
+
+      await expect(
+        service.updateStatus({
+          issueId: 'nonexistent',
+          newStatus: 'RESOLVED' as any,
+          changedById: 'staff-1',
+        })
+      ).rejects.toThrow('Issue not found: "nonexistent".');
+    });
+  });
 });
+

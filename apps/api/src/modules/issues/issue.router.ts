@@ -161,3 +161,44 @@ issueRouter.get('/', async (req: Request, res: Response) => {
     });
   }
 });
+
+/**
+ * PATCH /issues/:id/status
+ * Update status of an issue. Requires authenticated user.
+ */
+issueRouter.patch('/:id/status', authenticateUser, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const rawId = req.params.id;
+    const issueId = typeof rawId === 'string' ? rawId : (Array.isArray(rawId) ? rawId[0] : '');
+    const { status, reason } = req.body;
+
+    if (!issueId) {
+      res.status(400).json({ success: false, error: 'Issue ID is required.' });
+      return;
+    }
+
+    if (!status) {
+      res.status(400).json({ success: false, error: 'Status is required.' });
+      return;
+    }
+
+    const updated = await issueService.updateStatus({
+      issueId,
+      newStatus: status,
+      changedById: req.user!.id,
+      reason,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: updated,
+    });
+  } catch (error: any) {
+    const statusCode = error.message?.includes('not found') ? 404 : 400;
+    res.status(statusCode).json({
+      success: false,
+      error: error.message || 'Failed to update issue status.',
+    });
+  }
+});
+

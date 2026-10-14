@@ -123,6 +123,7 @@ model User {
   trustProfile          TrustProfile?
   riskSignals           RiskSignal[]
   riskSignalsReviewed   RiskSignal[]       @relation("SignalReviewer")
+  notifications         Notification[]
 
   @@index([email])
   @@index([phone])
@@ -305,6 +306,7 @@ model Issue {
   evidence            IssueEvidence[]
   verificationHistory VerificationHistory[]
   riskSignals         RiskSignal[]
+  notifications       Notification[]
 
   @@index([status])
   @@index([severity])
@@ -688,3 +690,51 @@ model RiskSignal {
   @@index([decision])
   @@map("risk_signals")
 }
+
+// ─────────────────────────────────────────────
+// NOTIFICATIONS
+// ─────────────────────────────────────────────
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  SMS
+  PUSH
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  READ
+}
+
+/// In-app and outbound notifications with strict idempotency
+model Notification {
+  id             String              @id @default(cuid())
+  userId         String
+  issueId        String?
+  channel        NotificationChannel @default(IN_APP)
+  title          String
+  message        String
+  status         NotificationStatus  @default(PENDING)
+  idempotencyKey String              @unique
+  metadata       Json?               @default("{}")
+  readAt         DateTime?
+  sentAt         DateTime?
+  failedAt       DateTime?
+  failureReason  String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  user           User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  issue          Issue?              @relation(fields: [issueId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([issueId])
+  @@index([channel])
+  @@index([status])
+  @@index([idempotencyKey])
+  @@map("notifications")
+}
+

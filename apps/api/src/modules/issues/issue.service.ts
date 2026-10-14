@@ -1,6 +1,7 @@
 import { prisma, Issue, IssueSeverity, IssueStatus, VerificationStatus } from '@civiq/db';
 import { CIVIC_ISSUE_TAXONOMY_V1, IssueCategory } from '@civiq/contracts';
 import { CreateIssueDTO, IssueSubmissionResult } from './issue.types';
+import { notificationService } from '../notifications/notification.service';
 
 export function getTaxonomyCategory(categoryId: string): IssueCategory | null {
   for (const group of CIVIC_ISSUE_TAXONOMY_V1.groups) {
@@ -98,7 +99,7 @@ export class IssueService {
       : `${taxonomyCat.name} - ${description.slice(0, 40).trim()}...`;
 
     // 8. Execute in transaction: Create issue and initial verification history record
-    return await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       const issue = await tx.issue.create({
         data: {
           title,
@@ -136,6 +137,102 @@ export class IssueService {
 
       return issue as IssueSubmissionResult;
     });
+
+    try {
+      await notificationService.handleIssueStatusChange({
+        eventId: `evt_${result.id}_${result.status}`,
+        issueId: result.id,
+        issueTitle: result.title,
+        previousStatus: 'DRAFT',
+        newStatus: result.status,
+        changedById: user.id,
+        recipientUserId: user.id,
+        ...(user.email ? { recipientEmail: user.email } : {}),
+        timestamp: new Date().toISOString(),
+      });
+    } catch {
+      // Non-blocking notification dispatch
+    }
+
+    return result;
+  }
+
+  /**
+   * Update issue status and dispatch lifecycle notification event.
+   */
+  async updateStatus(params: {
+    issueId: string;
+    newStatus: IssueStatus;
+    changedById: string;
+    reason?: string | undefined;
+  }): Promise<Issue> {
+    const { issueId, newStatus, changedById, reason } = params;
+
+    const issue = await prisma.issue.findUnique({
+      where: { id: issueId },
+      include: {
+        reportedBy: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    if (!issue) {
+      throw new Error(`Issue not found: "${issueId}".`);
+    }
+
+    const previousStatus = issue.status;
+    if (previousStatus === newStatus) {
+      return issue;
+    }
+
+    const updated = await prisma.$transaction(async (tx) => {
+      const updatedIssue = await tx.issue.update({
+        where: { id: issueId },
+        data: { status: newStatus },
+        include: {
+          reportedBy: {
+            select: {
+              id: true,
+              email: true,
+            },
+          },
+        },
+      });
+
+      await tx.verificationHistory.create({
+        data: {
+          issueId,
+          previousStatus: issue.verificationStatus,
+          newStatus: issue.verificationStatus,
+          changedById,
+          reason: reason ?? `Status changed from ${previousStatus} to ${newStatus}`,
+        },
+      });
+
+      return updatedIssue;
+    });
+
+    try {
+      await notificationService.handleIssueStatusChange({
+        eventId: `evt_${issueId}_${newStatus}`,
+        issueId,
+        issueTitle: updated.title,
+        previousStatus,
+        newStatus,
+        changedById,
+        recipientUserId: updated.reportedById,
+        ...(updated.reportedBy?.email ? { recipientEmail: updated.reportedBy.email } : {}),
+        timestamp: new Date().toISOString(),
+      });
+    } catch {
+      // Non-blocking notification dispatch
+    }
+
+    return updated;
   }
 
   /**

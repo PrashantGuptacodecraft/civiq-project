@@ -13,6 +13,10 @@ export interface CreateIssueDTO {
   city?: string;
   source?: string;
   severity?: IssueSeverity;
+  resolverVersion?: string;
+  resolverSource?: string;
+  isBoundaryAmbiguous?: boolean;
+  manualJurisdictionConfirmed?: boolean;
 }
 
 export interface IssueSubmissionResult {
@@ -31,6 +35,10 @@ export interface IssueSubmissionResult {
   state: string | null;
   district: string | null;
   city: string | null;
+  resolverVersion?: string | null;
+  resolverSource?: string | null;
+  isBoundaryAmbiguous?: boolean;
+  manualJurisdictionConfirmed?: boolean;
   reportedById: string;
   version: number;
   createdAt: Date;

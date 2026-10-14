@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import { MapView } from '../map/map-view';
+import { CURRENT_RESOLVER_SOURCE, CURRENT_RESOLVER_VERSION } from '@civiq/contracts';
 
 export interface LocationData {
   address: string;
@@ -10,6 +12,11 @@ export interface LocationData {
   city: string;
   latitude: number | null;
   longitude: number | null;
+  resolverVersion?: string;
+  resolverSource?: string;
+  isBoundaryAmbiguous?: boolean;
+  manualJurisdictionConfirmed?: boolean;
+  ambiguityReason?: string | null;
 }
 
 interface LocationPickerProps {
@@ -26,14 +33,44 @@ const JURISDICTIONS = [
   { id: 'mh-mumbai', name: 'Brihanmumbai Municipal Corporation (BMC)', state: 'Maharashtra', district: 'Mumbai', city: 'Mumbai' },
   { id: 'dl-newdelhi', name: 'New Delhi Municipal Council (NDMC)', state: 'Delhi', district: 'New Delhi', city: 'New Delhi' },
   { id: 'ka-bengaluru', name: 'Bruhat Bengaluru Mahanagara Palike (BBMP)', state: 'Karnataka', district: 'Bengaluru', city: 'Bengaluru' },
+  { id: 'mh-pune-pcmc', name: 'Pimpri-Chinchwad Municipal Corporation (PCMC)', state: 'Maharashtra', district: 'Pune', city: 'Pimpri-Chinchwad' },
 ];
 
 export function LocationPicker({ location, onChange, errors }: LocationPickerProps) {
   const [gpsStatus, setGpsStatus] = useState<'idle' | 'locating' | 'success' | 'error'>('idle');
   const [gpsMessage, setGpsMessage] = useState<string>('');
+  const [showMap, setShowMap] = useState<boolean>(true);
+
+  const handlePointSelect = (point: { latitude: number; longitude: number }) => {
+    // Check for border proximity between PMC and PCMC
+    const distanceToBorderMeters = Math.abs(point.latitude - 18.575) * 111000;
+    const isNearBorder = distanceToBorderMeters <= 75 && point.longitude >= 73.74 && point.longitude <= 73.92;
+
+    const matchedJurisdictionId = isNearBorder
+      ? point.latitude < 18.575 ? 'mh-pune' : 'mh-pune-pcmc'
+      : point.latitude >= 18.575 ? 'mh-pune-pcmc' : 'mh-pune';
+
+    const selected = JURISDICTIONS.find((j) => j.id === matchedJurisdictionId) ?? JURISDICTIONS[0];
+
+    onChange({
+      latitude: point.latitude,
+      longitude: point.longitude,
+      jurisdictionId: selected.id,
+      state: selected.state,
+      district: selected.district,
+      city: selected.city,
+      resolverVersion: CURRENT_RESOLVER_VERSION,
+      resolverSource: CURRENT_RESOLVER_SOURCE,
+      isBoundaryAmbiguous: isNearBorder,
+      ambiguityReason: isNearBorder
+        ? `Point is within ${Math.round(distanceToBorderMeters)}m of boundary between PMC and PCMC.`
+        : null,
+      manualJurisdictionConfirmed: !isNearBorder,
+    });
+  };
 
   const handleDetectLocation = () => {
-    if (!navigator.geolocation) {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
       setGpsStatus('error');
       setGpsMessage('Geolocation is not supported by your browser.');
       return;
@@ -46,12 +83,9 @@ export function LocationPicker({ location, onChange, errors }: LocationPickerPro
       (position) => {
         const lat = parseFloat(position.coords.latitude.toFixed(6));
         const lng = parseFloat(position.coords.longitude.toFixed(6));
-        onChange({
-          latitude: lat,
-          longitude: lng,
-        });
         setGpsStatus('success');
         setGpsMessage(`Location locked: ${lat}, ${lng} (±${Math.round(position.coords.accuracy)}m)`);
+        handlePointSelect({ latitude: lat, longitude: lng });
       },
       (error) => {
         setGpsStatus('error');
@@ -81,42 +115,45 @@ export function LocationPicker({ location, onChange, errors }: LocationPickerPro
         state: selected.state,
         district: selected.district,
         city: selected.city,
+        manualJurisdictionConfirmed: true,
+        isBoundaryAmbiguous: false,
       });
     } else {
-      onChange({ jurisdictionId });
+      onChange({ jurisdictionId, manualJurisdictionConfirmed: true, isBoundaryAmbiguous: false });
     }
   };
 
   return (
     <div className="space-y-4">
-      <div>
-        <label htmlFor="jurisdiction-select" className="block text-sm font-bold text-text-primary mb-1">
-          Responsible Jurisdiction <span className="text-red-500" aria-hidden="true">*</span>
-        </label>
-        <p className="text-xs text-text-secondary mb-2">
-          Select the local government body or municipality responsible for this area.
-        </p>
-        <select
-          id="jurisdiction-select"
-          value={location.jurisdictionId}
-          onChange={(e) => handleJurisdictionChange(e.target.value)}
-          className={`w-full px-3.5 py-2.5 rounded-lg border bg-surface-elevated text-sm text-text-primary transition-colors min-h-[44px] focus:outline-none focus:ring-2 focus:ring-primary ${
-            errors?.jurisdictionId ? 'border-red-500 ring-1 ring-red-500' : 'border-border-primary'
-          }`}
-          aria-invalid={!!errors?.jurisdictionId}
-          aria-describedby={errors?.jurisdictionId ? 'jurisdiction-error' : undefined}
-        >
-          <option value="">-- Choose Municipal Authority --</option>
-          {JURISDICTIONS.map((j) => (
-            <option key={j.id} value={j.id}>
-              {j.name} ({j.state})
-            </option>
-          ))}
-        </select>
-        {errors?.jurisdictionId && (
-          <p id="jurisdiction-error" className="text-xs font-semibold text-red-600 mt-1" role="alert">
-            {errors.jurisdictionId}
-          </p>
+      {/* Map Point Picker */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <label className="block text-sm font-bold text-text-primary">
+            Interactive Location Map
+          </label>
+          <button
+            type="button"
+            onClick={() => setShowMap(!showMap)}
+            className="text-xs font-semibold text-primary hover:underline focus:outline-none"
+          >
+            {showMap ? 'Hide Map' : 'Show Map'}
+          </button>
+        </div>
+
+        {showMap && (
+          <MapView
+            center={{
+              latitude: location.latitude ?? 18.5314,
+              longitude: location.longitude ?? 73.8446,
+            }}
+            selectedPoint={
+              location.latitude !== null && location.longitude !== null
+                ? { latitude: location.latitude, longitude: location.longitude }
+                : null
+            }
+            onSelectPoint={handlePointSelect}
+            isAmbiguous={location.isBoundaryAmbiguous}
+          />
         )}
       </div>
 
@@ -161,6 +198,69 @@ export function LocationPicker({ location, onChange, errors }: LocationPickerPro
           <span>Lng: {location.longitude}</span>
         </div>
       )}
+
+      {/* Ambiguous Boundary Alert & Candidates */}
+      {location.isBoundaryAmbiguous && !location.manualJurisdictionConfirmed && (
+        <div className="border border-status-warning bg-status-warning/10 rounded-xl p-3.5 space-y-2.5" role="alert">
+          <div className="flex items-start gap-2">
+            <span className="text-status-warning" aria-hidden="true">⚠️</span>
+            <div>
+              <h4 className="text-xs font-bold text-text-primary">Ambiguous Boundary Zone Detected (within 75m)</h4>
+              <p className="text-xs text-text-secondary mt-0.5">
+                {location.ambiguityReason ?? 'This location falls in the shared border buffer zone. Please confirm the authority:'}
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => handleJurisdictionChange('mh-pune')}
+              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-surface-elevated border border-border-primary hover:bg-surface-tertiary"
+            >
+              Confirm Pune Municipal Corporation (PMC)
+            </button>
+            <button
+              type="button"
+              onClick={() => handleJurisdictionChange('mh-pune-pcmc')}
+              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-surface-elevated border border-border-primary hover:bg-surface-tertiary"
+            >
+              Confirm Pimpri-Chinchwad Municipal Corporation (PCMC)
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Jurisdiction Selection Dropdown */}
+      <div>
+        <label htmlFor="jurisdiction-select" className="block text-sm font-bold text-text-primary mb-1">
+          Responsible Jurisdiction <span className="text-red-500" aria-hidden="true">*</span>
+        </label>
+        <p className="text-xs text-text-secondary mb-2">
+          Select the local government body or municipality responsible for this area.
+        </p>
+        <select
+          id="jurisdiction-select"
+          value={location.jurisdictionId}
+          onChange={(e) => handleJurisdictionChange(e.target.value)}
+          className={`w-full px-3.5 py-2.5 rounded-lg border bg-surface-elevated text-sm text-text-primary transition-colors min-h-[44px] focus:outline-none focus:ring-2 focus:ring-primary ${
+            errors?.jurisdictionId ? 'border-red-500 ring-1 ring-red-500' : 'border-border-primary'
+          }`}
+          aria-invalid={!!errors?.jurisdictionId}
+          aria-describedby={errors?.jurisdictionId ? 'jurisdiction-error' : undefined}
+        >
+          <option value="">-- Choose Municipal Authority --</option>
+          {JURISDICTIONS.map((j) => (
+            <option key={j.id} value={j.id}>
+              {j.name} ({j.state})
+            </option>
+          ))}
+        </select>
+        {errors?.jurisdictionId && (
+          <p id="jurisdiction-error" className="text-xs font-semibold text-red-600 mt-1" role="alert">
+            {errors.jurisdictionId}
+          </p>
+        )}
+      </div>
 
       {/* Street Address / Landmark Input */}
       <div>

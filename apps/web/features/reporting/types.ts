@@ -10,6 +10,10 @@ export interface ReportFormValues {
   latitude: number | null;
   longitude: number | null;
   source: string;
+  resolverVersion?: string;
+  resolverSource?: string;
+  isBoundaryAmbiguous?: boolean;
+  manualJurisdictionConfirmed?: boolean;
   files: Array<{
     name: string;
     size: number;

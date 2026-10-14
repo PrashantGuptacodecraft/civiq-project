@@ -287,6 +287,11 @@ model Issue {
   source             String             @default("CITIZEN_WEB")
   reportedById       String
   assignedToId       String?
+  /// Geospatial resolution metadata
+  resolverVersion              String?
+  resolverSource               String?
+  isBoundaryAmbiguous          Boolean @default(false)
+  manualJurisdictionConfirmed  Boolean @default(false)
   /// Optimistic lock — increment on every state change.
   version            Int                @default(0)
   createdAt          DateTime           @default(now())
@@ -424,6 +429,7 @@ model Jurisdiction {
 
   parent   Jurisdiction?  @relation("JurisdictionHierarchy", fields: [parentId], references: [id])
   children Jurisdiction[] @relation("JurisdictionHierarchy")
+  boundary JurisdictionBoundary?
   organizations   Organization[]
   roleAssignments RoleAssignment[]
   issues          Issue[]
@@ -432,6 +438,29 @@ model Jurisdiction {
   @@index([parentId])
   @@index([deletedAt])
   @@map("jurisdictions")
+}
+
+/// Geospatial boundary polygon and bounding box for a jurisdiction
+model JurisdictionBoundary {
+  id              String       @id @default(cuid())
+  jurisdictionId  String       @unique
+  boundaryType    String       @default("Polygon")
+  /// GeoJSON polygon coordinate rings JSON string
+  coordinatesJson String
+  minLat          Float
+  maxLat          Float
+  minLng          Float
+  maxLng          Float
+  bufferMeters    Float        @default(75.0)
+  source          String       @default("OFFICIAL_LGD_POLYGONS_2026")
+  version         String       @default("geo-resolver-v1.0.0")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  jurisdiction    Jurisdiction @relation(fields: [jurisdictionId], references: [id], onDelete: Cascade)
+
+  @@index([minLat, maxLat, minLng, maxLng])
+  @@map("jurisdiction_boundaries")
 }
 
 // ─────────────────────────────────────────────

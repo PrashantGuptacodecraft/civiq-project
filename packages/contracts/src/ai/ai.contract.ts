@@ -1,0 +1,226 @@
+export const AI_GATEWAY_VERSION = 'v1' as const;
+
+export const AI_OPERATIONS = [
+  'classify',
+  'evidence-check',
+  'duplicate-score',
+  'priority-score',
+  'route',
+  'summarize',
+  'predict',
+] as const;
+
+export type AiOperationType = (typeof AI_OPERATIONS)[number];
+
+export interface AiModelMetadata {
+  name: string;
+  version: string;
+  provider: string;
+}
+
+export interface BaseAiResponse {
+  version: string;
+  confidence: number; // 0.0 - 1.0
+  model: AiModelMetadata;
+  explanation: string;
+  latencyMs: number;
+  requestId?: string | undefined;
+  cached?: boolean | undefined;
+}
+
+// ─────────────────────────────────────────────
+// 1. CLASSIFY
+// ─────────────────────────────────────────────
+
+export interface AiClassifyRequest {
+  text: string;
+  title?: string | undefined;
+  location?: {
+    latitude: number;
+    longitude: number;
+    jurisdictionId?: string | undefined;
+  } | undefined;
+  language?: string | undefined;
+  candidateCategories?: string[] | undefined;
+}
+
+export interface AiCategoryPrediction {
+  categoryId: string;
+  confidence: number;
+  reasoning?: string | undefined;
+}
+
+export interface AiClassifyResponse extends BaseAiResponse {
+  primaryCategory: string;
+  predictedSeverity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  alternativeCategories: AiCategoryPrediction[];
+  suggestedTags: string[];
+  isEmergencyCandidate: boolean;
+}
+
+// ─────────────────────────────────────────────
+// 2. EVIDENCE CHECK
+// ─────────────────────────────────────────────
+
+export interface AiEvidenceCheckRequest {
+  mimeType: string;
+  issueTitle: string;
+  issueDescription: string;
+  mediaStorageKey?: string | undefined;
+  mediaUrl?: string | undefined;
+  mediaBase64?: string | undefined;
+  categoryId?: string | undefined;
+  captureCoordinates?: {
+    latitude: number;
+    longitude: number;
+  } | undefined;
+}
+
+export interface AiEvidenceCheckResponse extends BaseAiResponse {
+  isRelevant: boolean;
+  relevanceScore: number; // 0.0 - 1.0
+  qualityScore: number; // 0.0 - 1.0
+  flags: string[];
+  detectedObjects: string[];
+  safetyPassed: boolean;
+}
+
+// ─────────────────────────────────────────────
+// 3. DUPLICATE SCORE
+// ─────────────────────────────────────────────
+
+export interface AiIssueSummaryInput {
+  id: string;
+  title: string;
+  description: string;
+  categoryId?: string | undefined;
+  latitude?: number | undefined;
+  longitude?: number | undefined;
+  createdAt?: string | undefined;
+}
+
+export interface AiDuplicateScoreRequest {
+  targetIssue: AiIssueSummaryInput;
+  candidateIssues: AiIssueSummaryInput[];
+  threshold?: number | undefined;
+}
+
+export interface AiDuplicateCandidateResult {
+  candidateId: string;
+  similarityScore: number; // 0.0 - 1.0
+  semanticSimilarity: number;
+  geoDistanceMeters?: number | undefined;
+  timeDeltaHours?: number | undefined;
+  matchExplanation: string;
+}
+
+export interface AiDuplicateScoreResponse extends BaseAiResponse {
+  isDuplicate: boolean;
+  matchedCandidateId?: string | undefined;
+  topSimilarityScore: number;
+  scoredCandidates: AiDuplicateCandidateResult[];
+}
+
+// ─────────────────────────────────────────────
+// 4. PRIORITY SCORE
+// ─────────────────────────────────────────────
+
+export interface AiPriorityScoreRequest {
+  issueId: string;
+  title: string;
+  description: string;
+  category: string;
+  severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  reporterTrustScore?: number | undefined;
+  location?: {
+    latitude: number;
+    longitude: number;
+    jurisdictionId?: string | undefined;
+  } | undefined;
+  upvotesCount?: number | undefined;
+  ageHours?: number | undefined;
+}
+
+export interface AiPriorityBreakdown {
+  hazardScore: number; // 0 - 100
+  impactRadiusScore: number; // 0 - 100
+  vulnerabilityScore: number; // 0 - 100
+  timeDecayFactor: number;
+}
+
+export interface AiPriorityScoreResponse extends BaseAiResponse {
+  priorityScore: number; // 0 - 100
+  priorityTier: 'P1_CRITICAL' | 'P2_HIGH' | 'P3_MEDIUM' | 'P4_LOW';
+  scoreBreakdown: AiPriorityBreakdown;
+  recommendedSlaHours: number;
+}
+
+// ─────────────────────────────────────────────
+// 5. ROUTE
+// ─────────────────────────────────────────────
+
+export interface AiDepartmentOption {
+  id: string;
+  name: string;
+  categories: string[];
+  jurisdictionId?: string | undefined;
+}
+
+export interface AiRouteRequest {
+  issueId: string;
+  title: string;
+  description: string;
+  categoryId: string;
+  jurisdictionId: string;
+  availableDepartments: AiDepartmentOption[];
+}
+
+export interface AiRouteResponse extends BaseAiResponse {
+  recommendedDepartmentId: string;
+  recommendedDepartmentName: string;
+  secondaryDepartmentIds: string[];
+  routingReason: string;
+}
+
+// ─────────────────────────────────────────────
+// 6. SUMMARIZE
+// ─────────────────────────────────────────────
+
+export interface AiSummarizeRequest {
+  text: string;
+  format?: 'BULLETS' | 'EXECUTIVE' | 'CITIZEN' | 'ONE_LINE' | undefined;
+  maxLength?: number | undefined;
+  targetAudience?: 'CITIZEN' | 'OFFICIAL' | 'FIELD_WORKER' | undefined;
+  language?: string | undefined;
+}
+
+export interface AiSummarizeResponse extends BaseAiResponse {
+  summary: string;
+  keyPoints: string[];
+  language: string;
+}
+
+// ─────────────────────────────────────────────
+// 7. PREDICT
+// ─────────────────────────────────────────────
+
+export interface AiPredictRequest {
+  entityType: 'ISSUE' | 'HOTSPOT' | 'ASSET' | 'JURISDICTION';
+  entityId: string;
+  historicalMetrics: Record<string, any>;
+  horizonDays: number;
+}
+
+export interface AiContributingFactor {
+  factor: string;
+  weight: number; // 0.0 - 1.0
+  description?: string | undefined;
+}
+
+export interface AiPredictResponse extends BaseAiResponse {
+  predictionType: string;
+  riskProbability: number; // 0.0 - 1.0
+  riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  trend: 'INCREASING' | 'STABLE' | 'DECREASING';
+  contributingFactors: AiContributingFactor[];
+}

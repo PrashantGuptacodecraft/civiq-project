@@ -48,14 +48,50 @@ class CategoryPrediction(BaseModel):
     category_id: str
     confidence: float = Field(..., ge=0.0, le=1.0)
     reasoning: str | None = None
+    group_id: str | None = None
+    subcategory: str | None = None
+    category_name: str | None = None
 
 
 class ClassifyResponse(BaseAiResponse):
     primary_category: str
+    primary_group: str | None = None
+    primary_subcategory: str | None = None
     predicted_severity: Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
     alternative_categories: list[CategoryPrediction] = Field(default_factory=list)
     suggested_tags: list[str] = Field(default_factory=list)
     is_emergency_candidate: bool = False
+
+
+class ClassificationFeedbackRequest(BaseModel):
+    issue_id: str = Field(..., min_length=1)
+    text: str = Field(..., min_length=1)
+    title: str | None = None
+    predicted_category: str = Field(..., min_length=1)
+    corrected_category: str = Field(..., min_length=1)
+    predicted_severity: Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"] | None = None
+    corrected_severity: Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"] | None = None
+    reviewer_id: str | None = None
+    source: str = "human_review"
+    notes: str | None = None
+
+
+class ClassificationFeedbackResponse(BaseModel):
+    feedback_id: str
+    issue_id: str
+    text: str
+    title: str | None = None
+    predicted_category: str
+    predicted_group: str | None = None
+    corrected_category: str
+    corrected_group: str | None = None
+    predicted_severity: str | None = None
+    corrected_severity: str | None = None
+    reviewer_id: str | None = None
+    source: str
+    created_at: str
+    notes: str | None = None
+    success: bool = True
 
 
 # ─────────────────────────────────────────────

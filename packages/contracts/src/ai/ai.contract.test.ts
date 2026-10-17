@@ -16,6 +16,8 @@ import {
   AiSummarizeResponse,
   AiPredictRequest,
   AiPredictResponse,
+  AiClassificationFeedbackRequest,
+  AiClassificationFeedbackResponse,
 } from './ai.contract';
 
 describe('AI Gateway Contracts - v1 Schema & Types', () => {
@@ -292,4 +294,43 @@ describe('AI Gateway Contracts - v1 Schema & Types', () => {
     expect(response.trend).toBe('INCREASING');
     expect(response.contributingFactors).toHaveLength(2);
   });
+
+  it('validates classification feedback request and response structure', () => {
+    const feedbackReq: AiClassificationFeedbackRequest = {
+      issueId: 'issue-500',
+      text: 'Water pipe broke near crossroad',
+      title: 'Water pipe leak',
+      predictedCategory: 'sanitation_blocked_drain',
+      correctedCategory: 'water_pipeline_leak',
+      predictedSeverity: 'HIGH',
+      correctedSeverity: 'HIGH',
+      reviewerId: 'user-mod-1',
+      source: 'human_review',
+      notes: 'Correction from drainage to water supply leak',
+    };
+
+    const feedbackRes: AiClassificationFeedbackResponse = {
+      feedbackId: 'fb-uuid-12345',
+      issueId: feedbackReq.issueId,
+      text: feedbackReq.text,
+      title: feedbackReq.title,
+      predictedCategory: feedbackReq.predictedCategory,
+      predictedGroup: 'drainage_sanitation',
+      correctedCategory: feedbackReq.correctedCategory,
+      correctedGroup: 'water_supply',
+      predictedSeverity: feedbackReq.predictedSeverity,
+      correctedSeverity: feedbackReq.correctedSeverity,
+      reviewerId: feedbackReq.reviewerId,
+      source: feedbackReq.source || 'human_review',
+      createdAt: '2026-10-17T12:00:00Z',
+      notes: feedbackReq.notes,
+      success: true,
+    };
+
+    expect(feedbackReq.issueId).toBe('issue-500');
+    expect(feedbackRes.success).toBe(true);
+    expect(feedbackRes.correctedCategory).toBe('water_pipeline_leak');
+    expect(feedbackRes.correctedGroup).toBe('water_supply');
+  });
 });
+

@@ -1,0 +1,227 @@
+[
+  {
+    "id": "fix-01",
+    "title": "Severe pothole on main road",
+    "text": "Huge deep pothole on MG Road near the metro pillar 45. Two two-wheelers skid and almost fell this morning. Please fix the broken road asphalt.",
+    "expected_category": "roads_pothole",
+    "expected_group": "roads",
+    "is_emergency": false,
+    "description": "Standard road pothole report"
+  },
+  {
+    "id": "fix-02",
+    "title": "Dangerous road crater",
+    "text": "Large crater and damaged road surface right at the intersection of Ring Road and 5th Cross. Traffic is backing up heavily.",
+    "expected_category": "roads_pothole",
+    "expected_group": "roads",
+    "is_emergency": false,
+    "description": "Road crater synonym test"
+  },
+  {
+    "id": "fix-03",
+    "title": "Dark street due to broken streetlights",
+    "text": "All street lights are off on 14th Main Road since last three nights. The lamp post is broken and the entire stretch is pitch dark.",
+    "expected_category": "roads_streetlighting",
+    "expected_group": "roads",
+    "is_emergency": false,
+    "description": "Dark road and street lighting failure"
+  },
+  {
+    "id": "fix-04",
+    "title": "Flickering street lamp pole",
+    "text": "The light pole near Shivaji Park has been flickering and sparking intermittently. Tube light broken on the pole.",
+    "expected_category": "roads_streetlighting",
+    "expected_group": "roads",
+    "is_emergency": false,
+    "description": "Damaged streetlight fixture"
+  },
+  {
+    "id": "fix-05",
+    "title": "Broken walkway tiles on pedestrian path",
+    "text": "Pedestrian sidewalk has missing pavers and broken footpath tiles near the bus stand. Senior citizens are tripping and falling.",
+    "expected_category": "roads_footpath_damage",
+    "expected_group": "roads",
+    "is_emergency": false,
+    "description": "Pedestrian footpath damage"
+  },
+  {
+    "id": "fix-06",
+    "title": "Damaged curb and walkway",
+    "text": "Broken pavement slabs on the footpath along Outer Ring Road. Construction debris left on walkway blocking pedestrians.",
+    "expected_category": "roads_footpath_damage",
+    "expected_group": "roads",
+    "is_emergency": false,
+    "description": "Footpath obstruction and broken slabs"
+  },
+  {
+    "id": "fix-07",
+    "title": "Sewage overflowing from blocked storm drain",
+    "text": "The storm water drain is completely blocked with silt and plastic. Foul smelling sewage is overflowing onto the residential street.",
+    "expected_category": "sanitation_blocked_drain",
+    "expected_group": "drainage_sanitation",
+    "is_emergency": false,
+    "description": "Blocked storm drain with overflowing sewage"
+  },
+  {
+    "id": "fix-08",
+    "title": "Clogged gutter causing waterlogging",
+    "text": "The open naala gutter is choked with plastic waste. Wastewater is flooding into front yards and creating disease vector risks.",
+    "expected_category": "sanitation_blocked_drain",
+    "expected_group": "drainage_sanitation",
+    "is_emergency": false,
+    "description": "Clogged gutter naala overflow"
+  },
+  {
+    "id": "fix-09",
+    "title": "Uncovered open manhole on busy road",
+    "text": "Missing manhole cover on 80 Feet Road right in front of the school. The open manhole pit is uncovered and extremely dangerous for vehicles and children.",
+    "expected_category": "sanitation_open_manhole",
+    "expected_group": "drainage_sanitation",
+    "is_emergency": true,
+    "description": "Critical open manhole posing imminent hazard"
+  },
+  {
+    "id": "fix-10",
+    "title": "Broken sewer hole chamber",
+    "text": "Broken manhole cover fell through into the deep sewer hole chamber. No barricade or warning signage placed near the open sewer.",
+    "expected_category": "sanitation_open_manhole",
+    "expected_group": "drainage_sanitation",
+    "is_emergency": true,
+    "description": "Broken manhole cover and open sewer"
+  },
+  {
+    "id": "fix-11",
+    "title": "Drinking water pipeline leak",
+    "text": "Clean drinking water is gushing out from a broken underground pipe near Sector 4 tank. Thousands of liters of water wasted on the street.",
+    "expected_category": "water_pipeline_leak",
+    "expected_group": "water_supply",
+    "is_emergency": false,
+    "description": "Fresh water pipeline leak"
+  },
+  {
+    "id": "fix-12",
+    "title": "Major pipe burst on main road",
+    "text": "A municipal water supply pipe burst under the pavement. Continuous water leaking creating a small river along the curb.",
+    "expected_category": "water_pipeline_leak",
+    "expected_group": "water_supply",
+    "is_emergency": false,
+    "description": "Pipe burst with water leaking"
+  },
+  {
+    "id": "fix-13",
+    "title": "No water supply for 4 days",
+    "text": "Our entire residential block has had no water supply since Tuesday. Taps are dry, municipal tanker hasn't arrived, no drinking water available.",
+    "expected_category": "water_no_supply",
+    "expected_group": "water_supply",
+    "is_emergency": false,
+    "description": "Complete outage of water supply"
+  },
+  {
+    "id": "fix-14",
+    "title": "Severe water shortage and dry taps",
+    "text": "Water supply stopped without any prior notice. The taps have zero pressure and dry taps across all 50 houses in the colony.",
+    "expected_category": "water_no_supply",
+    "expected_group": "water_supply",
+    "is_emergency": false,
+    "description": "Zero water pressure and dry taps"
+  },
+  {
+    "id": "fix-15",
+    "title": "Massive garbage pile dumped on street",
+    "text": "Uncollected garbage and waste dumped on the corner of Market Road. Stray cows and dogs are scattering trash everywhere. Huge foul stench.",
+    "expected_category": "waste_garbage_dump",
+    "expected_group": "waste_management",
+    "is_emergency": false,
+    "description": "Uncollected solid waste pile"
+  },
+  {
+    "id": "fix-16",
+    "title": "Overflowing public rubbish bin",
+    "text": "The municipal trash bin has not been cleared for two weeks. Rubbish heap is spilling onto the road creating a huge kachra dump yard.",
+    "expected_category": "waste_garbage_dump",
+    "expected_group": "waste_management",
+    "is_emergency": false,
+    "description": "Overflowing waste bin and kachra dump"
+  },
+  {
+    "id": "fix-17",
+    "title": "Dead dog lying on highway",
+    "text": "Dead animal found on the median of the highway near toll booth. The animal carcass has been decomposing for 24 hours and needs urgent removal.",
+    "expected_category": "waste_dead_animal",
+    "expected_group": "waste_management",
+    "is_emergency": false,
+    "description": "Animal carcass on road"
+  },
+  {
+    "id": "fix-18",
+    "title": "Decomposing animal carcass",
+    "text": "Dead stray animal body lying on the road corner attracting flies and emitting unbearable smell. Sanitary workers must collect carcass.",
+    "expected_category": "waste_dead_animal",
+    "expected_group": "waste_management",
+    "is_emergency": false,
+    "description": "Decomposing animal body"
+  },
+  {
+    "id": "fix-19",
+    "title": "Live electric wire hanging low",
+    "text": "Live wire hanging down to shoulder height right next to the school gate. Sparking wire touching a tree branch during rain.",
+    "expected_category": "electrical_hanging_wires",
+    "expected_group": "electrical",
+    "is_emergency": true,
+    "description": "Dangerous live hanging wires with sparking"
+  },
+  {
+    "id": "fix-20",
+    "title": "Sparking overhead power cable",
+    "text": "Loose electric wire snapped from the pole and is dangling across the road. Sparking cable risks electrocution for pedestrians.",
+    "expected_category": "electrical_hanging_wires",
+    "expected_group": "electrical",
+    "is_emergency": true,
+    "description": "Loose sparking power cable"
+  },
+  {
+    "id": "fix-21",
+    "title": "Disgusting public toilet locked and dirty",
+    "text": "The public toilet near the railway station is locked and completely unhygienic. The urinal is broken and there is no water in public washroom.",
+    "expected_category": "facilities_public_toilet",
+    "expected_group": "public_facilities",
+    "is_emergency": false,
+    "description": "Unusable dirty public restroom"
+  },
+  {
+    "id": "fix-22",
+    "title": "Unusable public washroom facility",
+    "text": "Community public toilet lacks water supply, dirty washroom bowls are choked with feces, extremely unhygienic sauchalaya.",
+    "expected_category": "facilities_public_toilet",
+    "expected_group": "public_facilities",
+    "is_emergency": false,
+    "description": "Choked sauchalaya and unusable restroom"
+  },
+  {
+    "id": "fix-23",
+    "title": "Sadak par bada gaddha hai",
+    "text": "Main road par bahut bada khadda ho gaya hai gadiyan fas rahi hain sadak kharab ho chuki hai.",
+    "expected_category": "roads_pothole",
+    "expected_group": "roads",
+    "is_emergency": false,
+    "description": "Hinglish road pothole report"
+  },
+  {
+    "id": "fix-24",
+    "title": "Bijli ka taar latak raha hai",
+    "text": "Raste me bijli ka taar niche latak raha hai sparks nikal rahe hain electrocution ka khatra hai.",
+    "expected_category": "electrical_hanging_wires",
+    "expected_group": "electrical",
+    "is_emergency": true,
+    "description": "Hinglish dangerous electric wire"
+  },
+  {
+    "id": "fix-25",
+    "title": "General civic inquiry regarding property tax office",
+    "text": "Can someone please clarify the opening hours of the ward corporation office for grievance submission?",
+    "expected_category": "general_civic",
+    "expected_group": "general",
+    "is_emergency": false,
+    "description": "Unmatched general municipal inquiry"
+  }
+]

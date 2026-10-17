@@ -7,6 +7,8 @@ from app.api.schemas import (
     AI_GATEWAY_VERSION,
     AiModelMetadata,
     CategoryPrediction,
+    ClassificationFeedbackRequest,
+    ClassificationFeedbackResponse,
     ClassifyRequest,
     ClassifyResponse,
     ContributingFactor,
@@ -26,6 +28,7 @@ from app.api.schemas import (
     SummarizeRequest,
     SummarizeResponse,
 )
+from app.pipelines.classification import get_classifier, get_feedback_store
 
 router = APIRouter(prefix="/v1", tags=["AI Gateway v1"])
 
@@ -40,57 +43,107 @@ DEFAULT_MODEL = AiModelMetadata(
 def classify_issue(payload: ClassifyRequest) -> ClassifyResponse:
     start_time = time.perf_counter()
 
-    combined_text = f"{payload.title or ''} {payload.text}".lower()
-
-    primary_category = "general_civic"
-    predicted_severity: Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"] = "MEDIUM"
-    is_emergency = False
-    tags: list[str] = []
-
-    emergency_words = ["fire", "gas leak", "explosion", "electrocution", "collapse"]
-    if any(k in combined_text for k in emergency_words):
-        is_emergency = True
-        predicted_severity = "CRITICAL"
-        tags.extend(["emergency", "life-safety"])
-
-    if any(k in combined_text for k in ["pothole", "road", "asphalt", "crater", "speed breaker"]):
-        primary_category = "roads_pothole"
-        tags.extend(["roads", "traffic"])
-    elif any(k in combined_text for k in ["drain", "water", "sewage", "flooding", "pipe"]):
-        primary_category = "drainage_flooding"
-        tags.extend(["water", "drainage"])
-    elif any(k in combined_text for k in ["garbage", "trash", "waste", "dump", "debris"]):
-        primary_category = "sanitation_waste"
-        tags.extend(["sanitation", "cleanliness"])
-    elif any(k in combined_text for k in ["light", "street light", "wire", "cable", "pole"]):
-        primary_category = "electrical_lighting"
-        tags.extend(["electrical", "safety"])
-
-    if is_emergency:
-        explanation = "Urgent high-impact keywords detected. Flagged for emergency review."
-    else:
-        explanation = f"Classified based on contextual lexical indicators for {primary_category}."
+    classifier = get_classifier()
+    result = classifier.classify(
+        text=payload.text,
+        title=payload.title,
+        candidate_categories=payload.candidate_categories,
+        language=payload.language,
+    )
 
     latency = round((time.perf_counter() - start_time) * 1000, 2)
 
+    alt_preds = [
+        CategoryPrediction(
+            category_id=alt.category_id,
+            confidence=alt.confidence,
+            reasoning=alt.reasoning,
+            group_id=alt.group_id,
+            subcategory=alt.group_id,
+            category_name=alt.category_name,
+        )
+        for alt in result.alternative_categories
+    ]
+
     return ClassifyResponse(
         version=AI_GATEWAY_VERSION,
-        confidence=0.88 if primary_category != "general_civic" else 0.50,
-        model=DEFAULT_MODEL,
-        explanation=explanation,
+        confidence=result.confidence,
+        model=result.model_metadata,
+        explanation=result.explanation,
         latency_ms=latency,
-        primary_category=primary_category,
-        predicted_severity=predicted_severity,
-        alternative_categories=[
-            CategoryPrediction(
-                category_id=primary_category,
-                confidence=0.88,
-                reasoning="Primary semantic match",
-            )
-        ],
-        suggested_tags=list(set(tags)),
-        is_emergency_candidate=is_emergency,
+        primary_category=result.primary_category,
+        primary_group=result.primary_group,
+        primary_subcategory=result.primary_group,
+        predicted_severity=result.predicted_severity,
+        alternative_categories=alt_preds,
+        suggested_tags=result.suggested_tags,
+        is_emergency_candidate=result.is_emergency_candidate,
     )
+
+
+@router.post("/classify/feedback", response_model=ClassificationFeedbackResponse)
+def submit_classification_feedback(
+    payload: ClassificationFeedbackRequest,
+) -> ClassificationFeedbackResponse:
+    store = get_feedback_store()
+    entry = store.record_feedback(
+        issue_id=payload.issue_id,
+        text=payload.text,
+        predicted_category=payload.predicted_category,
+        corrected_category=payload.corrected_category,
+        title=payload.title,
+        predicted_severity=payload.predicted_severity,
+        corrected_severity=payload.corrected_severity,
+        reviewer_id=payload.reviewer_id,
+        source=payload.source,
+        notes=payload.notes,
+    )
+    return ClassificationFeedbackResponse(
+        feedback_id=entry.feedback_id,
+        issue_id=entry.issue_id,
+        text=entry.text,
+        title=entry.title,
+        predicted_category=entry.predicted_category,
+        predicted_group=entry.predicted_group,
+        corrected_category=entry.corrected_category,
+        corrected_group=entry.corrected_group,
+        predicted_severity=entry.predicted_severity,
+        corrected_severity=entry.corrected_severity,
+        reviewer_id=entry.reviewer_id,
+        source=entry.source,
+        created_at=entry.created_at,
+        notes=entry.notes,
+        success=True,
+    )
+
+
+@router.get("/classify/feedback", response_model=list[ClassificationFeedbackResponse])
+def list_classification_feedback(
+    category: str | None = None,
+    limit: int = 100,
+) -> list[ClassificationFeedbackResponse]:
+    store = get_feedback_store()
+    entries = store.list_feedback(category=category, limit=limit)
+    return [
+        ClassificationFeedbackResponse(
+            feedback_id=e.feedback_id,
+            issue_id=e.issue_id,
+            text=e.text,
+            title=e.title,
+            predicted_category=e.predicted_category,
+            predicted_group=e.predicted_group,
+            corrected_category=e.corrected_category,
+            corrected_group=e.corrected_group,
+            predicted_severity=e.predicted_severity,
+            corrected_severity=e.corrected_severity,
+            reviewer_id=e.reviewer_id,
+            source=e.source,
+            created_at=e.created_at,
+            notes=e.notes,
+            success=True,
+        )
+        for e in entries
+    ]
 
 
 @router.post("/evidence-check", response_model=EvidenceCheckResponse)

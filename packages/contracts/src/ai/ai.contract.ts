@@ -48,14 +48,50 @@ export interface AiCategoryPrediction {
   categoryId: string;
   confidence: number;
   reasoning?: string | undefined;
+  groupId?: string | undefined;
+  subcategory?: string | undefined;
+  categoryName?: string | undefined;
 }
 
 export interface AiClassifyResponse extends BaseAiResponse {
   primaryCategory: string;
+  primaryGroup?: string | undefined;
+  primarySubcategory?: string | undefined;
   predictedSeverity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   alternativeCategories: AiCategoryPrediction[];
   suggestedTags: string[];
   isEmergencyCandidate: boolean;
+}
+
+export interface AiClassificationFeedbackRequest {
+  issueId: string;
+  text: string;
+  title?: string | undefined;
+  predictedCategory: string;
+  correctedCategory: string;
+  predictedSeverity?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' | undefined;
+  correctedSeverity?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' | undefined;
+  reviewerId?: string | undefined;
+  source?: string | undefined;
+  notes?: string | undefined;
+}
+
+export interface AiClassificationFeedbackResponse {
+  feedbackId: string;
+  issueId: string;
+  text: string;
+  title?: string | undefined;
+  predictedCategory: string;
+  predictedGroup?: string | undefined;
+  correctedCategory: string;
+  correctedGroup?: string | undefined;
+  predictedSeverity?: string | undefined;
+  correctedSeverity?: string | undefined;
+  reviewerId?: string | undefined;
+  source: string;
+  createdAt: string;
+  notes?: string | undefined;
+  success: boolean;
 }
 
 // ─────────────────────────────────────────────

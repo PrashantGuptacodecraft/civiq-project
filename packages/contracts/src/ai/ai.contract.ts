@@ -137,6 +137,7 @@ export interface AiIssueSummaryInput {
   latitude?: number | undefined;
   longitude?: number | undefined;
   createdAt?: string | undefined;
+  imagePerceptualHash?: string | undefined;
 }
 
 export interface AiDuplicateScoreRequest {
@@ -152,6 +153,12 @@ export interface AiDuplicateCandidateResult {
   geoDistanceMeters?: number | undefined;
   timeDeltaHours?: number | undefined;
   matchExplanation: string;
+  geoScore?: number | undefined;
+  timeScore?: number | undefined;
+  textScore?: number | undefined;
+  imageScore?: number | undefined;
+  isHighImpact?: boolean | undefined;
+  decisionEvidence?: Record<string, unknown> | undefined;
 }
 
 export interface AiDuplicateScoreResponse extends BaseAiResponse {

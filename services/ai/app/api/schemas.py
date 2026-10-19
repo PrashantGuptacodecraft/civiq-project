@@ -141,6 +141,7 @@ class IssueSummaryInput(BaseModel):
     latitude: float | None = None
     longitude: float | None = None
     created_at: str | None = None
+    image_perceptual_hash: str | None = None
 
 
 class DuplicateCandidateResult(BaseModel):
@@ -150,12 +151,18 @@ class DuplicateCandidateResult(BaseModel):
     geo_distance_meters: float | None = None
     time_delta_hours: float | None = None
     match_explanation: str
+    geo_score: float | None = None
+    time_score: float | None = None
+    text_score: float | None = None
+    image_score: float | None = None
+    is_high_impact: bool = False
+    decision_evidence: dict[str, Any] = Field(default_factory=dict)
 
 
 class DuplicateScoreRequest(BaseModel):
     target_issue: IssueSummaryInput
     candidate_issues: list[IssueSummaryInput]
-    threshold: float = Field(default=0.75, ge=0.0, le=1.0)
+    threshold: float = Field(default=0.70, ge=0.0, le=1.0)
 
 
 class DuplicateScoreResponse(BaseAiResponse):

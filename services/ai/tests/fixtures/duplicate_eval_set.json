@@ -1,0 +1,377 @@
+[
+  {
+    "id": "pair-01-exact-pothole",
+    "scenario": "Near-identical pothole report at same coordinates within 1 hour",
+    "expected_is_duplicate": true,
+    "target": {
+      "id": "tgt-01",
+      "title": "Huge pothole on MG Road near Metro Pillar 45",
+      "description": "Deep asphalt crater on road damaging two-wheelers and backing up traffic.",
+      "category_id": "roads_pothole",
+      "latitude": 18.5204,
+      "longitude": 73.8567,
+      "created_at": "2026-10-15T09:00:00Z",
+      "image_perceptual_hash": "a1b2c3d4e5f67890"
+    },
+    "candidate": {
+      "id": "cnd-01",
+      "title": "Massive road pothole near Metro 45 on MG Road",
+      "description": "Very deep crater on road asphalt, vehicles are swerving dangerously.",
+      "category_id": "roads_pothole",
+      "latitude": 18.52042,
+      "longitude": 73.85672,
+      "created_at": "2026-10-15T09:45:00Z",
+      "image_perceptual_hash": "a1b2c3d4e5f67891"
+    }
+  },
+  {
+    "id": "pair-02-paraphrased-burst-pipe",
+    "scenario": "Paraphrased text for same clean water pipeline burst at same intersection",
+    "expected_is_duplicate": true,
+    "target": {
+      "id": "tgt-02",
+      "title": "Fresh drinking water pipeline leaking heavily",
+      "description": "Municipal supply pipe ruptured under sidewalk, clean water flooding the street.",
+      "category_id": "water_pipeline_leak",
+      "latitude": 28.6139,
+      "longitude": 77.2090,
+      "created_at": "2026-10-16T08:00:00Z",
+      "image_perceptual_hash": null
+    },
+    "candidate": {
+      "id": "cnd-02",
+      "title": "Potable water main burst gushing out",
+      "description": "Clean water pipe broken near curb, thousands of liters wasted into roadway.",
+      "category_id": "water_pipeline_leak",
+      "latitude": 28.61395,
+      "longitude": 77.20904,
+      "created_at": "2026-10-16T10:15:00Z",
+      "image_perceptual_hash": null
+    }
+  },
+  {
+    "id": "pair-03-image-hash-match",
+    "scenario": "Open manhole with identical perceptual image hash and same location",
+    "expected_is_duplicate": true,
+    "target": {
+      "id": "tgt-03",
+      "title": "Open manhole without cover",
+      "description": "Dangerous open sewer pit on 80 Feet Road in front of school.",
+      "category_id": "sanitation_open_manhole",
+      "latitude": 12.9716,
+      "longitude": 77.5946,
+      "created_at": "2026-10-17T07:30:00Z",
+      "image_perceptual_hash": "ffff0000aaaa5555"
+    },
+    "candidate": {
+      "id": "cnd-03",
+      "title": "Missing manhole cover on street",
+      "description": "Uncovered drainage chamber on road, school kids nearby.",
+      "category_id": "sanitation_open_manhole",
+      "latitude": 12.97161,
+      "longitude": 77.59462,
+      "created_at": "2026-10-17T08:30:00Z",
+      "image_perceptual_hash": "ffff0000aaaa5555"
+    }
+  },
+  {
+    "id": "pair-04-blocked-drain",
+    "scenario": "Blocked storm drain overflowing sewage on residential street reported 6h apart",
+    "expected_is_duplicate": true,
+    "target": {
+      "id": "tgt-04",
+      "title": "Storm water drain blocked with silt",
+      "description": "Sewage and wastewater overflowing onto 4th Cross street.",
+      "category_id": "sanitation_blocked_drain",
+      "latitude": 19.0760,
+      "longitude": 72.8777,
+      "created_at": "2026-10-14T11:00:00Z",
+      "image_perceptual_hash": "c3d4e5f600112233"
+    },
+    "candidate": {
+      "id": "cnd-04",
+      "title": "Gutter overflow on 4th Cross",
+      "description": "Clogged naala drain spilling dirty sewage water in front of houses.",
+      "category_id": "sanitation_blocked_drain",
+      "latitude": 19.07608,
+      "longitude": 72.87775,
+      "created_at": "2026-10-14T17:00:00Z",
+      "image_perceptual_hash": "c3d4e5f600112234"
+    }
+  },
+  {
+    "id": "pair-05-garbage-heap",
+    "scenario": "Uncollected garbage heap on street corner reported next day",
+    "expected_is_duplicate": true,
+    "target": {
+      "id": "tgt-05",
+      "title": "Garbage dump accumulating near market corner",
+      "description": "Uncollected solid waste, trash spilling out of dustbin creating bad smell.",
+      "category_id": "waste_garbage_dump",
+      "latitude": 22.5726,
+      "longitude": 88.3639,
+      "created_at": "2026-10-13T14:00:00Z",
+      "image_perceptual_hash": null
+    },
+    "candidate": {
+      "id": "cnd-05",
+      "title": "Huge trash pile on market road",
+      "description": "Rubbish dump and kachra not picked up for days, stray animals eating trash.",
+      "category_id": "waste_garbage_dump",
+      "latitude": 22.57264,
+      "longitude": 88.36393,
+      "created_at": "2026-10-14T09:00:00Z",
+      "image_perceptual_hash": null
+    }
+  },
+  {
+    "id": "pair-06-hanging-wire-hazard",
+    "scenario": "Live dangling electric cable reported by two pedestrians",
+    "expected_is_duplicate": true,
+    "target": {
+      "id": "tgt-06",
+      "title": "Dangerous live wire hanging low",
+      "description": "Live electric cable snapped from pole and dangling at head height near bus stop.",
+      "category_id": "electrical_hanging_wires",
+      "latitude": 13.0827,
+      "longitude": 80.2707,
+      "created_at": "2026-10-18T16:00:00Z",
+      "image_perceptual_hash": "1122334455667788"
+    },
+    "candidate": {
+      "id": "cnd-06",
+      "title": "Snaped electric power line hanging",
+      "description": "Loose sparking wire hanging down to shoulder level, electrocution risk.",
+      "category_id": "electrical_hanging_wires",
+      "latitude": 13.08272,
+      "longitude": 80.27068,
+      "created_at": "2026-10-18T16:20:00Z",
+      "image_perceptual_hash": "1122334455667789"
+    }
+  },
+  {
+    "id": "pair-07-dead-animal",
+    "scenario": "Animal carcass on highway median reported within 2 hours",
+    "expected_is_duplicate": true,
+    "target": {
+      "id": "tgt-07",
+      "title": "Dead dog on highway divider",
+      "description": "Decomposing animal carcass on median near toll gate kilometer 14.",
+      "category_id": "waste_dead_animal",
+      "latitude": 17.3850,
+      "longitude": 78.4867,
+      "created_at": "2026-10-15T06:30:00Z",
+      "image_perceptual_hash": null
+    },
+    "candidate": {
+      "id": "cnd-07",
+      "title": "Stray animal body on highway median",
+      "description": "Dead animal near km 14 toll plaza needs removal by sanitary department.",
+      "category_id": "waste_dead_animal",
+      "latitude": 17.38504,
+      "longitude": 78.48671,
+      "created_at": "2026-10-15T08:00:00Z",
+      "image_perceptual_hash": null
+    }
+  },
+  {
+    "id": "pair-08-broken-streetlight",
+    "scenario": "Dark street due to broken streetlight pole reported 2 hours apart",
+    "expected_is_duplicate": true,
+    "target": {
+      "id": "tgt-08",
+      "title": "Broken streetlight pole outside Park Gate",
+      "description": "Street lamp post is completely off, entire lane is dark at night.",
+      "category_id": "roads_streetlighting",
+      "latitude": 26.8467,
+      "longitude": 80.9462,
+      "created_at": "2026-10-16T20:00:00Z",
+      "image_perceptual_hash": null
+    },
+    "candidate": {
+      "id": "cnd-08",
+      "title": "No light on street lamp near Park Gate",
+      "description": "Dark road outside park entrance, streetlight not working.",
+      "category_id": "roads_streetlighting",
+      "latitude": 26.84672,
+      "longitude": 80.94618,
+      "created_at": "2026-10-16T21:30:00Z",
+      "image_perceptual_hash": null
+    }
+  },
+  {
+    "id": "pair-09-hard-neg-category-mismatch",
+    "scenario": "Pothole vs Streetlight at the same exact junction (distinct issues)",
+    "expected_is_duplicate": false,
+    "target": {
+      "id": "tgt-09",
+      "title": "Deep pothole at Ring Road junction",
+      "description": "Asphalt crater damaging cars and two-wheelers.",
+      "category_id": "roads_pothole",
+      "latitude": 18.5204,
+      "longitude": 73.8567,
+      "created_at": "2026-10-15T09:00:00Z",
+      "image_perceptual_hash": null
+    },
+    "candidate": {
+      "id": "cnd-09",
+      "title": "Broken streetlight at Ring Road junction",
+      "description": "Lamp post bulb smashed, darkness during night time.",
+      "category_id": "roads_streetlighting",
+      "latitude": 18.5204,
+      "longitude": 73.8567,
+      "created_at": "2026-10-15T09:30:00Z",
+      "image_perceptual_hash": null
+    }
+  },
+  {
+    "id": "pair-10-hard-neg-different-cities",
+    "scenario": "Identical wording in different cities (Delhi vs Bangalore)",
+    "expected_is_duplicate": false,
+    "target": {
+      "id": "tgt-10",
+      "title": "Pothole on MG Road",
+      "description": "Large road damage causing traffic congestion.",
+      "category_id": "roads_pothole",
+      "latitude": 28.6139,
+      "longitude": 77.2090,
+      "created_at": "2026-10-15T10:00:00Z",
+      "image_perceptual_hash": null
+    },
+    "candidate": {
+      "id": "cnd-10",
+      "title": "Pothole on MG Road",
+      "description": "Large road damage causing traffic congestion.",
+      "category_id": "roads_pothole",
+      "latitude": 12.9716,
+      "longitude": 77.5946,
+      "created_at": "2026-10-15T10:00:00Z",
+      "image_perceptual_hash": null
+    }
+  },
+  {
+    "id": "pair-11-hard-neg-time-separated",
+    "scenario": "Same location and issue type but reported 6 months apart (recurrent/new incident)",
+    "expected_is_duplicate": false,
+    "target": {
+      "id": "tgt-11",
+      "title": "Water leakage on 5th Main",
+      "description": "Pipe leaking fresh drinking water on street.",
+      "category_id": "water_pipeline_leak",
+      "latitude": 18.5204,
+      "longitude": 73.8567,
+      "created_at": "2026-04-01T09:00:00Z",
+      "image_perceptual_hash": null
+    },
+    "candidate": {
+      "id": "cnd-11",
+      "title": "Water leakage on 5th Main",
+      "description": "Pipe leaking fresh drinking water on street.",
+      "category_id": "water_pipeline_leak",
+      "latitude": 18.5204,
+      "longitude": 73.8567,
+      "created_at": "2026-10-15T09:00:00Z",
+      "image_perceptual_hash": null
+    }
+  },
+  {
+    "id": "pair-12-hard-neg-spatial-separation",
+    "scenario": "Same pothole issue description but 2.5 km apart in different neighborhoods",
+    "expected_is_duplicate": false,
+    "target": {
+      "id": "tgt-12",
+      "title": "Severe road crater and pothole",
+      "description": "Deep asphalt hole damaging vehicle tyres on Main Street.",
+      "category_id": "roads_pothole",
+      "latitude": 18.5204,
+      "longitude": 73.8567,
+      "created_at": "2026-10-15T09:00:00Z",
+      "image_perceptual_hash": null
+    },
+    "candidate": {
+      "id": "cnd-12",
+      "title": "Severe road crater and pothole",
+      "description": "Deep asphalt hole damaging vehicle tyres on Main Street.",
+      "category_id": "roads_pothole",
+      "latitude": 18.5420,
+      "longitude": 73.8750,
+      "created_at": "2026-10-15T09:30:00Z",
+      "image_perceptual_hash": null
+    }
+  },
+  {
+    "id": "pair-13-hard-neg-different-image-hashes",
+    "scenario": "Manhole issues with totally different image hashes and different locations",
+    "expected_is_duplicate": false,
+    "target": {
+      "id": "tgt-13",
+      "title": "Open manhole cover",
+      "description": "Cover missing from sewer chamber.",
+      "category_id": "sanitation_open_manhole",
+      "latitude": 18.5204,
+      "longitude": 73.8567,
+      "created_at": "2026-10-15T10:00:00Z",
+      "image_perceptual_hash": "0000000000000000"
+    },
+    "candidate": {
+      "id": "cnd-13",
+      "title": "Broken manhole cover",
+      "description": "Sewer chamber cover broken.",
+      "category_id": "sanitation_open_manhole",
+      "latitude": 18.5350,
+      "longitude": 73.8700,
+      "created_at": "2026-10-15T11:00:00Z",
+      "image_perceptual_hash": "ffffffffffffffff"
+    }
+  },
+  {
+    "id": "pair-14-hard-neg-public-toilet-vs-garbage",
+    "scenario": "Unusable public toilet vs Garbage dump 800m away",
+    "expected_is_duplicate": false,
+    "target": {
+      "id": "tgt-14",
+      "title": "Public toilet locked and filthy",
+      "description": "Urinal broken and dirty sauchalaya facility.",
+      "category_id": "facilities_public_toilet",
+      "latitude": 19.0760,
+      "longitude": 72.8777,
+      "created_at": "2026-10-12T12:00:00Z",
+      "image_perceptual_hash": null
+    },
+    "candidate": {
+      "id": "cnd-14",
+      "title": "Garbage accumulating outside bus depot",
+      "description": "Solid waste heap and kachra on pavement.",
+      "category_id": "waste_garbage_dump",
+      "latitude": 19.0835,
+      "longitude": 72.8840,
+      "created_at": "2026-10-12T13:00:00Z",
+      "image_perceptual_hash": null
+    }
+  },
+  {
+    "id": "pair-15-hard-neg-unrelated-inquiry",
+    "scenario": "General citizen inquiry vs actual civic pothole issue",
+    "expected_is_duplicate": false,
+    "target": {
+      "id": "tgt-15",
+      "title": "Office opening hours inquiry",
+      "description": "What time does the ward revenue counter open on Saturday?",
+      "category_id": "general_civic",
+      "latitude": 18.5204,
+      "longitude": 73.8567,
+      "created_at": "2026-10-15T09:00:00Z",
+      "image_perceptual_hash": null
+    },
+    "candidate": {
+      "id": "cnd-15",
+      "title": "Large pothole on Road",
+      "description": "Dangerous pothole damaging vehicles.",
+      "category_id": "roads_pothole",
+      "latitude": 18.5204,
+      "longitude": 73.8567,
+      "created_at": "2026-10-15T09:00:00Z",
+      "image_perceptual_hash": null
+    }
+  }
+]

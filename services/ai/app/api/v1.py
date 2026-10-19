@@ -29,6 +29,7 @@ from app.api.schemas import (
     SummarizeResponse,
 )
 from app.pipelines.classification import get_classifier, get_feedback_store
+from app.pipelines.dedup import IssueSummary, get_dedup_engine
 from app.pipelines.vision import get_analyzer
 
 router = APIRouter(prefix="/v1", tags=["AI Gateway v1"])
@@ -187,47 +188,73 @@ def check_evidence(payload: EvidenceCheckRequest) -> EvidenceCheckResponse:
 def score_duplicates(payload: DuplicateScoreRequest) -> DuplicateScoreResponse:
     start_time = time.perf_counter()
 
-    target_text = f"{payload.target_issue.title} {payload.target_issue.description}".lower()
-    target_words = set(target_text.split())
-
-    scored_candidates: list[DuplicateCandidateResult] = []
-    top_score = 0.0
-    matched_id: str | None = None
-
-    for candidate in payload.candidate_issues:
-        cand_text = f"{candidate.title} {candidate.description}".lower()
-        cand_words = set(cand_text.split())
-
-        intersection = target_words.intersection(cand_words)
-        union = target_words.union(cand_words)
-        jaccard = len(intersection) / len(union) if union else 0.0
-
-        similarity = round(jaccard, 3)
-        if similarity > top_score:
-            top_score = similarity
-            matched_id = candidate.id
-
-        scored_candidates.append(
-            DuplicateCandidateResult(
-                candidate_id=candidate.id,
-                similarity_score=similarity,
-                semantic_similarity=similarity,
-                match_explanation=f"Lexical overlap: {len(intersection)} shared terms",
-            )
+    engine = get_dedup_engine()
+    target_summary = IssueSummary(
+        id=payload.target_issue.id,
+        title=payload.target_issue.title,
+        description=payload.target_issue.description,
+        category_id=payload.target_issue.category_id,
+        latitude=payload.target_issue.latitude,
+        longitude=payload.target_issue.longitude,
+        created_at=payload.target_issue.created_at,
+        image_perceptual_hash=payload.target_issue.image_perceptual_hash,
+    )
+    candidates_summary = [
+        IssueSummary(
+            id=c.id,
+            title=c.title,
+            description=c.description,
+            category_id=c.category_id,
+            latitude=c.latitude,
+            longitude=c.longitude,
+            created_at=c.created_at,
+            image_perceptual_hash=c.image_perceptual_hash,
         )
+        for c in payload.candidate_issues
+    ]
 
-    is_duplicate = top_score >= payload.threshold
+    scored = engine.score_candidates(
+        target=target_summary,
+        candidates=candidates_summary,
+        threshold=payload.threshold,
+    )
+
+    scored_candidates = [
+        DuplicateCandidateResult(
+            candidate_id=res.candidate_id,
+            similarity_score=res.total_score,
+            semantic_similarity=res.semantic_similarity,
+            geo_distance_meters=res.geo_distance_meters,
+            time_delta_hours=res.time_delta_hours,
+            match_explanation=res.match_explanation,
+            geo_score=res.geo_similarity,
+            time_score=res.time_similarity,
+            text_score=res.semantic_similarity,
+            image_score=res.image_similarity,
+            is_high_impact=res.is_high_impact,
+            decision_evidence=res.decision_evidence,
+        )
+        for res in scored
+    ]
+
+    top_score = scored[0].total_score if scored else 0.0
+    is_duplicate = any(res.is_duplicate for res in scored)
+    matched_id = scored[0].candidate_id if is_duplicate and scored else None
+
     latency = round((time.perf_counter() - start_time) * 1000, 2)
     cand_count = len(payload.candidate_issues)
 
     return DuplicateScoreResponse(
         version=AI_GATEWAY_VERSION,
-        confidence=0.85,
+        confidence=0.88 if is_duplicate else 0.80,
         model=DEFAULT_MODEL,
-        explanation=f"Evaluated {cand_count} candidates against threshold {payload.threshold}.",
+        explanation=(
+            f"Evaluated {cand_count} candidates via embedding and spatial-temporal ensemble "
+            f"(threshold={payload.threshold})."
+        ),
         latency_ms=latency,
         is_duplicate=is_duplicate,
-        matched_candidate_id=matched_id if is_duplicate else None,
+        matched_candidate_id=matched_id,
         top_similarity_score=top_score,
         scored_candidates=scored_candidates,
     )

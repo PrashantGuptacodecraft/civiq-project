@@ -122,6 +122,10 @@ class EvidenceCheckResponse(BaseAiResponse):
     flags: list[str] = Field(default_factory=list)
     detected_objects: list[str] = Field(default_factory=list)
     safety_passed: bool = True
+    matched_category_id: str | None = None
+    review_decision: Literal["AUTO_ACCEPTED", "REVIEW_REQUIRED", "SOFT_ACCEPTED"] = "AUTO_ACCEPTED"
+    is_low_confidence: bool = False
+    is_unsupported_format: bool = False
 
 
 # ─────────────────────────────────────────────

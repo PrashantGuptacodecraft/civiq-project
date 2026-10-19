@@ -29,6 +29,7 @@ from app.api.schemas import (
     SummarizeResponse,
 )
 from app.pipelines.classification import get_classifier, get_feedback_store
+from app.pipelines.vision import get_analyzer
 
 router = APIRouter(prefix="/v1", tags=["AI Gateway v1"])
 
@@ -150,32 +151,35 @@ def list_classification_feedback(
 def check_evidence(payload: EvidenceCheckRequest) -> EvidenceCheckResponse:
     start_time = time.perf_counter()
 
-    is_image = payload.mime_type.startswith("image/")
-    quality_score = 0.85 if is_image else 0.70
-    relevance_score = 0.88 if is_image else 0.60
-    flags: list[str] = []
-
-    if not is_image:
-        flags.append("NON_IMAGE_FORMAT")
-
-    detected_objects: list[str] = (
-        ["scene_context", "urban_infrastructure"] if is_image else ["document"]
+    analyzer = get_analyzer()
+    result = analyzer.analyse(
+        mime_type=payload.mime_type,
+        issue_title=payload.issue_title,
+        issue_description=payload.issue_description,
+        category_id=payload.category_id,
+        media_base64=payload.media_base64,
+        media_url=payload.media_url,
+        media_storage_key=payload.media_storage_key,
     )
 
     latency = round((time.perf_counter() - start_time) * 1000, 2)
 
     return EvidenceCheckResponse(
         version=AI_GATEWAY_VERSION,
-        confidence=0.87,
-        model=DEFAULT_MODEL,
-        explanation="Evidence verified against MIME integrity and civic issue context.",
+        confidence=result.confidence,
+        model=result.model_metadata,
+        explanation=result.explanation,
         latency_ms=latency,
-        is_relevant=relevance_score >= 0.5,
-        relevance_score=relevance_score,
-        quality_score=quality_score,
-        flags=flags,
-        detected_objects=detected_objects,
-        safety_passed=True,
+        is_relevant=result.is_relevant,
+        relevance_score=result.relevance_score,
+        quality_score=result.quality.quality_score,
+        flags=result.all_flags(),
+        detected_objects=result.detected_objects,
+        safety_passed=result.safety_passed,
+        matched_category_id=result.primary_category_id,
+        review_decision=result.review_decision,
+        is_low_confidence=result.is_low_confidence,
+        is_unsupported_format=result.is_unsupported_format,
     )
 
 

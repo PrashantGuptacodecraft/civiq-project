@@ -119,6 +119,10 @@ export interface AiEvidenceCheckResponse extends BaseAiResponse {
   flags: string[];
   detectedObjects: string[];
   safetyPassed: boolean;
+  matchedCategoryId?: string | undefined;
+  reviewDecision?: 'AUTO_ACCEPTED' | 'REVIEW_REQUIRED' | 'SOFT_ACCEPTED' | undefined;
+  isLowConfidence?: boolean | undefined;
+  isUnsupportedFormat?: boolean | undefined;
 }
 
 // ─────────────────────────────────────────────

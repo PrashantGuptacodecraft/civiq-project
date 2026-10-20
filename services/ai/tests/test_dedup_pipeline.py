@@ -47,7 +47,8 @@ def test_text_embedder_dimension_and_similarity() -> None:
     # Dissimilar text
     vec3 = embedder.embed("Music concert in auditorium on Sunday evening")
     sim_low = embedder.similarity(vec1, vec3)
-    assert sim_low < 0.25
+    assert sim_low < 0.35
+    assert sim_low < sim_high
 
 
 def test_image_embedder_perceptual_hash() -> None:

@@ -187,6 +187,8 @@ class PriorityScoreRequest(BaseModel):
     location: LocationInput | None = None
     upvotes_count: int | None = Field(default=0, ge=0)
     age_hours: float | None = Field(default=0.0, ge=0.0)
+    corroboration_count: int | None = Field(default=0, ge=0)
+    location_context: dict[str, Any] | None = None
 
 
 class PriorityBreakdown(BaseModel):
@@ -194,6 +196,11 @@ class PriorityBreakdown(BaseModel):
     impact_radius_score: float = Field(..., ge=0.0, le=100.0)
     vulnerability_score: float = Field(..., ge=0.0, le=100.0)
     time_decay_factor: float = Field(..., ge=0.0)
+    safety_risk_score: float | None = Field(default=None, ge=0.0, le=100.0)
+    impact_score: float | None = Field(default=None, ge=0.0, le=100.0)
+    corroboration_score: float | None = Field(default=None, ge=0.0, le=100.0)
+    age_score: float | None = Field(default=None, ge=0.0, le=100.0)
+    location_context_score: float | None = Field(default=None, ge=0.0, le=100.0)
 
 
 class PriorityScoreResponse(BaseAiResponse):
@@ -201,6 +208,8 @@ class PriorityScoreResponse(BaseAiResponse):
     priority_tier: Literal["P1_CRITICAL", "P2_HIGH", "P3_MEDIUM", "P4_LOW"]
     score_breakdown: PriorityBreakdown
     recommended_sla_hours: int = Field(..., ge=1)
+    reasons: list[str] = Field(default_factory=list)
+    decision_evidence: dict[str, Any] = Field(default_factory=dict)
 
 
 # ─────────────────────────────────────────────

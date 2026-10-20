@@ -1,0 +1,108 @@
+[
+  {
+    "id": "case-01-live-wire-school",
+    "title": "Exposed live sparking wire near school entrance",
+    "description": "Snapped high-voltage line hanging at head height near school gate, danger of electrocution.",
+    "category": "electrical_hanging_wires",
+    "severity": "CRITICAL",
+    "reporter_trust_score": 90.0,
+    "location": {
+      "latitude": 18.5204,
+      "longitude": 73.8567
+    },
+    "upvotes_count": 12,
+    "age_hours": 1.5,
+    "corroboration_count": 3,
+    "location_context": {
+      "is_school_zone": true
+    },
+    "expected_tier": "P1_CRITICAL",
+    "expected_min_score": 85.0,
+    "expected_max_sla_hours": 4,
+    "expected_keywords_in_reasons": ["school", "safety", "critical"]
+  },
+  {
+    "id": "case-02-major-water-main-burst",
+    "title": "Water main burst flooding arterial highway junction",
+    "description": "Potable water pipeline ruptured, flooding multiple lanes on ring road, traffic gridlock.",
+    "category": "water_pipeline_leak",
+    "severity": "HIGH",
+    "reporter_trust_score": 75.0,
+    "location": {
+      "latitude": 28.6139,
+      "longitude": 77.2090
+    },
+    "upvotes_count": 25,
+    "age_hours": 6.0,
+    "corroboration_count": 4,
+    "location_context": {
+      "is_arterial_road": true
+    },
+    "expected_tier": "P2_HIGH",
+    "expected_min_score": 60.0,
+    "expected_max_sla_hours": 24,
+    "expected_keywords_in_reasons": ["artery", "upvotes", "HIGH"]
+  },
+  {
+    "id": "case-03-overdue-pothole-starvation",
+    "title": "Deep crater on residential road damaging vehicles",
+    "description": "Pothole unattended for over a week, vehicles swerving into oncoming lane.",
+    "category": "roads_pothole",
+    "severity": "MEDIUM",
+    "reporter_trust_score": 60.0,
+    "location": {
+      "latitude": 19.0760,
+      "longitude": 72.8777
+    },
+    "upvotes_count": 4,
+    "age_hours": 192.0,
+    "corroboration_count": 1,
+    "location_context": {},
+    "expected_tier": "P2_HIGH",
+    "expected_min_score": 60.0,
+    "expected_max_sla_hours": 24,
+    "expected_keywords_in_reasons": ["starvation", "overdue"]
+  },
+  {
+    "id": "case-04-minor-park-litter",
+    "title": "Litter and dry leaves on park jogging track",
+    "description": "Small pile of fallen leaves and snack wrappers on garden walkway.",
+    "category": "waste_garbage_dump",
+    "severity": "LOW",
+    "reporter_trust_score": 50.0,
+    "location": {
+      "latitude": 12.9716,
+      "longitude": 77.5946
+    },
+    "upvotes_count": 0,
+    "age_hours": 0.5,
+    "corroboration_count": 0,
+    "location_context": {},
+    "expected_tier": "P4_LOW",
+    "expected_max_score": 40.0,
+    "expected_max_sla_hours": 168,
+    "expected_keywords_in_reasons": ["LOW"]
+  },
+  {
+    "id": "case-05-open-manhole-near-hospital",
+    "title": "Open manhole cover missing outside General Hospital",
+    "description": "Dangerous open sewer pit right in front of hospital emergency entry.",
+    "category": "sanitation_open_manhole",
+    "severity": "HIGH",
+    "reporter_trust_score": 85.0,
+    "location": {
+      "latitude": 22.5726,
+      "longitude": 88.3639
+    },
+    "upvotes_count": 7,
+    "age_hours": 2.5,
+    "corroboration_count": 2,
+    "location_context": {
+      "is_hospital_zone": true
+    },
+    "expected_tier": "P2_HIGH",
+    "expected_min_score": 70.0,
+    "expected_max_sla_hours": 24,
+    "expected_keywords_in_reasons": ["hospital", "fall hazard"]
+  }
+]

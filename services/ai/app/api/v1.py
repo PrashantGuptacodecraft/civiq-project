@@ -30,6 +30,7 @@ from app.api.schemas import (
 )
 from app.pipelines.classification import get_classifier, get_feedback_store
 from app.pipelines.dedup import IssueSummary, get_dedup_engine
+from app.pipelines.priority import IssuePriorityInput, get_priority_engine
 from app.pipelines.vision import get_analyzer
 
 router = APIRouter(prefix="/v1", tags=["AI Gateway v1"])
@@ -264,51 +265,62 @@ def score_duplicates(payload: DuplicateScoreRequest) -> DuplicateScoreResponse:
 def score_priority(payload: PriorityScoreRequest) -> PriorityScoreResponse:
     start_time = time.perf_counter()
 
-    severity_weight = {
-        "LOW": 25.0,
-        "MEDIUM": 50.0,
-        "HIGH": 75.0,
-        "CRITICAL": 95.0,
-    }.get(payload.severity, 50.0)
+    engine = get_priority_engine()
+    location_dict = (
+        {
+            "latitude": payload.location.latitude,
+            "longitude": payload.location.longitude,
+            "jurisdiction_id": payload.location.jurisdiction_id,
+        }
+        if payload.location
+        else None
+    )
 
-    hazard_score = severity_weight
-    impact_score = min(100.0, 40.0 + (payload.upvotes_count or 0) * 5.0)
-    vulnerability_score = 60.0
-    time_decay = min(2.0, 1.0 + (payload.age_hours or 0.0) * 0.02)
+    priority_input = IssuePriorityInput(
+        issue_id=payload.issue_id,
+        title=payload.title,
+        description=payload.description,
+        category=payload.category,
+        severity=payload.severity,
+        reporter_trust_score=payload.reporter_trust_score,
+        location=location_dict,
+        upvotes_count=payload.upvotes_count,
+        age_hours=payload.age_hours,
+        corroboration_count=payload.corroboration_count,
+        location_context=payload.location_context,
+    )
 
-    raw_score = (hazard_score * 0.4 + impact_score * 0.3 + vulnerability_score * 0.3) * time_decay
-    final_score = round(min(100.0, max(0.0, raw_score)), 2)
-
-    if final_score >= 80.0:
-        tier: Literal["P1_CRITICAL", "P2_HIGH", "P3_MEDIUM", "P4_LOW"] = "P1_CRITICAL"
-        sla = 4
-    elif final_score >= 60.0:
-        tier = "P2_HIGH"
-        sla = 24
-    elif final_score >= 40.0:
-        tier = "P3_MEDIUM"
-        sla = 72
-    else:
-        tier = "P4_LOW"
-        sla = 168
-
+    result = engine.calculate_priority(priority_input)
     latency = round((time.perf_counter() - start_time) * 1000, 2)
+
+    first_reason = result.reasons[0] if result.reasons else "Deterministic signals evaluated."
+    explanation = (
+        f"Priority score {result.priority_score}/100 [{result.priority_tier}]: "
+        f"{first_reason}"
+    )
 
     return PriorityScoreResponse(
         version=AI_GATEWAY_VERSION,
-        confidence=0.91,
+        confidence=0.92,
         model=DEFAULT_MODEL,
-        explanation=f"Composite priority index ({final_score}/100) based on severity and impact.",
+        explanation=explanation,
         latency_ms=latency,
-        priority_score=final_score,
-        priority_tier=tier,
+        priority_score=result.priority_score,
+        priority_tier=result.priority_tier,
         score_breakdown=PriorityBreakdown(
-            hazard_score=hazard_score,
-            impact_radius_score=impact_score,
-            vulnerability_score=vulnerability_score,
-            time_decay_factor=time_decay,
+            hazard_score=result.hazard_score,
+            impact_radius_score=result.impact_radius_score,
+            vulnerability_score=result.vulnerability_score,
+            time_decay_factor=result.time_decay_factor,
+            safety_risk_score=result.safety_risk_score,
+            impact_score=result.impact_score,
+            corroboration_score=result.corroboration_score,
+            age_score=result.age_score,
+            location_context_score=result.location_context_score,
         ),
-        recommended_sla_hours=sla,
+        recommended_sla_hours=result.recommended_sla_hours,
+        reasons=result.reasons,
+        decision_evidence=result.decision_evidence,
     )
 
 

@@ -186,6 +186,13 @@ export interface AiPriorityScoreRequest {
   } | undefined;
   upvotesCount?: number | undefined;
   ageHours?: number | undefined;
+  corroborationCount?: number | undefined;
+  locationContext?: {
+    isSchoolZone?: boolean | undefined;
+    isHospitalZone?: boolean | undefined;
+    isTransitHub?: boolean | undefined;
+    isArterialRoad?: boolean | undefined;
+  } | undefined;
 }
 
 export interface AiPriorityBreakdown {
@@ -193,6 +200,11 @@ export interface AiPriorityBreakdown {
   impactRadiusScore: number; // 0 - 100
   vulnerabilityScore: number; // 0 - 100
   timeDecayFactor: number;
+  safetyRiskScore?: number | undefined; // 0 - 100
+  impactScore?: number | undefined; // 0 - 100
+  corroborationScore?: number | undefined; // 0 - 100
+  ageScore?: number | undefined; // 0 - 100
+  locationContextScore?: number | undefined; // 0 - 100
 }
 
 export interface AiPriorityScoreResponse extends BaseAiResponse {
@@ -200,6 +212,8 @@ export interface AiPriorityScoreResponse extends BaseAiResponse {
   priorityTier: 'P1_CRITICAL' | 'P2_HIGH' | 'P3_MEDIUM' | 'P4_LOW';
   scoreBreakdown: AiPriorityBreakdown;
   recommendedSlaHours: number;
+  reasons?: string[] | undefined;
+  decisionEvidence?: Record<string, unknown> | undefined;
 }
 
 // ─────────────────────────────────────────────

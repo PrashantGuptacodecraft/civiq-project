@@ -404,6 +404,61 @@ model AuditLog {
 }
 
 // ─────────────────────────────────────────────
+// AI AUDIT & GOVERNANCE
+// ─────────────────────────────────────────────
+
+enum AiOperationType {
+  CLASSIFICATION
+  EVIDENCE_VERIFICATION
+  DUPLICATE_DETECTION
+  PRIORITY_SCORING
+  DEPARTMENT_ROUTING
+  SUMMARIZATION
+  INCIDENT_PREDICTION
+}
+
+enum AiHumanDecision {
+  ACCEPTED
+  MODIFIED
+  OVERRIDDEN
+  REJECTED
+  PENDING_REVIEW
+}
+
+/// Immutable record of AI inferences, model governance metadata,
+/// prompt/config hashes, redacted inputs, and human-in-the-loop decisions.
+model AiAuditRecord {
+  id                 String          @id @default(cuid())
+  operation          AiOperationType
+  issueId            String?
+  traceId            String?
+  modelName          String
+  modelVersion       String
+  promptConfigHash   String?
+  confidence         Float?
+  inferenceOutput    Json            @default("{}")
+  rawInputRedacted   Json            @default("{}")
+  isRedacted         Boolean         @default(true)
+  humanDecision      AiHumanDecision @default(PENDING_REVIEW)
+  humanDecisionNotes String?
+  humanDecisionBy    String?
+  humanDecidedAt     DateTime?
+  overrideReason     String?
+  finalOutcome       Json?
+  evaluationMetrics  Json?
+  latencyMs          Float?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  @@index([issueId])
+  @@index([operation])
+  @@index([humanDecision])
+  @@index([createdAt])
+  @@index([modelName, modelVersion])
+  @@map("ai_audit_records")
+}
+
+// ─────────────────────────────────────────────
 // JURISDICTIONS
 // ─────────────────────────────────────────────
 

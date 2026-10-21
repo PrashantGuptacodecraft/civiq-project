@@ -285,3 +285,84 @@ export interface AiPredictResponse extends BaseAiResponse {
   trend: 'INCREASING' | 'STABLE' | 'DECREASING';
   contributingFactors: AiContributingFactor[];
 }
+
+
+// ─────────────────────────────────────────────
+// 8. AI AUDIT & GOVERNANCE TRAIL
+// ─────────────────────────────────────────────
+
+export type AiAuditOperation =
+  | 'CLASSIFICATION'
+  | 'EVIDENCE_VERIFICATION'
+  | 'DUPLICATE_DETECTION'
+  | 'PRIORITY_SCORING'
+  | 'DEPARTMENT_ROUTING'
+  | 'SUMMARIZATION'
+  | 'INCIDENT_PREDICTION';
+
+export type AiHumanDecisionType =
+  | 'ACCEPTED'
+  | 'MODIFIED'
+  | 'OVERRIDDEN'
+  | 'REJECTED'
+  | 'PENDING_REVIEW';
+
+export interface AiAuditRecordDto {
+  id: string;
+  operation: AiAuditOperation;
+  issueId?: string | undefined;
+  traceId?: string | undefined;
+  modelName: string;
+  modelVersion: string;
+  promptConfigHash?: string | undefined;
+  confidence?: number | undefined;
+  inferenceOutput: Record<string, unknown>;
+  rawInputRedacted: Record<string, unknown>;
+  isRedacted: boolean;
+  humanDecision: AiHumanDecisionType;
+  humanDecisionNotes?: string | undefined;
+  humanDecisionBy?: string | undefined;
+  humanDecidedAt?: string | undefined;
+  overrideReason?: string | undefined;
+  finalOutcome?: Record<string, unknown> | undefined;
+  evaluationMetrics?: Record<string, unknown> | undefined;
+  latencyMs?: number | undefined;
+  createdAt: string;
+}
+
+export interface AiAdminComparisonFilter {
+  operation?: AiAuditOperation | undefined;
+  humanDecision?: AiHumanDecisionType | undefined;
+  modelName?: string | undefined;
+  startDate?: string | undefined;
+  endDate?: string | undefined;
+  limit?: number | undefined;
+  offset?: number | undefined;
+}
+
+export interface AiAdminComparisonSummary {
+  totalInferences: number;
+  pendingReviewCount: number;
+  acceptedCount: number;
+  modifiedCount: number;
+  overriddenCount: number;
+  rejectedCount: number;
+  acceptanceRate: number;
+  overrideRate: number;
+  avgConfidenceAccepted: number;
+  avgConfidenceOverridden: number;
+  topOverrideReasons: Array<{ reason: string; count: number }>;
+  records: AiAuditRecordDto[];
+}
+
+export interface AiEvaluationRecordDto {
+  recordId: string;
+  operation: AiAuditOperation;
+  modelName: string;
+  modelVersion: string;
+  isAgreement: boolean;
+  humanDecision: AiHumanDecisionType;
+  discrepancyType?: string | undefined;
+  confidenceCalibrated: boolean;
+  metrics: Record<string, unknown>;
+}

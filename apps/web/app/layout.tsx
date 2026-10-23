@@ -33,9 +33,24 @@ export default function RootLayout({
               >
                 Verification
               </Link>
+              <Link
+                href="/field"
+                className="hover:text-primary transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-sm"
+              >
+                Field Work
+              </Link>
             </nav>
             {/* Mobile nav toggle — visible on small screens */}
-            <div className="md:hidden flex items-center">
+            <div className="md:hidden flex items-center gap-1">
+              <Link
+                href="/field"
+                className="text-sm font-medium text-text-secondary hover:text-primary transition-colors p-2 outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md"
+                aria-label="Field worker console"
+              >
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+              </Link>
               <Link
                 href="/verification"
                 className="text-sm font-medium text-text-secondary hover:text-primary transition-colors p-2 outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md"

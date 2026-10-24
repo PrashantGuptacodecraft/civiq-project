@@ -14,7 +14,7 @@
     "db:seed": "node seed/seed.js"
   },
   "dependencies": {
-    "@civiq/contracts": "workspace:*",
+    "@civiq/contracts": "*",
     "@prisma/client": "5.22.0",
     "prisma": "5.22.0"
   }

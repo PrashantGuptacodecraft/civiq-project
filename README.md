@@ -76,30 +76,30 @@ CivIQ is designed to **coexist with** Indian public systems such as CPGRAMS, 112
 
 ### Prerequisites
 - Node.js >= 20.0.0
-- pnpm >= 10.12.4
+- npm >= 10.0.0
 
 ### 1. Install Dependencies
 ```bash
-pnpm install
+npm install
 ```
 
 ### 2. Run the Development Servers
 - **Run Backend only (port 8000):**
   ```bash
-  pnpm dev:backend
+  npm run dev:backend
   ```
 - **Run Frontend only (port 3000):**
   ```bash
-  pnpm dev:frontend
+  npm run dev:frontend
   ```
 - **Run Both concurrently:**
   ```bash
-  pnpm dev
+  npm run dev
   ```
 
 ### 3. Run Automated Tests
 ```bash
-pnpm test
+npm test
 ```
 All unit and integration tests across `shared/`, `backend/`, and `frontend/` will execute.
 

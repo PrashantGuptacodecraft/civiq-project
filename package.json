@@ -1,18 +1,26 @@
 {
   "name": "civiq",
+  "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@10.12.4",
+  "workspaces": [
+    "frontend",
+    "backend",
+    "shared/contracts",
+    "shared/auth",
+    "shared/db",
+    "shared/observability"
+  ],
   "engines": {
     "node": ">=20.0.0",
-    "pnpm": ">=10.12.4"
+    "npm": ">=10.0.0"
   },
   "scripts": {
-    "dev": "pnpm -r --parallel --if-present dev",
-    "dev:backend": "pnpm --filter @civiq/backend dev",
-    "dev:frontend": "pnpm --filter @civiq/frontend dev",
-    "test": "pnpm -r --if-present test",
-    "test:backend": "pnpm --filter @civiq/backend test",
-    "test:frontend": "pnpm --filter @civiq/frontend test",
-    "build": "pnpm -r --if-present build"
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:backend": "npm --workspace=@civiq/backend run dev",
+    "dev:frontend": "npm --workspace=@civiq/frontend run dev",
+    "test": "npm run test --workspaces --if-present",
+    "test:backend": "npm --workspace=@civiq/backend run test",
+    "test:frontend": "npm --workspace=@civiq/frontend run test",
+    "build": "npm run build --workspaces --if-present"
   }
 }

@@ -137,4 +137,81 @@ describe('Field Worker Mobile PWA Experience (Phase 41)', () => {
             expect(queue.getQueue()[0]?.retryCount).toBe(1);
         });
     });
+
+    describe('Before & After Photo Proof & Field Verification (Phase 42)', () => {
+        it('renders BeforeAfterProof with required before and after proof cards', () => {
+            const task = MOCK_FIELD_TASKS[0]; // task-101 has no evidence
+            const html = renderToStaticMarkup(<TaskDetail task={task} currentWorker={CURRENT_FIELD_WORKER} onBack={() => { }}/>);
+            expect(html).toContain('Before &amp; After Evidence Proof');
+            expect(html).toContain('1. Before Work');
+            expect(html).toContain('2. After Work');
+            expect(html).toContain('Capture Before Photo');
+            expect(html).toContain('min-h-[44px]');
+        });
+
+        it('displays captured evidence with GPS-verified distance badge and timestamp', () => {
+            const resolvedTask = MOCK_FIELD_TASKS.find((t) => t.id === 'task-104');
+            const html = renderToStaticMarkup(<TaskDetail task={resolvedTask} currentWorker={CURRENT_FIELD_WORKER} onBack={() => { }}/>);
+            expect(html).toContain('GPS Verified');
+            expect(html).toContain('Captured');
+            expect(html).toContain('4m from site');
+            expect(html).toContain('6m from site');
+        });
+
+        it('renders supervisor rejection banner with clear rework instructions when task is reopened', () => {
+            const reopenedTask = MOCK_FIELD_TASKS.find((t) => t.id === 'task-105');
+            const html = renderToStaticMarkup(<TaskDetail task={reopenedTask} currentWorker={CURRENT_FIELD_WORKER} onBack={() => { }}/>);
+            expect(html).toContain('Task Returned by Field Supervisor');
+            expect(html).toContain('Supervisor Inspection: After photo was blurry');
+            expect(html).toContain('Please rectify the on-site defect');
+        });
+
+        it('renders supervisor verification action button for FIELD_SUPERVISOR role', () => {
+            const supervisorUser = {
+                id: 'sup-verma-01',
+                name: 'Sunil Verma',
+                role: 'FIELD_SUPERVISOR',
+                jurisdictionId: 'jur-delhi-north',
+                jurisdictionName: 'NDMC',
+                departmentId: 'dept-pwd-north',
+                departmentName: 'PWD',
+            };
+            const resolvedTask = MOCK_FIELD_TASKS.find((t) => t.id === 'task-104');
+            const html = renderToStaticMarkup(<TaskDetail task={resolvedTask} currentWorker={supervisorUser} onBack={() => { }}/>);
+            expect(html).toContain('Supervisor Verification Review');
+            expect(html).toContain('min-h-[56px]');
+        });
+
+        it('optimistically applies SUBMIT_EVIDENCE and SUPERVISOR_REVIEW in MutationQueueManager', () => {
+            const queue = new MutationQueueManager();
+            const task = { ...MOCK_FIELD_TASKS[0], evidence: [] };
+
+            // 1. Submit evidence
+            const updatedWithProof = queue.applyOptimisticUpdate(task, 'SUBMIT_EVIDENCE', {
+                evidence: {
+                    id: 'ev-new',
+                    proofType: 'BEFORE',
+                    mediaUrl: 'https://civiq.in/img.jpg',
+                },
+            });
+            expect(updatedWithProof.evidence).toHaveLength(1);
+            expect(updatedWithProof.evidence[0].proofType).toBe('BEFORE');
+
+            // 2. Supervisor Approval
+            const approved = queue.applyOptimisticUpdate(updatedWithProof, 'SUPERVISOR_REVIEW', {
+                decision: 'APPROVED',
+            });
+            expect(approved.status).toBe('RESOLVED');
+            expect(approved.verificationStatus).toBe('APPROVED');
+
+            // 3. Supervisor Rejection
+            const rejected = queue.applyOptimisticUpdate(updatedWithProof, 'SUPERVISOR_REVIEW', {
+                decision: 'REJECTED',
+                rejectionReason: 'Bitumen unsealed',
+            });
+            expect(rejected.status).toBe('IN_PROGRESS');
+            expect(rejected.verificationStatus).toBe('REJECTED');
+            expect(rejected.rejectionReason).toBe('Bitumen unsealed');
+        });
+    });
 });

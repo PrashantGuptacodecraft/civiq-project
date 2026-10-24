@@ -6,4 +6,5 @@ export * from './install-prompt.jsx';
 export * from './task-card.jsx';
 export * from './task-list.jsx';
 export * from './task-detail.jsx';
+export * from './before-after-proof.jsx';
 export * from './field-console.jsx';

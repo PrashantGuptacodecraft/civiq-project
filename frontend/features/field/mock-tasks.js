@@ -8,6 +8,18 @@ export const CURRENT_FIELD_WORKER = {
     departmentName: 'Public Works Department (PWD)',
     phone: '+91 98765 43210',
 };
+
+export const CURRENT_FIELD_SUPERVISOR = {
+    id: 'sup-verma-01',
+    name: 'Sunil Verma',
+    role: 'FIELD_SUPERVISOR',
+    jurisdictionId: 'jur-delhi-north',
+    jurisdictionName: 'North Delhi Municipal Corporation (NDMC)',
+    departmentId: 'dept-pwd-north',
+    departmentName: 'Public Works Department (PWD)',
+    phone: '+91 98111 22334',
+};
+
 export const MOCK_FIELD_TASKS = [
     {
         id: 'task-101',
@@ -33,6 +45,7 @@ export const MOCK_FIELD_TASKS = [
         dueAt: new Date(Date.now() + 1 * 3600 * 1000).toISOString(),
         slaHoursRemaining: 1.0,
         slaStatus: 'WARNING',
+        evidence: [],
     },
     {
         id: 'task-102',
@@ -59,6 +72,17 @@ export const MOCK_FIELD_TASKS = [
         slaHoursRemaining: 16.0,
         slaStatus: 'WITHIN_SLA',
         notes: 'Arrived at site with asphalt patch crew. Work ongoing.',
+        evidence: [
+            {
+                id: 'ev-102-before',
+                proofType: 'BEFORE',
+                mediaUrl: 'https://storage.civiq.in/proofs/task-102-before.jpg',
+                capturedLocation: { latitude: 28.6845, longitude: 77.2154 },
+                distanceFromSiteMeters: 5,
+                capturedAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
+                notes: 'Initial pothole dimensions photographed with scale ruler.',
+            },
+        ],
     },
     {
         id: 'task-103',
@@ -84,6 +108,7 @@ export const MOCK_FIELD_TASKS = [
         dueAt: new Date(Date.now() - 6 * 3600 * 1000).toISOString(),
         slaHoursRemaining: -6.0,
         slaStatus: 'BREACHED',
+        evidence: [],
     },
     {
         id: 'task-104',
@@ -112,6 +137,61 @@ export const MOCK_FIELD_TASKS = [
         notes: 'Re-leveled pavers and reset curb stones.',
         resolutionNotes: 'Repaired 10 meters of paver tiles and reset cement borders. Path fully clear.',
         resolvedAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
+        verificationStatus: 'APPROVED',
+        evidence: [
+            {
+                id: 'ev-104-before',
+                proofType: 'BEFORE',
+                mediaUrl: 'https://storage.civiq.in/proofs/task-104-before.jpg',
+                capturedLocation: { latitude: 28.675, longitude: 77.222 },
+                distanceFromSiteMeters: 4,
+                capturedAt: new Date(Date.now() - 6 * 3600 * 1000).toISOString(),
+            },
+            {
+                id: 'ev-104-after',
+                proofType: 'AFTER',
+                mediaUrl: 'https://storage.civiq.in/proofs/task-104-after.jpg',
+                capturedLocation: { latitude: 28.675, longitude: 77.222 },
+                distanceFromSiteMeters: 6,
+                capturedAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
+            },
+        ],
+    },
+    {
+        id: 'task-105',
+        title: 'Damaged speed breaker causing vehicle underbody scrape',
+        description: 'Cement speed breaker cracked and loose concrete scattered across road.',
+        categoryId: 'roads_pothole',
+        categoryName: 'Pothole / Road Surface',
+        priority: 'MEDIUM',
+        status: 'IN_PROGRESS',
+        jurisdictionId: 'jur-delhi-north',
+        jurisdictionName: 'North Delhi Municipal Corporation (NDMC)',
+        departmentId: 'dept-pwd-north',
+        departmentName: 'Public Works Department (PWD)',
+        assignedWorkerId: 'worker-rajesh-01',
+        assignedWorkerName: 'Rajesh Kumar',
+        location: {
+            latitude: 28.681,
+            longitude: 77.219,
+            address: 'University Road, Timarpur',
+            landmark: 'Near Girls Hostel Crossing',
+        },
+        createdAt: new Date(Date.now() - 12 * 3600 * 1000).toISOString(),
+        dueAt: new Date(Date.now() + 8 * 3600 * 1000).toISOString(),
+        slaHoursRemaining: 8.0,
+        slaStatus: 'WITHIN_SLA',
+        rejectionReason: 'Supervisor Inspection: After photo was blurry and asphalt edge unsealed. Please re-compact asphalt and submit clear after photo.',
+        evidence: [
+            {
+                id: 'ev-105-before',
+                proofType: 'BEFORE',
+                mediaUrl: 'https://storage.civiq.in/proofs/task-105-before.jpg',
+                capturedLocation: { latitude: 28.681, longitude: 77.219 },
+                distanceFromSiteMeters: 10,
+                capturedAt: new Date(Date.now() - 10 * 3600 * 1000).toISOString(),
+            },
+        ],
     },
     // Task belonging to another worker and foreign jurisdiction (for authorization / isolation testing)
     {
@@ -137,5 +217,6 @@ export const MOCK_FIELD_TASKS = [
         dueAt: new Date(Date.now() + 20 * 3600 * 1000).toISOString(),
         slaHoursRemaining: 20.0,
         slaStatus: 'WITHIN_SLA',
+        evidence: [],
     },
 ];

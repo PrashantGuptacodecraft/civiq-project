@@ -86,6 +86,26 @@ export function FieldWorkerConsole({ initialTasks, initialWorker = CURRENT_FIELD
             await handleManualSync();
         }
     };
+    const handleCaptureProof = async (taskId, proofData) => {
+        setTasks((prev) => prev.map((t) => t.id === taskId
+            ? mutationQueue.applyOptimisticUpdate(t, 'SUBMIT_EVIDENCE', { evidence: proofData })
+            : t));
+        mutationQueue.enqueue(taskId, 'SUBMIT_EVIDENCE', { evidence: proofData });
+        setQueuedCount(mutationQueue.getQueue().length);
+        if (!isOffline) {
+            await handleManualSync();
+        }
+    };
+    const handleSupervisorReview = async (taskId, reviewData) => {
+        setTasks((prev) => prev.map((t) => t.id === taskId
+            ? mutationQueue.applyOptimisticUpdate(t, 'SUPERVISOR_REVIEW', reviewData)
+            : t));
+        mutationQueue.enqueue(taskId, 'SUPERVISOR_REVIEW', reviewData);
+        setQueuedCount(mutationQueue.getQueue().length);
+        if (!isOffline) {
+            await handleManualSync();
+        }
+    };
     return (<div className="min-h-screen bg-surface-secondary text-text-primary flex flex-col">
       {/* Offline Status & Sync Banner */}
       <OfflineBanner isOffline={isOffline} queuedCount={queuedCount} isSyncing={isSyncing} onManualSync={handleManualSync}/>
@@ -120,7 +140,7 @@ export function FieldWorkerConsole({ initialTasks, initialWorker = CURRENT_FIELD
 
       {/* Main Content Area */}
       <div className="flex-1 max-w-xl w-full mx-auto">
-        {selectedTask ? (<TaskDetail task={selectedTask} currentWorker={worker} onBack={() => setSelectedTaskId(null)} onStartProgress={handleStartProgress} onUpdateNotes={handleUpdateNotes} onResolveTask={handleResolveTask}/>) : (<TaskList tasks={authorizedTasks} selectedTaskId={selectedTaskId ?? undefined} onSelectTask={(id) => setSelectedTaskId(id)}/>)}
+        {selectedTask ? (<TaskDetail task={selectedTask} currentWorker={worker} onBack={() => setSelectedTaskId(null)} onStartProgress={handleStartProgress} onUpdateNotes={handleUpdateNotes} onResolveTask={handleResolveTask} onCaptureProof={handleCaptureProof} onSupervisorReview={handleSupervisorReview}/>) : (<TaskList tasks={authorizedTasks} selectedTaskId={selectedTaskId ?? undefined} onSelectTask={(id) => setSelectedTaskId(id)}/>)}
       </div>
     </div>);
 }

@@ -81,6 +81,23 @@ export class MutationQueueManager {
                 }
                 updated.resolvedAt = new Date().toISOString();
                 break;
+            case 'SUBMIT_EVIDENCE':
+                if (payload.evidence) {
+                    const currentEv = updated.evidence ? [...updated.evidence] : [];
+                    currentEv.push(payload.evidence);
+                    updated.evidence = currentEv;
+                }
+                break;
+            case 'SUPERVISOR_REVIEW':
+                if (payload.decision === 'APPROVED') {
+                    updated.status = 'RESOLVED';
+                    updated.verificationStatus = 'APPROVED';
+                } else {
+                    updated.status = 'IN_PROGRESS';
+                    updated.verificationStatus = payload.decision;
+                    updated.rejectionReason = payload.rejectionReason;
+                }
+                break;
         }
         return updated;
     }

@@ -62,18 +62,46 @@ CivIQ is designed to **coexist with** Indian public systems such as CPGRAMS, 112
 
 ## Repository map
 
-- `apps/web` — Next.js/React web/PWA
-- `apps/api` — Node.js/Express API
-- `apps/worker` — background jobs and queues
-- `services/ai` — Python/FastAPI AI service
-- `packages/db` — Prisma schema, migrations and seeds
-- `packages/contracts` — API/event contracts
-- `packages/auth` — shared auth/permission helpers
-- `packages/ui` — shared UI components
-- `packages/config` — typed environment/config
-- `packages/observability` — logs, metrics, tracing helpers
-- `docs` — product, architecture, security, AI, API, operations, research and phase specs
-- `tests` — end-to-end, integration and load suites
+- `frontend/` — Next.js/React web & PWA interface (JavaScript / JSX)
+- `backend/` — Node.js & Express.js REST API and background jobs (JavaScript / ESM)
+- `services/ai/` — Python & FastAPI AI microservice
+- `shared/` — Core reusable libraries:
+  - `shared/contracts/` — API contracts, taxonomy, schema validators
+  - `shared/auth/` — Shared RBAC authorization and permission policies
+  - `shared/db/` — Prisma ORM schema, client, and seeds
+  - `shared/observability/` — Structured logging and metrics
+- `docs/` — Product specifications, architecture, and phase execution docs
+
+## Quick Start (Developer Guide)
+
+### Prerequisites
+- Node.js >= 20.0.0
+- pnpm >= 10.12.4
+
+### 1. Install Dependencies
+```bash
+pnpm install
+```
+
+### 2. Run the Development Servers
+- **Run Backend only (port 8000):**
+  ```bash
+  pnpm dev:backend
+  ```
+- **Run Frontend only (port 3000):**
+  ```bash
+  pnpm dev:frontend
+  ```
+- **Run Both concurrently:**
+  ```bash
+  pnpm dev
+  ```
+
+### 3. Run Automated Tests
+```bash
+pnpm test
+```
+All unit and integration tests across `shared/`, `backend/`, and `frontend/` will execute.
 
 ## Non-negotiable product principles
 

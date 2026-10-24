@@ -1,176 +1,149 @@
-﻿import { Router, Request, Response, NextFunction } from 'express';
-import { aiAuditService } from './ai-audit.service';
-import { AiAuditOperation, AiHumanDecisionType } from './ai-audit.types';
-
+import { Router } from 'express';
+import { aiAuditService } from './ai-audit.service.js';
 export const aiAuditRouter = Router();
-
 /**
  * GET /ai-audit/admin/comparison
  * Admin view comparing AI recommendations against final human decisions.
  */
-aiAuditRouter.get(
-  '/admin/comparison',
-  async (req, res, next) => {
+aiAuditRouter.get('/admin/comparison', async (req, res, next) => {
     try {
-      const operation = req.query.operation  | undefined;
-      const humanDecision = req.query.humanDecision  | undefined;
-      const modelName = req.query.modelName  | undefined;
-      const startDate = req.query.startDate  | undefined;
-      const endDate = req.query.endDate  | undefined;
-      const limit = req.query.limit ? parseInt(req.query.limit , 10) : 50;
-      const offset = req.query.offset ? parseInt(req.query.offset , 10) : 0;
-
-      const summary = await aiAuditService.getAdminComparisonView({
-        operation,
-        humanDecision,
-        modelName,
-        startDate,
-        endDate,
-        limit,
-        offset,
-      });
-
-      res.status(200).json({
-        success: true,
-        data: summary,
-      });
-    } catch (err) {
-      next(err);
+        const operation = req.query.operation;
+        const humanDecision = req.query.humanDecision;
+        const modelName = req.query.modelName;
+        const startDate = req.query.startDate;
+        const endDate = req.query.endDate;
+        const limit = req.query.limit ? parseInt(req.query.limit, 10) : 50;
+        const offset = req.query.offset ? parseInt(req.query.offset, 10) : 0;
+        const summary = await aiAuditService.getAdminComparisonView({
+            operation,
+            humanDecision,
+            modelName,
+            startDate,
+            endDate,
+            limit,
+            offset,
+        });
+        res.status(200).json({
+            success: true,
+            data: summary,
+        });
     }
-  }
-);
-
+    catch (err) {
+        next(err);
+    }
+});
 /**
  * GET /ai-audit/records
  * Query AI audit records.
  */
-aiAuditRouter.get(
-  '/records',
-  async (req, res, next) => {
+aiAuditRouter.get('/records', async (req, res, next) => {
     try {
-      const operation = req.query.operation  | undefined;
-      const humanDecision = req.query.humanDecision  | undefined;
-      const modelName = req.query.modelName  | undefined;
-      const limit = req.query.limit ? parseInt(req.query.limit , 10) : 50;
-      const offset = req.query.offset ? parseInt(req.query.offset , 10) : 0;
-
-      const summary = await aiAuditService.getAdminComparisonView({
-        operation,
-        humanDecision,
-        modelName,
-        limit,
-        offset,
-      });
-
-      res.status(200).json({
-        success: true,
-        data: summary.records,
-        total: summary.totalInferences,
-      });
-    } catch (err) {
-      next(err);
+        const operation = req.query.operation;
+        const humanDecision = req.query.humanDecision;
+        const modelName = req.query.modelName;
+        const limit = req.query.limit ? parseInt(req.query.limit, 10) : 50;
+        const offset = req.query.offset ? parseInt(req.query.offset, 10) : 0;
+        const summary = await aiAuditService.getAdminComparisonView({
+            operation,
+            humanDecision,
+            modelName,
+            limit,
+            offset,
+        });
+        res.status(200).json({
+            success: true,
+            data: summary.records,
+            total: summary.totalInferences,
+        });
     }
-  }
-);
-
+    catch (err) {
+        next(err);
+    }
+});
 /**
  * GET /ai-audit/records/:id
  * Retrieve a specific AI audit record by ID.
  */
-aiAuditRouter.get(
-  '/records/:id',
-  async (req, res, next) => {
+aiAuditRouter.get('/records/:id', async (req, res, next) => {
     try {
-      const recordId = String(req.params.id);
-      const record = await aiAuditService.getRecordById(recordId);
-      if (!record) {
-        res.status(404).json({
-          success: false,
-          error: `AI audit record '${recordId}' not found.`,
+        const recordId = String(req.params.id);
+        const record = await aiAuditService.getRecordById(recordId);
+        if (!record) {
+            res.status(404).json({
+                success: false,
+                error: `AI audit record '${recordId}' not found.`,
+            });
+            return;
+        }
+        res.status(200).json({
+            success: true,
+            data: record,
         });
-        return;
-      }
-
-      res.status(200).json({
-        success: true,
-        data: record,
-      });
-    } catch (err) {
-      next(err);
     }
-  }
-);
-
+    catch (err) {
+        next(err);
+    }
+});
 /**
  * POST /ai-audit/records/:id/decision
  * Record human review decision for an AI inference.
  */
-aiAuditRouter.post(
-  '/records/:id/decision',
-  async (req, res, next) => {
+aiAuditRouter.post('/records/:id/decision', async (req, res, next) => {
     try {
-      const recordId = String(req.params.id);
-      const { decision, reviewerId, notes, overrideReason, finalOutcome } = req.body;
-
-      if (!decision || !reviewerId) {
-        res.status(400).json({
-          success: false,
-          error: 'Fields decision and reviewerId are required.',
+        const recordId = String(req.params.id);
+        const { decision, reviewerId, notes, overrideReason, finalOutcome } = req.body;
+        if (!decision || !reviewerId) {
+            res.status(400).json({
+                success: false,
+                error: 'Fields decision and reviewerId are required.',
+            });
+            return;
+        }
+        const updated = await aiAuditService.recordHumanDecision({
+            auditRecordId: recordId,
+            decision,
+            reviewerId,
+            notes,
+            overrideReason,
+            finalOutcome,
         });
-        return;
-      }
-
-      const updated = await aiAuditService.recordHumanDecision({
-        auditRecordId: recordId,
-        decision,
-        reviewerId,
-        notes,
-        overrideReason,
-        finalOutcome,
-      });
-
-      if (!updated) {
-        res.status(404).json({
-          success: false,
-          error: `AI audit record '${recordId}' not found.`,
+        if (!updated) {
+            res.status(404).json({
+                success: false,
+                error: `AI audit record '${recordId}' not found.`,
+            });
+            return;
+        }
+        res.status(200).json({
+            success: true,
+            data: updated,
         });
-        return;
-      }
-
-      res.status(200).json({
-        success: true,
-        data: updated,
-      });
-    } catch (err) {
-      next(err);
     }
-  }
-);
-
+    catch (err) {
+        next(err);
+    }
+});
 /**
  * GET /ai-audit/records/:id/evaluation
  * Retrieve evaluation metrics comparing AI recommendation vs final decision.
  */
-aiAuditRouter.get(
-  '/records/:id/evaluation',
-  async (req, res, next) => {
+aiAuditRouter.get('/records/:id/evaluation', async (req, res, next) => {
     try {
-      const recordId = String(req.params.id);
-      const evalRecord = await aiAuditService.createEvaluationRecord(recordId);
-      if (!evalRecord) {
-        res.status(404).json({
-          success: false,
-          error: `AI audit record '${recordId}' not found.`,
+        const recordId = String(req.params.id);
+        const evalRecord = await aiAuditService.createEvaluationRecord(recordId);
+        if (!evalRecord) {
+            res.status(404).json({
+                success: false,
+                error: `AI audit record '${recordId}' not found.`,
+            });
+            return;
+        }
+        res.status(200).json({
+            success: true,
+            data: evalRecord,
         });
-        return;
-      }
-
-      res.status(200).json({
-        success: true,
-        data: evalRecord,
-      });
-    } catch (err) {
-      next(err);
     }
-  }
-);
+    catch (err) {
+        next(err);
+    }
+});

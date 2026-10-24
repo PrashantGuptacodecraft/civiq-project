@@ -1,5 +1,4 @@
-﻿export { VerificationConsole } from './verification-console';
-export { IssueDetailPanel } from './issue-detail-panel';
-export { StatusBadge, SeverityBadge, TrustBadge, SkeletonCard, EmptyState, ErrorState } from './ui';
-export { MOCK_ISSUES } from './mock-data';
- from './mock-data';
+export { VerificationConsole } from './verification-console.jsx';
+export { IssueDetailPanel } from './issue-detail-panel.jsx';
+export { StatusBadge, SeverityBadge, TrustBadge, SkeletonCard, EmptyState, ErrorState } from './ui.jsx';
+export { MOCK_ISSUES } from './mock-data.js';

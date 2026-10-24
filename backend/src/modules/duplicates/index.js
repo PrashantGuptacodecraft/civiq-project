@@ -1,2 +1,2 @@
-﻿export * from './duplicate.service';
-export * from './duplicate.store';
+export * from './duplicate.service.js';
+export * from './duplicate.store.js';

@@ -1,143 +1,94 @@
-﻿'use client';
-
+'use client';
 import React, { useState, useEffect, useCallback } from 'react';
-import { FieldTask, FieldWorkerProfile } from './types';
-import { CURRENT_FIELD_WORKER, MOCK_FIELD_TASKS } from './mock-tasks';
-import { mutationQueue } from './mutations';
-import { OfflineBanner } from './offline-banner';
-import { InstallPrompt } from './install-prompt';
-import { TaskList } from './task-list';
-import { TaskDetail } from './task-detail';
-
-interface FieldWorkerConsoleProps {
-  initialTasks?;
-  initialWorker?;
-}
-
-export function FieldWorkerConsole({
-  initialTasks,
-  initialWorker = CURRENT_FIELD_WORKER,
-}) {
-  const [worker, setWorker] = useState<FieldWorkerProfile>(initialWorker);
-  const [tasks, setTasks] = useState<FieldTask[]>(initialTasks || MOCK_FIELD_TASKS);
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [isOffline, setIsOffline] = useState(false);
-  const [queuedCount, setQueuedCount] = useState(0);
-  const [isSyncing, setIsSyncing] = useState(false);
-
-  // Monitor network connectivity & mutation queue
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setIsOffline(!window.navigator.onLine);
-
-      const handleOnline = () => {
-        setIsOffline(false);
-        handleManualSync();
-      };
-      const handleOffline = () => setIsOffline(true);
-
-      window.addEventListener('online', handleOnline);
-      window.addEventListener('offline', handleOffline);
-
-      setQueuedCount(mutationQueue.getQueue().length);
-
-      return () => {
-        window.removeEventListener('online', handleOnline);
-        window.removeEventListener('offline', handleOffline);
-      };
-    }
-  }, []);
-
-  const handleManualSync = useCallback(async () => {
-    setIsSyncing(true);
-    try {
-      await mutationQueue.syncQueue(async (mutation) => {
-        // Simulated network dispatch for queued item
-        await new Promise((resolve) => setTimeout(resolve, 300));
-        return true;
-      });
-      setQueuedCount(mutationQueue.getQueue().length);
-    } finally {
-      setIsSyncing(false);
-    }
-  }, []);
-
-  // Filter tasks restricted to worker's assigned jurisdiction / tasks
-  const authorizedTasks = tasks.filter(
-    (t) =>
-      t.jurisdictionId === worker.jurisdictionId ||
-      t.assignedWorkerId === worker.id
-  );
-
-  const selectedTask = tasks.find((t) => t.id === selectedTaskId);
-
-  // Mutation Handlers (Retry-Safe with Optimistic Updates)
-  const handleStartProgress = async (taskId) => {
-    // 1. Optimistic update
-    setTasks((prev) =>
-      prev.map((t) =>
-        t.id === taskId
-          ? mutationQueue.applyOptimisticUpdate(t, 'START_PROGRESS', {})
-          : t
-      )
-    );
-
-    // 2. Queue mutation
-    mutationQueue.enqueue(taskId, 'START_PROGRESS', { status: 'IN_PROGRESS' });
-    setQueuedCount(mutationQueue.getQueue().length);
-
-    // 3. If online, trigger sync
-    if (!isOffline) {
-      await handleManualSync();
-    }
-  };
-
-  const handleUpdateNotes = async (taskId, notes) => {
-    setTasks((prev) =>
-      prev.map((t) =>
-        t.id === taskId
-          ? mutationQueue.applyOptimisticUpdate(t, 'UPDATE_NOTES', { notes })
-          : t
-      )
-    );
-
-    mutationQueue.enqueue(taskId, 'UPDATE_NOTES', { notes });
-    setQueuedCount(mutationQueue.getQueue().length);
-
-    if (!isOffline) {
-      await handleManualSync();
-    }
-  };
-
-  const handleResolveTask = async (taskId, resolutionNotes) => {
-    setTasks((prev) =>
-      prev.map((t) =>
-        t.id === taskId
-          ? mutationQueue.applyOptimisticUpdate(t, 'RESOLVE_TASK', { resolutionNotes })
-          : t
-      )
-    );
-
-    mutationQueue.enqueue(taskId, 'RESOLVE_TASK', {
-      status: 'RESOLVED',
-      resolutionNotes,
-    });
-    setQueuedCount(mutationQueue.getQueue().length);
-
-    if (!isOffline) {
-      await handleManualSync();
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-surface-secondary text-text-primary flex flex-col">
+import { CURRENT_FIELD_WORKER, MOCK_FIELD_TASKS } from './mock-tasks.js';
+import { mutationQueue } from './mutations.js';
+import { OfflineBanner } from './offline-banner.jsx';
+import { InstallPrompt } from './install-prompt.jsx';
+import { TaskList } from './task-list.jsx';
+import { TaskDetail } from './task-detail.jsx';
+export function FieldWorkerConsole({ initialTasks, initialWorker = CURRENT_FIELD_WORKER, }) {
+    const [worker, setWorker] = useState(initialWorker);
+    const [tasks, setTasks] = useState(initialTasks || MOCK_FIELD_TASKS);
+    const [selectedTaskId, setSelectedTaskId] = useState(null);
+    const [isOffline, setIsOffline] = useState(false);
+    const [queuedCount, setQueuedCount] = useState(0);
+    const [isSyncing, setIsSyncing] = useState(false);
+    // Monitor network connectivity & mutation queue
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setIsOffline(!window.navigator.onLine);
+            const handleOnline = () => {
+                setIsOffline(false);
+                handleManualSync();
+            };
+            const handleOffline = () => setIsOffline(true);
+            window.addEventListener('online', handleOnline);
+            window.addEventListener('offline', handleOffline);
+            setQueuedCount(mutationQueue.getQueue().length);
+            return () => {
+                window.removeEventListener('online', handleOnline);
+                window.removeEventListener('offline', handleOffline);
+            };
+        }
+    }, []);
+    const handleManualSync = useCallback(async () => {
+        setIsSyncing(true);
+        try {
+            await mutationQueue.syncQueue(async (mutation) => {
+                // Simulated network dispatch for queued item
+                await new Promise((resolve) => setTimeout(resolve, 300));
+                return true;
+            });
+            setQueuedCount(mutationQueue.getQueue().length);
+        }
+        finally {
+            setIsSyncing(false);
+        }
+    }, []);
+    // Filter tasks restricted to worker's assigned jurisdiction / tasks
+    const authorizedTasks = tasks.filter((t) => t.jurisdictionId === worker.jurisdictionId ||
+        t.assignedWorkerId === worker.id);
+    const selectedTask = tasks.find((t) => t.id === selectedTaskId);
+    // Mutation Handlers (Retry-Safe with Optimistic Updates)
+    const handleStartProgress = async (taskId) => {
+        // 1. Optimistic update
+        setTasks((prev) => prev.map((t) => t.id === taskId
+            ? mutationQueue.applyOptimisticUpdate(t, 'START_PROGRESS', {})
+            : t));
+        // 2. Queue mutation
+        mutationQueue.enqueue(taskId, 'START_PROGRESS', { status: 'IN_PROGRESS' });
+        setQueuedCount(mutationQueue.getQueue().length);
+        // 3. If online, trigger sync
+        if (!isOffline) {
+            await handleManualSync();
+        }
+    };
+    const handleUpdateNotes = async (taskId, notes) => {
+        setTasks((prev) => prev.map((t) => t.id === taskId
+            ? mutationQueue.applyOptimisticUpdate(t, 'UPDATE_NOTES', { notes })
+            : t));
+        mutationQueue.enqueue(taskId, 'UPDATE_NOTES', { notes });
+        setQueuedCount(mutationQueue.getQueue().length);
+        if (!isOffline) {
+            await handleManualSync();
+        }
+    };
+    const handleResolveTask = async (taskId, resolutionNotes) => {
+        setTasks((prev) => prev.map((t) => t.id === taskId
+            ? mutationQueue.applyOptimisticUpdate(t, 'RESOLVE_TASK', { resolutionNotes })
+            : t));
+        mutationQueue.enqueue(taskId, 'RESOLVE_TASK', {
+            status: 'RESOLVED',
+            resolutionNotes,
+        });
+        setQueuedCount(mutationQueue.getQueue().length);
+        if (!isOffline) {
+            await handleManualSync();
+        }
+    };
+    return (<div className="min-h-screen bg-surface-secondary text-text-primary flex flex-col">
       {/* Offline Status & Sync Banner */}
-      <OfflineBanner
-        isOffline={isOffline}
-        queuedCount={queuedCount}
-        isSyncing={isSyncing}
-        onManualSync={handleManualSync}
-      />
+      <OfflineBanner isOffline={isOffline} queuedCount={queuedCount} isSyncing={isSyncing} onManualSync={handleManualSync}/>
 
       {/* PWA Homescreen Install Prompt */}
       <InstallPrompt />
@@ -169,23 +120,7 @@ export function FieldWorkerConsole({
 
       {/* Main Content Area */}
       <div className="flex-1 max-w-xl w-full mx-auto">
-        {selectedTask ? (
-          <TaskDetail
-            task={selectedTask}
-            currentWorker={worker}
-            onBack={() => setSelectedTaskId(null)}
-            onStartProgress={handleStartProgress}
-            onUpdateNotes={handleUpdateNotes}
-            onResolveTask={handleResolveTask}
-          />
-        ) : (
-          <TaskList
-            tasks={authorizedTasks}
-            selectedTaskId={selectedTaskId ?? undefined}
-            onSelectTask={(id) => setSelectedTaskId(id)}
-          />
-        )}
+        {selectedTask ? (<TaskDetail task={selectedTask} currentWorker={worker} onBack={() => setSelectedTaskId(null)} onStartProgress={handleStartProgress} onUpdateNotes={handleUpdateNotes} onResolveTask={handleResolveTask}/>) : (<TaskList tasks={authorizedTasks} selectedTaskId={selectedTaskId ?? undefined} onSelectTask={(id) => setSelectedTaskId(id)}/>)}
       </div>
-    </div>
-  );
+    </div>);
 }

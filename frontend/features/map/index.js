@@ -1,3 +1,3 @@
-﻿export * from './types';
-export * from './map-view';
-export * from './map-point-picker';
+export * from './types.js';
+export * from './map-view.jsx';
+export * from './map-point-picker.jsx';

@@ -1,1 +1,1 @@
-﻿export * from './priority.service';
+export * from './priority.service.js';

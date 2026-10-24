@@ -7,21 +7,12 @@
     "pnpm": ">=10.12.4"
   },
   "scripts": {
-    "dev": "pnpm -r --if-present dev",
-    "build": "pnpm -r --if-present build",
-    "lint": "pnpm -r --if-present lint",
-    "typecheck": "pnpm -r --if-present typecheck",
+    "dev": "pnpm -r --parallel --if-present dev",
+    "dev:backend": "pnpm --filter @civiq/backend dev",
+    "dev:frontend": "pnpm --filter @civiq/frontend dev",
     "test": "pnpm -r --if-present test",
-    "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
-    "prepare": "husky"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md,yml,yaml}": [
-      "prettier --write"
-    ]
+    "test:backend": "pnpm --filter @civiq/backend test",
+    "test:frontend": "pnpm --filter @civiq/frontend test",
+    "build": "pnpm -r --if-present build"
   }
 }

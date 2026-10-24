@@ -1,121 +1,97 @@
-﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { IntegrationService } from './integration.service';
-import { prisma } from '@civiq/shared-db';
-import { IntegrationAdapter, SyncResult } from '@civiq/shared-contracts';
-
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { IntegrationService } from './integration.service.js';
+import { prisma } from '@civiq/db';
 vi.mock('@civiq/db', () => ({
-  prisma: {
-    integrationSource: {
-      findFirst: vi.fn(),
-      findUniqueOrThrow: vi.fn(),
-      update: vi.fn(),
-      create: vi.fn(),
+    prisma: {
+        integrationSource: {
+            findFirst: vi.fn(),
+            findUniqueOrThrow: vi.fn(),
+            update: vi.fn(),
+            create: vi.fn(),
+        },
+        externalReference: {
+            upsert: vi.fn(),
+        },
     },
-    externalReference: {
-      upsert: vi.fn(),
+    IntegrationType: {
+        GOVERNMENT_API: 'GOVERNMENT_API',
+        SENSOR_NETWORK: 'SENSOR_NETWORK'
     },
-  },
-  IntegrationType: {
-    GOVERNMENT_API: 'GOVERNMENT_API',
-    SENSOR_NETWORK: 'SENSOR_NETWORK'
-  },
-  Prisma: {
-    DbNull: 'DbNull'
-  }
+    Prisma: {
+        DbNull: 'DbNull'
+    }
 }));
-
 // Dummy adapter for testing
 class MockAdapter {
-  providerName = 'test-provider';
-  async sync(cursor?) {
-    return { success: true, recordsProcessed: 10, newCursor: 'cursor-10' };
-  }
-  async verify(externalId) {
-    return true;
-  }
+    providerName = 'test-provider';
+    async sync(cursor) {
+        return { success: true, recordsProcessed: 10, newCursor: 'cursor-10' };
+    }
+    async verify(externalId) {
+        return true;
+    }
 }
-
 describe('IntegrationService', () => {
-  const service = new IntegrationService();
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('should register a new integration source', async () => {
-    vi.mocked(prisma.integrationSource.findFirst).mockResolvedValue(null);
-    vi.mocked(prisma.integrationSource.create).mockResolvedValue({ id: 'src-1' } );
-
-    const source = await service.registerSource('LGD', 'GOVERNMENT_API' , 90);
-    
-    expect(prisma.integrationSource.create).toHaveBeenCalledWith({
-      data: { name: 'LGD', type: 'GOVERNMENT_API', confidence: 90 }
+    const service = new IntegrationService();
+    beforeEach(() => {
+        vi.clearAllMocks();
     });
-    expect(source.id).toBe('src-1');
-  });
-
-  it('should execute sync and update cursor successfully', async () => {
-    const mockSource = { id: 'src-1', syncCursor: 'cursor-0' };
-    vi.mocked(prisma.integrationSource.findUniqueOrThrow).mockResolvedValue(mockSource );
-    vi.mocked(prisma.integrationSource.update).mockResolvedValue({} );
-
-    const adapter = new MockAdapter();
-    const result = await service.executeSync('src-1', adapter);
-
-    expect(result.success).toBe(true);
-    expect(prisma.integrationSource.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: 'src-1' },
-        data: expect.objectContaining({
-          syncCursor: 'cursor-10',
-          errorState: 'DbNull'
-        })
-      })
-    );
-  });
-
-  it('should record failure state when adapter throws', async () => {
-    const mockSource = { id: 'src-2' };
-    vi.mocked(prisma.integrationSource.findUniqueOrThrow).mockResolvedValue(mockSource );
-
-    const failingAdapter = {
-      providerName: 'fail-provider',
-      sync: async () => { throw new Error('API Timeout'); },
-      verify: async () => false,
-    };
-
-    const result = await service.executeSync('src-2', failingAdapter);
-
-    expect(result.success).toBe(false);
-    expect(result.errorDetails?.message).toBe('API Timeout');
-    expect(prisma.integrationSource.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          errorState: expect.objectContaining({ message: 'API Timeout' })
-        })
-      })
-    );
-  });
-
-  it('should create an external reference (provenance)', async () => {
-    vi.mocked(prisma.externalReference.upsert).mockResolvedValue({ id: 'ext-1' } );
-
-    await service.linkExternalRecord('src-1', 'Issue', 'local-issue-1', 'ext-issue-99', { agency: 'PMC' });
-
-    expect(prisma.externalReference.upsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: {
-          integrationId_objectType_externalId: {
-            integrationId: 'src-1',
-            objectType: 'Issue',
-            externalId: 'ext-issue-99'
-          }
-        },
-        create: expect.objectContaining({
-          objectId: 'local-issue-1',
-          metadata: { agency: 'PMC' }
-        })
-      })
-    );
-  });
+    it('should register a new integration source', async () => {
+        vi.mocked(prisma.integrationSource.findFirst).mockResolvedValue(null);
+        vi.mocked(prisma.integrationSource.create).mockResolvedValue({ id: 'src-1' });
+        const source = await service.registerSource('LGD', 'GOVERNMENT_API', 90);
+        expect(prisma.integrationSource.create).toHaveBeenCalledWith({
+            data: { name: 'LGD', type: 'GOVERNMENT_API', confidence: 90 }
+        });
+        expect(source.id).toBe('src-1');
+    });
+    it('should execute sync and update cursor successfully', async () => {
+        const mockSource = { id: 'src-1', syncCursor: 'cursor-0' };
+        vi.mocked(prisma.integrationSource.findUniqueOrThrow).mockResolvedValue(mockSource);
+        vi.mocked(prisma.integrationSource.update).mockResolvedValue({});
+        const adapter = new MockAdapter();
+        const result = await service.executeSync('src-1', adapter);
+        expect(result.success).toBe(true);
+        expect(prisma.integrationSource.update).toHaveBeenCalledWith(expect.objectContaining({
+            where: { id: 'src-1' },
+            data: expect.objectContaining({
+                syncCursor: 'cursor-10',
+                errorState: 'DbNull'
+            })
+        }));
+    });
+    it('should record failure state when adapter throws', async () => {
+        const mockSource = { id: 'src-2' };
+        vi.mocked(prisma.integrationSource.findUniqueOrThrow).mockResolvedValue(mockSource);
+        const failingAdapter = {
+            providerName: 'fail-provider',
+            sync: async () => { throw new Error('API Timeout'); },
+            verify: async () => false,
+        };
+        const result = await service.executeSync('src-2', failingAdapter);
+        expect(result.success).toBe(false);
+        expect(result.errorDetails?.message).toBe('API Timeout');
+        expect(prisma.integrationSource.update).toHaveBeenCalledWith(expect.objectContaining({
+            data: expect.objectContaining({
+                errorState: expect.objectContaining({ message: 'API Timeout' })
+            })
+        }));
+    });
+    it('should create an external reference (provenance)', async () => {
+        vi.mocked(prisma.externalReference.upsert).mockResolvedValue({ id: 'ext-1' });
+        await service.linkExternalRecord('src-1', 'Issue', 'local-issue-1', 'ext-issue-99', { agency: 'PMC' });
+        expect(prisma.externalReference.upsert).toHaveBeenCalledWith(expect.objectContaining({
+            where: {
+                integrationId_objectType_externalId: {
+                    integrationId: 'src-1',
+                    objectType: 'Issue',
+                    externalId: 'ext-issue-99'
+                }
+            },
+            create: expect.objectContaining({
+                objectId: 'local-issue-1',
+                metadata: { agency: 'PMC' }
+            })
+        }));
+    });
 });

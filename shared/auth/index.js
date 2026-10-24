@@ -1,2 +1,2 @@
-﻿export * from './rbac';
-export * from './authz';
+export * from './rbac.js';
+export * from './authz.js';

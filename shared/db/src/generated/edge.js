@@ -632,7 +632,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\prashant gupta\\OneDrive\\Desktop\\Project\\civiq-project\\packages\\db\\src\\generated",
+      "value": "C:\\Users\\prashant gupta\\OneDrive\\Desktop\\Project\\civiq-project\\shared\\db\\src\\generated",
       "fromEnvVar": null
     },
     "config": {
@@ -646,7 +646,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\prashant gupta\\OneDrive\\Desktop\\Project\\civiq-project\\packages\\db\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\prashant gupta\\OneDrive\\Desktop\\Project\\civiq-project\\shared\\db\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

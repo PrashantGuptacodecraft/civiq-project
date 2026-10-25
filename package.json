@@ -22,5 +22,11 @@
     "test:backend": "npm --workspace=@civiq/backend run test",
     "test:frontend": "npm --workspace=@civiq/frontend run test",
     "build": "npm run build --workspaces --if-present"
+  },
+  "optionalDependencies": {
+    "@img/sharp-linux-x64": "^0.35.5",
+    "@next/swc-linux-x64-gnu": "^16.4.3",
+    "@rolldown/binding-linux-x64-gnu": "^1.2.15",
+    "lightningcss-linux-x64-gnu": "^1.33.0"
   }
 }

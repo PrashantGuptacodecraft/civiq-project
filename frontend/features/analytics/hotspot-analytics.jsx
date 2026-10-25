@@ -4,9 +4,14 @@ import { MOCK_HOTSPOTS } from './mock-hotspot-data.js';
 import { HotspotCard } from './hotspot-card.jsx';
 import { HotspotDetailDrawer } from './hotspot-detail-drawer.jsx';
 import { HotspotTrendView } from './hotspot-trend-view.jsx';
+import { RecurrenceView } from './recurrence-view.jsx';
+import { MOCK_RECURRENCE_CANDIDATES } from './mock-recurrence-data.js';
 import { ANALYTICAL_DISCLAIMER, CATEGORY_LABELS } from './types.js';
 
-export function HotspotAnalytics({ initialHotspots = MOCK_HOTSPOTS }) {
+export function HotspotAnalytics({
+  initialHotspots = MOCK_HOTSPOTS,
+  initialRecurrenceCandidates = MOCK_RECURRENCE_CANDIDATES,
+}) {
   const [hotspots] = useState(initialHotspots);
   const [selectedHotspot, setSelectedHotspot] = useState(null);
   const [activeTab, setActiveTab] = useState('CLUSTERS'); // 'CLUSTERS' | 'TRENDS'
@@ -99,6 +104,17 @@ export function HotspotAnalytics({ initialHotspots = MOCK_HOTSPOTS }) {
             }`}
           >
             Trends & Dynamics
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('RECURRENCE')}
+            className={`px-4 py-2 text-xs font-bold rounded-lg transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+              activeTab === 'RECURRENCE'
+                ? 'bg-surface-primary text-text-primary shadow-sm'
+                : 'text-text-secondary hover:text-text-primary'
+            }`}
+          >
+            Recurring Assets ({initialRecurrenceCandidates.length})
           </button>
         </div>
       </div>
@@ -242,11 +258,13 @@ export function HotspotAnalytics({ initialHotspots = MOCK_HOTSPOTS }) {
             ))}
           </div>
         )
-      ) : (
+      ) : activeTab === 'TRENDS' ? (
         <HotspotTrendView
           hotspots={filteredHotspots}
           onSelectHotspot={(h) => setSelectedHotspot(h)}
         />
+      ) : (
+        <RecurrenceView candidates={initialRecurrenceCandidates} />
       )}
 
       {/* Drill-down Drawer */}

@@ -9,7 +9,7 @@ import { aiAuditRouter } from './modules/ai-audit/ai-audit.router.js';
 import { fieldVerificationRouter } from './modules/field-verification/field-verification.router.js';
 import { feedbackRouter } from './modules/feedback/feedback.router.js';
 import { dashboardRouter } from './modules/dashboard/dashboard.router.js';
-import { hotspotRouter } from './modules/analytics/hotspots/hotspot.router.js';
+import { analyticsRouter } from './modules/analytics/analytics.router.js';
 
 export function createApp() {
   const app = express();
@@ -30,7 +30,7 @@ export function createApp() {
   app.use('/field-verification', fieldVerificationRouter);
   app.use('/feedback', feedbackRouter);
   app.use('/dashboard', dashboardRouter);
-  app.use('/analytics', hotspotRouter);
+  app.use('/analytics', analyticsRouter);
 
   // Global Error Handler
   app.use((err, req, res, next) => {

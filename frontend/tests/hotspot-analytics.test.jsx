@@ -12,8 +12,11 @@ import {
   HotspotCard,
   HotspotDetailDrawer,
   HotspotTrendView,
+  RecurrenceView,
   MOCK_HOTSPOTS,
+  MOCK_RECURRENCE_CANDIDATES,
   ANALYTICAL_DISCLAIMER,
+  RECURRENCE_DISCLAIMER,
 } from '../features/analytics/index.js';
 
 describe('Phase 46: Hotspot Analytics Frontend Components', () => {
@@ -100,6 +103,31 @@ describe('Phase 46: Hotspot Analytics Frontend Components', () => {
 
       // Emerging item
       expect(html).toContain('+66.7%');
+    });
+  });
+
+  describe('RecurrenceView Component (Phase 47)', () => {
+    it('renders recurring failure candidates, asset details, and actionable recommendations', () => {
+      const html = renderToStaticMarkup(
+        <RecurrenceView candidates={MOCK_RECURRENCE_CANDIDATES} />
+      );
+
+      // Asset tags & Names
+      expect(html).toContain('AST-RD-104');
+      expect(html).toContain('FC Road Carriageway Km 2.4-2.8');
+      expect(html).toContain('AST-EL-402');
+      expect(html).toContain('Distribution Transformer TR-402');
+
+      // Urgency badge
+      expect(html).toContain('URGENT MAINTENANCE');
+
+      // Recommendations
+      expect(html).toContain('Actionable Maintenance Recommendation');
+      expect(html).toContain('Subsurface structural investigation recommended');
+
+      // Mandatory analytical disclaimer
+      expect(html).toContain('Recurrence Pattern Analysis • Engineering Verification Required');
+      expect(html).toContain(RECURRENCE_DISCLAIMER);
     });
   });
 

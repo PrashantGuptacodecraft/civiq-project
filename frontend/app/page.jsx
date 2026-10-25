@@ -32,13 +32,13 @@ export default function HomePage() {
             Report an Issue
           </Link>
           
-          {/* Secondary Action (Placeholder for Future Phase) */}
-          <button disabled title="Feature in development" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-surface-primary text-text-primary border border-border-primary rounded-md h-12 px-8 font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary disabled:opacity-50 disabled:cursor-not-allowed hover:bg-surface-secondary">
-            Official Sign In
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
+          {/* Operational Map Action */}
+          <Link href="/map" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-surface-primary text-text-primary border border-border-primary rounded-md h-12 px-8 font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary hover:bg-surface-secondary shadow-sm">
+            <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
             </svg>
-          </button>
+            Operational Map
+          </Link>
         </div>
       </section>
 

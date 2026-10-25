@@ -44,7 +44,104 @@ export async function authenticateUser(req, res, next) {
     req.user = session.user;
     next();
 }
+
+/**
+ * Optional authentication middleware for public endpoints with role-based features.
+ * Populates req.user if valid bearer token is provided, otherwise leaves req.user = null.
+ */
+export async function optionalAuthenticateUser(req, res, next) {
+    const authHeader = req.headers.authorization;
+    let token;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7).trim();
+    } else if (typeof req.headers['x-session-token'] === 'string') {
+        token = req.headers['x-session-token'].trim();
+    }
+
+    if (!token) {
+        req.user = null;
+        return next();
+    }
+
+    try {
+        const tokenHash = createHash('sha256').update(token).digest('hex');
+        const session = await prisma.session.findUnique({
+            where: { tokenHash },
+            include: { user: true },
+        });
+
+        if (session && !session.isRevoked && session.expiresAt > new Date() && session.user.status === 'ACTIVE') {
+            req.user = session.user;
+        } else {
+            req.user = null;
+        }
+    } catch {
+        req.user = null;
+    }
+    next();
+}
+
 export const issueRouter = Router();
+
+/**
+ * GET /issues/operational-map
+ * Fetch clustered, filtered, and paginated issues for the operational map.
+ * Enforces privacy redaction of exact evidence and citizen PII for public viewers.
+ */
+issueRouter.get('/operational-map', optionalAuthenticateUser, async (req, res) => {
+    try {
+        const {
+            status,
+            severity,
+            priority,
+            department,
+            verificationStatus,
+            jurisdictionId,
+            minLat,
+            maxLat,
+            minLng,
+            maxLng,
+            cluster,
+            clusterGridSize,
+            page,
+            limit,
+        } = req.query;
+
+        let bbox = null;
+        if (minLat && maxLat && minLng && maxLng) {
+            bbox = {
+                minLat: parseFloat(minLat),
+                maxLat: parseFloat(maxLat),
+                minLng: parseFloat(minLng),
+                maxLng: parseFloat(maxLng),
+            };
+        }
+
+        const result = await issueService.getOperationalMap({
+            status: typeof status === 'string' ? status : undefined,
+            severity: typeof (severity || priority) === 'string' ? (severity || priority) : undefined,
+            department: typeof department === 'string' ? department : undefined,
+            verificationStatus: typeof verificationStatus === 'string' ? verificationStatus : undefined,
+            jurisdictionId: typeof jurisdictionId === 'string' ? jurisdictionId : undefined,
+            bbox,
+            cluster: cluster !== 'false',
+            clusterGridSize: clusterGridSize ? parseFloat(clusterGridSize) : undefined,
+            page: page ? parseInt(page, 10) : 1,
+            limit: limit ? parseInt(limit, 10) : 50,
+            user: req.user,
+        });
+
+        res.status(200).json({
+            success: true,
+            data: result,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Failed to fetch operational map data.',
+        });
+    }
+});
 /**
  * POST /issues
  * Create a new civic issue. Requires authenticated user.

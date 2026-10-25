@@ -238,5 +238,245 @@ export class IssueService {
             orderBy: { createdAt: 'desc' },
         });
     }
+
+    /**
+     * Get operational map data with status/priority/department/verification filters,
+     * clustering, pagination, and role-based privacy protection.
+     */
+    async getOperationalMap(params = {}) {
+        const {
+            status,
+            severity,
+            department,
+            verificationStatus,
+            jurisdictionId,
+            bbox,
+            cluster = true,
+            clusterGridSize = 0.02,
+            page = 1,
+            limit = 50,
+            user = null,
+        } = params;
+
+        // Determine if requesting principal is an authorized official
+        const isAuthorizedOfficial = Boolean(
+            user &&
+            user.role &&
+            user.role !== 'CITIZEN' &&
+            user.status === 'ACTIVE'
+        );
+
+        const where = { deletedAt: null };
+
+        // Require non-null coordinates for operational map
+        where.latitude = { not: null };
+        where.longitude = { not: null };
+
+        if (status) {
+            where.status = Array.isArray(status) ? { in: status } : status;
+        }
+        if (severity) {
+            where.severity = Array.isArray(severity) ? { in: severity } : severity;
+        }
+        if (verificationStatus) {
+            where.verificationStatus = Array.isArray(verificationStatus)
+                ? { in: verificationStatus }
+                : verificationStatus;
+        }
+        if (jurisdictionId) {
+            where.jurisdictionId = jurisdictionId;
+        }
+        if (bbox && typeof bbox.minLat === 'number') {
+            where.latitude = {
+                gte: bbox.minLat,
+                lte: bbox.maxLat,
+            };
+            where.longitude = {
+                gte: bbox.minLng,
+                lte: bbox.maxLng,
+            };
+        }
+
+        // Fetch issues with evidence and reporter details
+        const allMatchingIssues = await prisma.issue.findMany({
+            where,
+            include: {
+                evidence: true,
+                jurisdiction: true,
+                reportedBy: {
+                    select: {
+                        id: true,
+                        email: isAuthorizedOfficial,
+                        phone: isAuthorizedOfficial,
+                        role: true,
+                        status: true,
+                    },
+                },
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+
+        // Filter by department if specified
+        let filteredIssues = allMatchingIssues;
+        if (department && department !== 'ALL') {
+            filteredIssues = allMatchingIssues.filter((issue) => {
+                const cat = getTaxonomyCategory(issue.categoryId);
+                const deptName = cat?.defaultDepartment || 'General Administration';
+                return deptName.toLowerCase().includes(department.toLowerCase());
+            });
+        }
+
+        // Apply privacy enforcement
+        const sanitizedIssues = filteredIssues.map((issue) => {
+            const cat = getTaxonomyCategory(issue.categoryId);
+            const resolvedDepartment = cat?.defaultDepartment || 'General Administration';
+
+            if (isAuthorizedOfficial) {
+                return {
+                    ...issue,
+                    department: resolvedDepartment,
+                    isRedacted: false,
+                };
+            }
+
+            // Public View: Redact exact evidence & PII
+            return {
+                id: issue.id,
+                title: issue.title,
+                description: issue.description,
+                status: issue.status,
+                severity: issue.severity,
+                verificationStatus: issue.verificationStatus,
+                latitude: issue.latitude,
+                longitude: issue.longitude,
+                address: issue.address,
+                categoryId: issue.categoryId,
+                jurisdictionId: issue.jurisdictionId,
+                department: resolvedDepartment,
+                createdAt: issue.createdAt,
+                updatedAt: issue.updatedAt,
+                isRedacted: true,
+                evidenceCount: issue.evidence?.length || 0,
+                evidence: (issue.evidence || []).map((e) => ({
+                    id: e.id,
+                    mimeType: e.mimeType,
+                    sizeBytes: e.sizeBytes,
+                    isRedacted: true,
+                })),
+                reportedBy: {
+                    id: issue.reportedBy?.id,
+                    role: issue.reportedBy?.role || 'CITIZEN',
+                },
+            };
+        });
+
+        // Pagination
+        const total = sanitizedIssues.length;
+        const totalPages = Math.max(1, Math.ceil(total / limit));
+        const currentPage = Math.max(1, Math.min(page, totalPages));
+        const startIndex = (currentPage - 1) * limit;
+        const paginatedItems = sanitizedIssues.slice(startIndex, startIndex + limit);
+
+        // Clustering calculation
+        let clusters = [];
+        if (cluster && sanitizedIssues.length > 0) {
+            clusters = calculateClusters(sanitizedIssues, clusterGridSize);
+        }
+
+        return {
+            items: paginatedItems,
+            clusters,
+            total,
+            page: currentPage,
+            limit,
+            totalPages,
+            isPublicView: !isAuthorizedOfficial,
+            isAuthorizedOfficial,
+        };
+    }
+}
+
+/**
+ * Grid-based spatial clustering algorithm for operational map points.
+ */
+export function calculateClusters(items, gridSize = 0.02) {
+    const grid = new Map();
+
+    for (const item of items) {
+        if (typeof item.latitude !== 'number' || typeof item.longitude !== 'number') {
+            continue;
+        }
+        const gridX = Math.floor(item.longitude / gridSize);
+        const gridY = Math.floor(item.latitude / gridSize);
+        const key = `${gridX}:${gridY}`;
+
+        if (!grid.has(key)) {
+            grid.set(key, []);
+        }
+        grid.get(key).push(item);
+    }
+
+    const clusters = [];
+    let clusterIdx = 1;
+
+    for (const [key, cellItems] of grid.entries()) {
+        if (cellItems.length === 1) {
+            const single = cellItems[0];
+            clusters.push({
+                id: `point-${single.id}`,
+                isCluster: false,
+                issueId: single.id,
+                latitude: single.latitude,
+                longitude: single.longitude,
+                status: single.status,
+                severity: single.severity,
+                department: single.department,
+                verificationStatus: single.verificationStatus,
+                title: single.title,
+            });
+        } else {
+            const count = cellItems.length;
+            const avgLat = cellItems.reduce((sum, it) => sum + it.latitude, 0) / count;
+            const avgLng = cellItems.reduce((sum, it) => sum + it.longitude, 0) / count;
+
+            const statusCounts = {};
+            const severityCounts = {};
+            for (const it of cellItems) {
+                statusCounts[it.status] = (statusCounts[it.status] || 0) + 1;
+                severityCounts[it.severity] = (severityCounts[it.severity] || 0) + 1;
+            }
+
+            const dominantStatus = Object.keys(statusCounts).reduce((a, b) =>
+                statusCounts[a] >= statusCounts[b] ? a : b
+            );
+
+            const dominantSeverity = severityCounts['CRITICAL']
+                ? 'CRITICAL'
+                : Object.keys(severityCounts).reduce((a, b) =>
+                      severityCounts[a] >= severityCounts[b] ? a : b
+                  );
+
+            clusters.push({
+                id: `cluster-${clusterIdx++}`,
+                isCluster: true,
+                count,
+                latitude: parseFloat(avgLat.toFixed(6)),
+                longitude: parseFloat(avgLng.toFixed(6)),
+                dominantStatus,
+                dominantSeverity,
+                issueIds: cellItems.map((it) => it.id),
+                issues: cellItems.map((it) => ({
+                    id: it.id,
+                    title: it.title,
+                    status: it.status,
+                    severity: it.severity,
+                    department: it.department,
+                    verificationStatus: it.verificationStatus,
+                })),
+            });
+        }
+    }
+
+    return clusters;
 }
 export const issueService = new IssueService();

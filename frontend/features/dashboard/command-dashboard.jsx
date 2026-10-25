@@ -8,6 +8,7 @@ import { KpiCard } from './kpi-card.jsx';
 import { DepartmentBreakdown } from './department-breakdown.jsx';
 import { WardBreakdown } from './ward-breakdown.jsx';
 import { DrillDownDrawer } from './drill-down-drawer.jsx';
+import { ExportModal } from '../operational-reports/index.js';
 import { KPI_METRIC_KEYS, SOURCE_LABELS } from './types.js';
 
 export function CommandDashboard({
@@ -21,6 +22,7 @@ export function CommandDashboard({
 
   const [activeDrillDownMetric, setActiveDrillDownMetric] = useState(null);
   const [isDrillDownOpen, setIsDrillDownOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('DEPARTMENTS'); // 'DEPARTMENTS' | 'WARDS'
@@ -90,11 +92,22 @@ export function CommandDashboard({
           </p>
         </div>
 
-        {/* Executive Scope Badge */}
-        <div className="flex items-center gap-2 self-start md:self-auto">
+        {/* Executive Scope Badge & Export Action */}
+        <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
           <span className="px-3 py-1.5 rounded-xl border border-border-primary bg-surface-secondary text-xs font-semibold text-text-primary shadow-elevation-1">
             🏛️ Authority Access Level: Executive Official
           </span>
+          <button
+            type="button"
+            onClick={() => setIsExportOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-border-primary bg-surface-elevated text-xs font-bold text-text-primary hover:bg-surface-secondary shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-[36px] transition-colors"
+            aria-label="Export operational reports"
+          >
+            <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Export Reports
+          </button>
         </div>
       </div>
 
@@ -280,6 +293,13 @@ export function CommandDashboard({
         metricKey={activeDrillDownMetric || 'all'}
         title={`Drill-down: ${activeDrillDownMetric ? activeDrillDownMetric.toUpperCase().replace('_', ' ') : 'All Issues'}`}
         issues={drillDownItems}
+      />
+
+      {/* Operational Reports Export Modal */}
+      <ExportModal
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        jurisdictionId={filters.ward !== 'ALL' ? filters.ward : 'mh-pune-pmc'}
       />
     </div>
   );

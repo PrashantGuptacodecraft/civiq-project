@@ -8,6 +8,7 @@ import { notificationRouter } from './modules/notifications/notification.router.
 import { aiAuditRouter } from './modules/ai-audit/ai-audit.router.js';
 import { fieldVerificationRouter } from './modules/field-verification/field-verification.router.js';
 import { feedbackRouter } from './modules/feedback/feedback.router.js';
+import { dashboardRouter } from './modules/dashboard/dashboard.router.js';
 
 export function createApp() {
   const app = express();
@@ -27,6 +28,7 @@ export function createApp() {
   app.use('/ai-audit', aiAuditRouter);
   app.use('/field-verification', fieldVerificationRouter);
   app.use('/feedback', feedbackRouter);
+  app.use('/dashboard', dashboardRouter);
 
   // Global Error Handler
   app.use((err, req, res, next) => {

@@ -11,6 +11,7 @@ import { feedbackRouter } from './modules/feedback/feedback.router.js';
 import { dashboardRouter } from './modules/dashboard/dashboard.router.js';
 import { analyticsRouter } from './modules/analytics/analytics.router.js';
 import { reportRouter } from './modules/reports/report.router.js';
+import { assetRouter } from './modules/assets/asset.router.js';
 
 export function createApp() {
   const app = express();
@@ -33,6 +34,7 @@ export function createApp() {
   app.use('/dashboard', dashboardRouter);
   app.use('/analytics', analyticsRouter);
   app.use('/reports', reportRouter);
+  app.use('/assets', assetRouter);
 
   // Global Error Handler
   app.use((err, req, res, next) => {

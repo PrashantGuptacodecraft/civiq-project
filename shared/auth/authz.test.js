@@ -81,6 +81,27 @@ describe('Authorization (AuthZ)', () => {
             if (['AUDITOR', 'PLATFORM_SUPER_ADMIN', 'NATIONAL_ADMIN', 'STATE_ADMIN', 'DISTRICT_ULB_ADMIN', 'DEPARTMENT_OFFICER', 'DISASTER_COORDINATOR'].includes(role)) {
                 expect(can(ctx, 'reports:read')).toBe(true);
             }
+            // Phase 49: Asset Registry permissions
+            expect(can(ctx, 'assets:read')).toBe(true);
+            if (['PLATFORM_SUPER_ADMIN', 'DISTRICT_ULB_ADMIN'].includes(role)) {
+                expect(can(ctx, 'assets:delete')).toBe(true);
+            } else {
+                expect(can(ctx, 'assets:delete')).toBe(false);
+            }
         });
+    });
+
+    it('should enforce asset write permissions and jurisdiction scoping', () => {
+        const citizen = { userId: 'c1', roleAssignments: [{ role: 'CITIZEN' }] };
+        expect(can(citizen, 'assets:write')).toBe(false);
+
+        const deptOfficerPune = {
+            userId: 'do1',
+            roleAssignments: [{ role: 'DEPARTMENT_OFFICER', jurisdictionId: 'mh-pune-pmc' }],
+        };
+        // Allowed in Pune jurisdiction
+        expect(can(deptOfficerPune, 'assets:write', { jurisdictionId: 'mh-pune-pmc' })).toBe(true);
+        // Denied outside Pune jurisdiction
+        expect(can(deptOfficerPune, 'assets:write', { jurisdictionId: 'mh-mumbai-mcgm' })).toBe(false);
     });
 });

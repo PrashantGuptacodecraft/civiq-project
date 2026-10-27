@@ -20,6 +20,8 @@ from app.api.schemas import (
     EvidenceCheckResponse,
     PredictRequest,
     PredictResponse,
+    PredictiveMaintenanceRequest,
+    PredictiveMaintenanceResponse,
     PriorityBreakdown,
     PriorityScoreRequest,
     PriorityScoreResponse,
@@ -32,6 +34,7 @@ from app.pipelines.classification import get_classifier, get_feedback_store
 from app.pipelines.dedup import IssueSummary, get_dedup_engine
 from app.pipelines.priority import IssuePriorityInput, get_priority_engine
 from app.pipelines.vision import get_analyzer
+from app.pipelines.maintenance import AssetMaintenanceInput, get_maintenance_predictor
 
 router = APIRouter(prefix="/v1", tags=["AI Gateway v1"])
 
@@ -382,6 +385,42 @@ def summarize_text(payload: SummarizeRequest) -> SummarizeResponse:
 def predict_trend(payload: PredictRequest) -> PredictResponse:
     start_time = time.perf_counter()
 
+    if payload.entity_type == "ASSET":
+        predictor = get_maintenance_predictor()
+        metrics = payload.historical_metrics
+        asset_input = AssetMaintenanceInput(
+            asset_id=payload.entity_id,
+            asset_type=metrics.get("asset_type", "OTHER"),
+            age_years=metrics.get("age_years"),
+            expected_lifespan_years=metrics.get("expected_lifespan_years"),
+            current_condition_score=metrics.get("current_condition_score", 100.0),
+            failure_count=metrics.get("failure_count", 0),
+            recent_failure_count=metrics.get("recent_failure_count", 0),
+            total_downtime_hours=metrics.get("total_downtime_hours", 0.0),
+            days_since_last_maintenance=metrics.get("days_since_last_maintenance"),
+        )
+        res = predictor.predict(asset_input)
+        latency = round((time.perf_counter() - start_time) * 1000, 2)
+        return PredictResponse(
+            version=AI_GATEWAY_VERSION,
+            confidence=res.confidence,
+            model=DEFAULT_MODEL,
+            explanation=f"Predictive maintenance risk assessment for asset {payload.entity_id}.",
+            latency_ms=latency,
+            prediction_type="PREDICTIVE_MAINTENANCE_RISK",
+            risk_probability=res.risk_score,
+            risk_level=res.risk_level.value,
+            trend="INCREASING" if res.risk_level in ["HIGH", "CRITICAL"] else "STABLE",
+            contributing_factors=[
+                ContributingFactor(
+                    factor=f.factor,
+                    weight=f.weight,
+                    description=f.description,
+                )
+                for f in res.contributing_factors
+            ],
+        )
+
     risk_prob = 0.65
     risk_level: Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"] = "MEDIUM"
     trend: Literal["INCREASING", "STABLE", "DECREASING"] = "STABLE"
@@ -421,4 +460,60 @@ def predict_trend(payload: PredictRequest) -> PredictResponse:
         risk_level=risk_level,
         trend=trend,
         contributing_factors=factors,
+    )
+
+
+
+@router.post("/predict/maintenance", response_model=PredictiveMaintenanceResponse)
+def predict_maintenance(payload: PredictiveMaintenanceRequest) -> PredictiveMaintenanceResponse:
+    start_time = time.perf_counter()
+
+    predictor = get_maintenance_predictor()
+    asset_input = AssetMaintenanceInput(
+        asset_id=payload.asset_id,
+        asset_name=payload.asset_name,
+        asset_type=payload.asset_type,
+        installation_date=payload.installation_date,
+        age_years=payload.age_years,
+        expected_lifespan_years=payload.expected_lifespan_years,
+        current_condition_score=payload.current_condition_score,
+        failure_count=payload.failure_count,
+        recent_failure_count=payload.recent_failure_count,
+        total_downtime_hours=payload.total_downtime_hours,
+        days_since_last_maintenance=payload.days_since_last_maintenance,
+        mtbf_days=payload.mtbf_days,
+        past_expenditure_inr=payload.past_expenditure_inr,
+    )
+
+    result = predictor.predict(asset_input)
+    latency = round((time.perf_counter() - start_time) * 1000, 2)
+
+    factors = [
+        ContributingFactor(
+            factor=f.factor,
+            weight=f.weight,
+            description=f.description,
+        )
+        for f in result.contributing_factors
+    ]
+
+    return PredictiveMaintenanceResponse(
+        version=AI_GATEWAY_VERSION,
+        confidence=result.confidence,
+        model=DEFAULT_MODEL,
+        explanation=(
+            f"Baseline predictive maintenance assessment for asset {payload.asset_id} ({payload.asset_type}): "
+            f"risk {result.risk_level.value} ({result.risk_score}). Recommended action: {result.recommended_action.value}."
+        ),
+        latency_ms=latency,
+        asset_id=result.asset_id,
+        asset_name=result.asset_name,
+        asset_type=result.asset_type,
+        risk_score=result.risk_score,
+        risk_level=result.risk_level.value,
+        recommended_action=result.recommended_action.value,
+        reason_codes=[rc.value for rc in result.reason_codes],
+        contributing_factors=factors,
+        is_authoritative=False,
+        disclaimer=result.disclaimer,
     )

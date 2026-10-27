@@ -283,3 +283,37 @@ class PredictResponse(BaseAiResponse):
     risk_level: Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
     trend: Literal["INCREASING", "STABLE", "DECREASING"]
     contributing_factors: list[ContributingFactor] = Field(default_factory=list)
+
+
+# ─────────────────────────────────────────────
+# 8. PREDICTIVE MAINTENANCE
+# ─────────────────────────────────────────────
+
+
+class PredictiveMaintenanceRequest(BaseModel):
+    asset_id: str = Field(..., min_length=1, description="Unique asset identifier")
+    asset_name: str | None = None
+    asset_type: str = "OTHER"
+    installation_date: str | None = None
+    age_years: float | None = None
+    expected_lifespan_years: float | None = None
+    current_condition_score: float = Field(default=100.0, ge=0.0, le=100.0)
+    failure_count: int = Field(default=0, ge=0)
+    recent_failure_count: int = Field(default=0, ge=0)
+    total_downtime_hours: float = Field(default=0.0, ge=0.0)
+    days_since_last_maintenance: int | None = Field(default=None, ge=0)
+    mtbf_days: float | None = None
+    past_expenditure_inr: float = Field(default=0.0, ge=0.0)
+
+
+class PredictiveMaintenanceResponse(BaseAiResponse):
+    asset_id: str
+    asset_name: str | None = None
+    asset_type: str
+    risk_score: float = Field(..., ge=0.0, le=1.0)
+    risk_level: Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+    recommended_action: Literal["ROUTINE_MONITORING", "MAINTENANCE_REVIEW_RECOMMENDED"]
+    reason_codes: list[str] = Field(default_factory=list)
+    contributing_factors: list[ContributingFactor] = Field(default_factory=list)
+    is_authoritative: bool = False
+    disclaimer: str

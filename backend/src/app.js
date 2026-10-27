@@ -13,6 +13,7 @@ import { analyticsRouter } from './modules/analytics/analytics.router.js';
 import { reportRouter } from './modules/reports/report.router.js';
 import { assetRouter } from './modules/assets/asset.router.js';
 import { assetLinkRouter } from './modules/assets-links/asset-link.router.js';
+import { maintenanceRouter } from './modules/maintenance/maintenance.router.js';
 
 export function createApp() {
   const app = express();
@@ -37,6 +38,7 @@ export function createApp() {
   app.use('/reports', reportRouter);
   app.use('/assets', assetRouter);
   app.use('/assets-links', assetLinkRouter);
+  app.use('/maintenance', maintenanceRouter);
 
   // Global Error Handler
   app.use((err, req, res, next) => {

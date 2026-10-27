@@ -88,6 +88,13 @@ describe('Authorization (AuthZ)', () => {
             } else {
                 expect(can(ctx, 'assets:delete')).toBe(false);
             }
+            // Phase 51: Maintenance & Financial Access permissions
+            expect(can(ctx, 'maintenance:read')).toBe(true);
+            if (['PLATFORM_SUPER_ADMIN', 'NATIONAL_ADMIN', 'STATE_ADMIN', 'DISTRICT_ULB_ADMIN', 'DEPARTMENT_OFFICER', 'AUDITOR'].includes(role)) {
+                expect(can(ctx, 'maintenance:costs:read')).toBe(true);
+            } else {
+                expect(can(ctx, 'maintenance:costs:read')).toBe(false);
+            }
         });
     });
 
@@ -103,5 +110,10 @@ describe('Authorization (AuthZ)', () => {
         expect(can(deptOfficerPune, 'assets:write', { jurisdictionId: 'mh-pune-pmc' })).toBe(true);
         // Denied outside Pune jurisdiction
         expect(can(deptOfficerPune, 'assets:write', { jurisdictionId: 'mh-mumbai-mcgm' })).toBe(false);
+
+        // Phase 51: Maintenance write jurisdiction scoping
+        expect(can(deptOfficerPune, 'maintenance:write', { jurisdictionId: 'mh-pune-pmc' })).toBe(true);
+        expect(can(deptOfficerPune, 'maintenance:write', { jurisdictionId: 'mh-mumbai-mcgm' })).toBe(false);
+        expect(can(citizen, 'maintenance:write')).toBe(false);
     });
 });

@@ -21,6 +21,9 @@ export default function RootLayout({ children, }) {
               <Link href="/dashboard" className="hover:text-primary transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-sm">
                 Dashboard
               </Link>
+              <Link href="/assets" className="hover:text-primary transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-sm">
+                Assets
+              </Link>
               <Link href="/analytics" className="hover:text-primary transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-sm">
                 Hotspots
               </Link>
@@ -39,6 +42,11 @@ export default function RootLayout({ children, }) {
               <Link href="/dashboard" className="text-sm font-medium text-text-secondary hover:text-primary transition-colors p-2 outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md" aria-label="Command dashboard">
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </Link>
+              <Link href="/assets" className="text-sm font-medium text-text-secondary hover:text-primary transition-colors p-2 outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md" aria-label="Asset intelligence">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
               </Link>
               <Link href="/analytics" className="text-sm font-medium text-text-secondary hover:text-primary transition-colors p-2 outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md" aria-label="Hotspot analytics">

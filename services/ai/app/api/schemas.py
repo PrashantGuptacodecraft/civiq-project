@@ -317,3 +317,79 @@ class PredictiveMaintenanceResponse(BaseAiResponse):
     contributing_factors: list[ContributingFactor] = Field(default_factory=list)
     is_authoritative: bool = False
     disclaimer: str
+
+
+# ─────────────────────────────────────────────
+# 9. ASSET DECISION SUPPORT (Phase 54)
+# ─────────────────────────────────────────────
+
+
+class DecisionFactorSchema(BaseModel):
+    factor: str
+    weight: float
+    metric_value: str | float
+    threshold_value: str | float
+    description: str
+
+
+class AssetDecisionRequest(BaseModel):
+    asset_id: str = Field(..., min_length=1, description="Unique asset identifier")
+    asset_name: str | None = None
+    asset_type: str = "OTHER"
+    cumulative_repair_cost_inr: float = Field(default=0.0, ge=0.0)
+    estimated_replacement_cost_inr: float | None = Field(default=None, ge=1.0)
+    current_condition_score: float = Field(default=100.0, ge=0.0, le=100.0)
+    age_years: float | None = Field(default=None, ge=0.0)
+    expected_lifespan_years: float | None = Field(default=None, ge=0.5)
+    failure_count: int = Field(default=0, ge=0)
+    annual_repair_cost_inr: float | None = Field(default=None, ge=0.0)
+    custom_threshold_ratio: float | None = Field(default=None, ge=0.1, le=1.0)
+    custom_warning_ratio: float | None = Field(default=None, ge=0.05, le=0.95)
+
+
+class AssetDecisionResponse(BaseAiResponse):
+    asset_id: str
+    asset_name: str | None = None
+    asset_type: str
+    recommendation: Literal["REPLACE_REVIEW_RECOMMENDED", "REHABILITATE_OR_OVERHAUL", "CONTINUE_MAINTENANCE"]
+    cumulative_repair_cost_inr: float
+    estimated_replacement_cost_inr: float
+    repair_to_replacement_ratio: float
+    applied_threshold_ratio: float
+    warning_threshold_ratio: float
+    cost_headroom_inr: float
+    cost_overrun_inr: float
+    reason_codes: list[str] = Field(default_factory=list)
+    explanation: str
+    contributing_factors: list[DecisionFactorSchema] = Field(default_factory=list)
+    is_authoritative: bool = False
+    disclaimer: str
+
+
+class AssetDecisionBatchRequest(BaseModel):
+    assets: list[AssetDecisionRequest] = Field(..., min_length=1)
+
+
+class AssetDecisionBatchResponse(BaseModel):
+    version: str
+    total_evaluated: int
+    recommendations_summary: dict[str, int]
+    decisions: list[AssetDecisionResponse]
+
+
+class CategoryPolicyResponse(BaseModel):
+    asset_type: str
+    replacement_threshold_ratio: float
+    warning_threshold_ratio: float
+    baseline_replacement_cost_inr: float
+    annual_repair_budget_cap_inr: float | None = None
+    description: str
+
+
+class UpdateCategoryPolicyRequest(BaseModel):
+    replacement_threshold_ratio: float = Field(..., ge=0.1, le=1.0)
+    warning_threshold_ratio: float = Field(..., ge=0.05, le=0.95)
+    baseline_replacement_cost_inr: float = Field(..., ge=1000.0)
+    annual_repair_budget_cap_inr: float | None = Field(default=None, ge=0.0)
+    description: str | None = None
+

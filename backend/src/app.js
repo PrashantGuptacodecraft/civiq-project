@@ -14,6 +14,7 @@ import { reportRouter } from './modules/reports/report.router.js';
 import { assetRouter } from './modules/assets/asset.router.js';
 import { assetLinkRouter } from './modules/assets-links/asset-link.router.js';
 import { maintenanceRouter } from './modules/maintenance/maintenance.router.js';
+import { assetDecisionRouter } from './modules/asset-decisions/asset-decision.router.js';
 
 export function createApp() {
   const app = express();
@@ -39,6 +40,7 @@ export function createApp() {
   app.use('/assets', assetRouter);
   app.use('/assets-links', assetLinkRouter);
   app.use('/maintenance', maintenanceRouter);
+  app.use('/asset-decisions', assetDecisionRouter);
 
   // Global Error Handler
   app.use((err, req, res, next) => {

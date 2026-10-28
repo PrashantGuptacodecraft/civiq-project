@@ -22,6 +22,13 @@ from app.api.schemas import (
     PredictResponse,
     PredictiveMaintenanceRequest,
     PredictiveMaintenanceResponse,
+    AssetDecisionRequest,
+    AssetDecisionResponse,
+    AssetDecisionBatchRequest,
+    AssetDecisionBatchResponse,
+    CategoryPolicyResponse,
+    UpdateCategoryPolicyRequest,
+    DecisionFactorSchema,
     PriorityBreakdown,
     PriorityScoreRequest,
     PriorityScoreResponse,
@@ -35,6 +42,12 @@ from app.pipelines.dedup import IssueSummary, get_dedup_engine
 from app.pipelines.priority import IssuePriorityInput, get_priority_engine
 from app.pipelines.vision import get_analyzer
 from app.pipelines.maintenance import AssetMaintenanceInput, get_maintenance_predictor
+from app.pipelines.asset_decision import (
+    AssetDecisionInput,
+    CategoryPolicyThreshold,
+    get_asset_decision_model,
+    get_policy_manager,
+)
 
 router = APIRouter(prefix="/v1", tags=["AI Gateway v1"])
 
@@ -516,4 +529,184 @@ def predict_maintenance(payload: PredictiveMaintenanceRequest) -> PredictiveMain
         contributing_factors=factors,
         is_authoritative=False,
         disclaimer=result.disclaimer,
+    )
+
+
+# ─────────────────────────────────────────────
+# 9. ASSET DECISION SUPPORT (Phase 54)
+# ─────────────────────────────────────────────
+
+
+@router.post("/asset-decision/evaluate", response_model=AssetDecisionResponse)
+def evaluate_asset_decision(payload: AssetDecisionRequest) -> AssetDecisionResponse:
+    start_time = time.perf_counter()
+
+    model = get_asset_decision_model()
+    asset_input = AssetDecisionInput(
+        asset_id=payload.asset_id,
+        asset_name=payload.asset_name,
+        asset_type=payload.asset_type,
+        cumulative_repair_cost_inr=payload.cumulative_repair_cost_inr,
+        estimated_replacement_cost_inr=payload.estimated_replacement_cost_inr,
+        current_condition_score=payload.current_condition_score,
+        age_years=payload.age_years,
+        expected_lifespan_years=payload.expected_lifespan_years,
+        failure_count=payload.failure_count,
+        annual_repair_cost_inr=payload.annual_repair_cost_inr,
+        custom_threshold_ratio=payload.custom_threshold_ratio,
+        custom_warning_ratio=payload.custom_warning_ratio,
+    )
+
+    result = model.evaluate(asset_input)
+    latency = round((time.perf_counter() - start_time) * 1000, 2)
+
+    factors = [
+        DecisionFactorSchema(
+            factor=f.factor,
+            weight=f.weight,
+            metric_value=f.metric_value,
+            threshold_value=f.threshold_value,
+            description=f.description,
+        )
+        for f in result.contributing_factors
+    ]
+
+    return AssetDecisionResponse(
+        version=AI_GATEWAY_VERSION,
+        confidence=result.confidence,
+        model=DEFAULT_MODEL,
+        explanation=result.explanation,
+        latency_ms=latency,
+        asset_id=result.asset_id,
+        asset_name=result.asset_name,
+        asset_type=result.asset_type,
+        recommendation=result.recommendation.value,
+        cumulative_repair_cost_inr=result.cumulative_repair_cost_inr,
+        estimated_replacement_cost_inr=result.estimated_replacement_cost_inr,
+        repair_to_replacement_ratio=result.repair_to_replacement_ratio,
+        applied_threshold_ratio=result.applied_threshold_ratio,
+        warning_threshold_ratio=result.warning_threshold_ratio,
+        cost_headroom_inr=result.cost_headroom_inr,
+        cost_overrun_inr=result.cost_overrun_inr,
+        reason_codes=[rc.value for rc in result.reason_codes],
+        contributing_factors=factors,
+        is_authoritative=False,
+        disclaimer=result.disclaimer,
+    )
+
+
+@router.post("/asset-decision/evaluate-batch", response_model=AssetDecisionBatchResponse)
+def evaluate_asset_decision_batch(payload: AssetDecisionBatchRequest) -> AssetDecisionBatchResponse:
+    model = get_asset_decision_model()
+    decisions: list[AssetDecisionResponse] = []
+    summary: dict[str, int] = {
+        "REPLACE_REVIEW_RECOMMENDED": 0,
+        "REHABILITATE_OR_OVERHAUL": 0,
+        "CONTINUE_MAINTENANCE": 0,
+    }
+
+    for item in payload.assets:
+        start_time = time.perf_counter()
+        asset_input = AssetDecisionInput(
+            asset_id=item.asset_id,
+            asset_name=item.asset_name,
+            asset_type=item.asset_type,
+            cumulative_repair_cost_inr=item.cumulative_repair_cost_inr,
+            estimated_replacement_cost_inr=item.estimated_replacement_cost_inr,
+            current_condition_score=item.current_condition_score,
+            age_years=item.age_years,
+            expected_lifespan_years=item.expected_lifespan_years,
+            failure_count=item.failure_count,
+            annual_repair_cost_inr=item.annual_repair_cost_inr,
+            custom_threshold_ratio=item.custom_threshold_ratio,
+            custom_warning_ratio=item.custom_warning_ratio,
+        )
+        res = model.evaluate(asset_input)
+        latency = round((time.perf_counter() - start_time) * 1000, 2)
+        summary[res.recommendation.value] = summary.get(res.recommendation.value, 0) + 1
+
+        factors = [
+            DecisionFactorSchema(
+                factor=f.factor,
+                weight=f.weight,
+                metric_value=f.metric_value,
+                threshold_value=f.threshold_value,
+                description=f.description,
+            )
+            for f in res.contributing_factors
+        ]
+
+        decisions.append(
+            AssetDecisionResponse(
+                version=AI_GATEWAY_VERSION,
+                confidence=res.confidence,
+                model=DEFAULT_MODEL,
+                explanation=res.explanation,
+                latency_ms=latency,
+                asset_id=res.asset_id,
+                asset_name=res.asset_name,
+                asset_type=res.asset_type,
+                recommendation=res.recommendation.value,
+                cumulative_repair_cost_inr=res.cumulative_repair_cost_inr,
+                estimated_replacement_cost_inr=res.estimated_replacement_cost_inr,
+                repair_to_replacement_ratio=res.repair_to_replacement_ratio,
+                applied_threshold_ratio=res.applied_threshold_ratio,
+                warning_threshold_ratio=res.warning_threshold_ratio,
+                cost_headroom_inr=res.cost_headroom_inr,
+                cost_overrun_inr=res.cost_overrun_inr,
+                reason_codes=[rc.value for rc in res.reason_codes],
+                contributing_factors=factors,
+                is_authoritative=False,
+                disclaimer=res.disclaimer,
+            )
+        )
+
+    return AssetDecisionBatchResponse(
+        version=AI_GATEWAY_VERSION,
+        total_evaluated=len(decisions),
+        recommendations_summary=summary,
+        decisions=decisions,
+    )
+
+
+@router.get("/asset-decision/policies", response_model=list[CategoryPolicyResponse])
+def get_asset_decision_policies() -> list[CategoryPolicyResponse]:
+    manager = get_policy_manager()
+    policies = manager.list_all()
+    return [
+        CategoryPolicyResponse(
+            asset_type=p.asset_type,
+            replacement_threshold_ratio=p.replacement_threshold_ratio,
+            warning_threshold_ratio=p.warning_threshold_ratio,
+            baseline_replacement_cost_inr=p.baseline_replacement_cost_inr,
+            annual_repair_budget_cap_inr=p.annual_repair_budget_cap_inr,
+            description=p.description,
+        )
+        for p in policies.values()
+    ]
+
+
+@router.put("/asset-decision/policies/{asset_type}", response_model=CategoryPolicyResponse)
+def update_asset_decision_policy(
+    asset_type: str,
+    payload: UpdateCategoryPolicyRequest,
+) -> CategoryPolicyResponse:
+    manager = get_policy_manager()
+    normalized = asset_type.upper().strip()
+    updated = CategoryPolicyThreshold(
+        asset_type=normalized,
+        replacement_threshold_ratio=payload.replacement_threshold_ratio,
+        warning_threshold_ratio=payload.warning_threshold_ratio,
+        baseline_replacement_cost_inr=payload.baseline_replacement_cost_inr,
+        annual_repair_budget_cap_inr=payload.annual_repair_budget_cap_inr,
+        description=payload.description or f"Updated policy for {normalized}",
+    )
+    manager.set_threshold(updated)
+    return CategoryPolicyResponse(
+        asset_type=updated.asset_type,
+        replacement_threshold_ratio=updated.replacement_threshold_ratio,
+        warning_threshold_ratio=updated.warning_threshold_ratio,
+        baseline_replacement_cost_inr=updated.baseline_replacement_cost_inr,
+        annual_repair_budget_cap_inr=updated.annual_repair_budget_cap_inr,
+        description=updated.description,
     )

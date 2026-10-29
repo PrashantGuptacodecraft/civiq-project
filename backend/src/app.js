@@ -16,6 +16,7 @@ import { assetLinkRouter } from './modules/assets-links/asset-link.router.js';
 import { maintenanceRouter } from './modules/maintenance/maintenance.router.js';
 import { assetDecisionRouter } from './modules/asset-decisions/asset-decision.router.js';
 import { incidentRouter } from './modules/incidents/incident.router.js';
+import { incidentSourceRouter } from './integrations/incident-source/index.js';
 
 export function createApp() {
   const app = express();
@@ -43,6 +44,7 @@ export function createApp() {
   app.use('/maintenance', maintenanceRouter);
   app.use('/asset-decisions', assetDecisionRouter);
   app.use('/incidents', incidentRouter);
+  app.use('/integrations/incident-source', incidentSourceRouter);
 
   // Global Error Handler
   app.use((err, req, res, next) => {

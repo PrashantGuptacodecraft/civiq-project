@@ -1,17 +1,21 @@
 /**
  * Critical Incident & Accident Reporting Synthetic Fixtures
  * Phase 55: Build accident/incident reporting model
+ * Phase 56: Build accident response workflow
  */
 
 import {
   INCIDENT_TYPES,
   INCIDENT_STATUS,
+  VERIFICATION_STATUS,
   INCIDENT_SEVERITY,
   INCIDENT_HAZARDS,
   VEHICLE_TYPES,
   REPORTER_TYPES,
   INCIDENT_SOURCES,
   OFFICIAL_RESPONDER_AGENCIES,
+  TIMELINE_EVENT_TYPES,
+  INCIDENT_NOTIFICATION_TYPES,
 } from './incident.types.js';
 
 export const SYNTHETIC_INCIDENTS = [
@@ -26,6 +30,7 @@ export const SYNTHETIC_INCIDENTS = [
     incidentType: INCIDENT_TYPES.ROAD_TRAFFIC_ACCIDENT,
     severity: INCIDENT_SEVERITY.CRITICAL,
     status: INCIDENT_STATUS.ON_SCENE,
+    verificationStatus: VERIFICATION_STATUS.CONFIRMED,
     occurredAt: '2026-10-29T08:15:00Z',
     reportedAt: '2026-10-29T08:18:22Z',
     location: {
@@ -126,6 +131,7 @@ export const SYNTHETIC_INCIDENTS = [
     incidentType: INCIDENT_TYPES.INFRASTRUCTURE_COLLAPSE,
     severity: INCIDENT_SEVERITY.HIGH,
     status: INCIDENT_STATUS.CONTAINED,
+    verificationStatus: VERIFICATION_STATUS.CONFIRMED,
     occurredAt: '2026-10-28T16:40:00Z',
     reportedAt: '2026-10-28T16:45:10Z',
     location: {
@@ -206,6 +212,7 @@ export const SYNTHETIC_INCIDENTS = [
     incidentType: INCIDENT_TYPES.HAZARDOUS_UTILITY_EVENT,
     severity: INCIDENT_SEVERITY.CRITICAL,
     status: INCIDENT_STATUS.DISPATCH_PENDING,
+    verificationStatus: VERIFICATION_STATUS.UNVERIFIED,
     occurredAt: '2026-10-29T08:50:00Z',
     reportedAt: '2026-10-29T08:52:14Z',
     location: {
@@ -284,6 +291,7 @@ export const SYNTHETIC_INCIDENTS = [
     incidentType: INCIDENT_TYPES.ROAD_TRAFFIC_ACCIDENT,
     severity: INCIDENT_SEVERITY.LOW,
     status: INCIDENT_STATUS.RESOLVED,
+    verificationStatus: VERIFICATION_STATUS.CONFIRMED,
     occurredAt: '2026-10-27T11:20:00Z',
     reportedAt: '2026-10-27T11:24:05Z',
     location: {
@@ -333,4 +341,219 @@ export const SYNTHETIC_INCIDENTS = [
     createdAt: '2026-10-27T11:24:05Z',
     updatedAt: '2026-10-27T11:45:00Z',
   },
+
+  // ─── 5. University Flyover Overturned Auto (Rapid / Unverified State) ───
+  {
+    id: 'inc-pune-005',
+    incidentNumber: 'INC-2026-0005',
+    title: 'Overturned auto-rickshaw blocking fast lane at University Flyover',
+    description: 'Auto overturned after collision with divider. Strong CNG smell reported, driver partially pinned. Call 112 initiated.',
+    incidentType: INCIDENT_TYPES.ROAD_TRAFFIC_ACCIDENT,
+    severity: INCIDENT_SEVERITY.CRITICAL,
+    status: INCIDENT_STATUS.UNVERIFIED,
+    verificationStatus: VERIFICATION_STATUS.UNVERIFIED,
+    occurredAt: '2026-10-29T09:10:00Z',
+    reportedAt: '2026-10-29T09:11:45Z',
+    location: {
+      latitude: 18.5314,
+      longitude: 73.8298,
+      accuracyMeters: 4.0,
+      address: 'University Flyover crest, Ganeshkhind Road, Shivaji Nagar, Pune',
+      ward: 'Ward 10 - Model Colony',
+      jurisdictionId: 'mh-pune-pmc',
+      corridorOrRoadName: 'Ganeshkhind Road',
+    },
+    hazards: [
+      INCIDENT_HAZARDS.FUEL_LEAK_OR_HAZMAT,
+      INCIDENT_HAZARDS.TRAFFIC_BLOCKAGE,
+      INCIDENT_HAZARDS.FIRE_OR_EXPLOSION_RISK,
+    ],
+    casualties: {
+      hasCasualties: true,
+      injuredCount: 1,
+      fatalitiesCount: 0,
+      trappedCount: 1,
+      requiresAmbulance: true,
+      medicalNotes: 'Driver trapped by steering column; conscious and responsive',
+    },
+    vehiclesInvolved: [VEHICLE_TYPES.CAR_OR_AUTO],
+    evidence: [
+      {
+        id: 'ev-inc-05',
+        mediaUrl: '/protected-evidence/university_flyover_auto_spill.jpg',
+        mediaType: 'IMAGE',
+        caption: 'Overturned CNG auto on lane 1 with traffic diverted around hazard',
+        isGraphicOrSensitive: false,
+        capturedAt: '2026-10-29T09:11:00Z',
+      },
+    ],
+    reporter: {
+      reporterId: 'usr-cit-pune-512',
+      reporterType: REPORTER_TYPES.CITIZEN,
+      name: 'Pooja Deshmukh',
+      contactNumber: '+91 9890123456',
+      isContactNumberVerified: true,
+    },
+    source: INCIDENT_SOURCES.CITIZEN_MOBILE_APP,
+    officialResponderHandoff: {
+      isHandedOffTo112: true,
+      agencyNotified: OFFICIAL_RESPONDER_AGENCIES.POLICE,
+      externalReferenceNumber: 'CAD-112-MH-2026-1188',
+      handoffTimestamp: '2026-10-29T09:12:00Z',
+    },
+    statusHistory: [
+      {
+        status: INCIDENT_STATUS.UNVERIFIED,
+        timestamp: '2026-10-29T09:11:45Z',
+        actorId: 'usr-cit-pune-512',
+        notes: 'Rapid emergency submission (UNVERIFIED state)',
+      },
+    ],
+    metadata: {
+      fuelType: 'CNG',
+      trafficCongestionLevel: 'SEVERE',
+    },
+    createdAt: '2026-10-29T09:11:45Z',
+    updatedAt: '2026-10-29T09:12:00Z',
+  },
 ];
+
+export const SYNTHETIC_TIMELINES = {
+  'inc-pune-001': [
+    {
+      id: 'tl-001-1',
+      incidentId: 'inc-pune-001',
+      eventType: TIMELINE_EVENT_TYPES.INCIDENT_RECORDED,
+      status: INCIDENT_STATUS.UNVERIFIED,
+      title: 'Incident Submitted (UNVERIFIED)',
+      description: 'Rapid accident report received via citizen app at Paud Road Flyover ramp.',
+      actorId: 'usr-cit-pune-441',
+      actorRole: REPORTER_TYPES.CITIZEN,
+      timestamp: '2026-10-29T08:18:22Z',
+    },
+    {
+      id: 'tl-001-2',
+      incidentId: 'inc-pune-001',
+      eventType: TIMELINE_EVENT_TYPES.CALL_112_HANDOFF_INITIATED,
+      status: INCIDENT_STATUS.UNVERIFIED,
+      title: 'Official Call 112 Handoff Initiated',
+      description: 'Citizen triggered 112 national emergency call; CAD reference CAD-112-MH-2026-0914 generated.',
+      actorId: 'usr-cit-pune-441',
+      actorRole: REPORTER_TYPES.CITIZEN,
+      timestamp: '2026-10-29T08:19:00Z',
+    },
+    {
+      id: 'tl-001-3',
+      incidentId: 'inc-pune-001',
+      eventType: TIMELINE_EVENT_TYPES.RESPONDER_DISPATCHED,
+      status: INCIDENT_STATUS.RESPONDER_EN_ROUTE,
+      title: 'First Responders Dispatched',
+      description: 'Pune Traffic Police Patrol Car 14 and 108 Emergency Ambulance en route.',
+      actorId: 'dispatcher-112',
+      actorRole: 'EMERGENCY_DISPATCHER',
+      timestamp: '2026-10-29T08:21:00Z',
+    },
+    {
+      id: 'tl-001-4',
+      incidentId: 'inc-pune-001',
+      eventType: TIMELINE_EVENT_TYPES.RESPONDER_CONFIRMED,
+      status: INCIDENT_STATUS.ON_SCENE,
+      title: 'Responder Ground Confirmation',
+      description: 'Officer S. More (Traffic Police Unit 9) confirmed collision scene and 3 injured.',
+      actorId: 'responder-tp-09',
+      actorRole: OFFICIAL_RESPONDER_AGENCIES.TRAFFIC_POLICE,
+      timestamp: '2026-10-29T08:28:40Z',
+    },
+  ],
+  'inc-pune-005': [
+    {
+      id: 'tl-005-1',
+      incidentId: 'inc-pune-005',
+      eventType: TIMELINE_EVENT_TYPES.INCIDENT_RECORDED,
+      status: INCIDENT_STATUS.UNVERIFIED,
+      title: 'Emergency Incident Recorded (UNVERIFIED)',
+      description: 'Rapid incident report logged in CivIQ. Unverified pending first responder ground assessment.',
+      actorId: 'usr-cit-pune-512',
+      actorRole: REPORTER_TYPES.CITIZEN,
+      timestamp: '2026-10-29T09:11:45Z',
+    },
+    {
+      id: 'tl-005-2',
+      incidentId: 'inc-pune-005',
+      eventType: TIMELINE_EVENT_TYPES.CALL_112_HANDOFF_INITIATED,
+      status: INCIDENT_STATUS.UNVERIFIED,
+      title: 'Call 112 Handoff Completed',
+      description: 'Citizen connected to 112 Emergency Dispatch. Incident flagged with urgent ambulance requirement.',
+      actorId: 'usr-cit-pune-512',
+      actorRole: REPORTER_TYPES.CITIZEN,
+      timestamp: '2026-10-29T09:12:00Z',
+    },
+  ],
+};
+
+export const SYNTHETIC_INCIDENT_NOTIFICATIONS = {
+  'inc-pune-001': [
+    {
+      id: 'notif-inc-001-1',
+      incidentId: 'inc-pune-001',
+      incidentNumber: 'INC-2026-0001',
+      type: INCIDENT_NOTIFICATION_TYPES.INCIDENT_RECORDED_UNVERIFIED,
+      title: 'Incident Recorded as UNVERIFIED',
+      message: 'Your report #INC-2026-0001 has been logged as UNVERIFIED. Immediate official help: Call 112.',
+      channel: 'IN_APP',
+      recipientRole: 'CITIZEN',
+      timestamp: '2026-10-29T08:18:22Z',
+      read: true,
+    },
+    {
+      id: 'notif-inc-001-2',
+      incidentId: 'inc-pune-001',
+      incidentNumber: 'INC-2026-0001',
+      type: INCIDENT_NOTIFICATION_TYPES.CALL_112_HANDOFF_ALERT,
+      title: 'Emergency 112 Handoff Recorded',
+      message: 'Official emergency handoff CAD-112-MH-2026-0914 logged for Paud Road Flyover collision.',
+      channel: 'IN_APP',
+      recipientRole: 'DISASTER_COORDINATOR',
+      timestamp: '2026-10-29T08:19:00Z',
+      read: true,
+    },
+    {
+      id: 'notif-inc-001-3',
+      incidentId: 'inc-pune-001',
+      incidentNumber: 'INC-2026-0001',
+      type: INCIDENT_NOTIFICATION_TYPES.RESPONDER_CONFIRMATION_NOTICE,
+      title: 'Ground Confirmation by Traffic Police',
+      message: 'Officer S. More verified the scene. 3 injured transported to Sahyadri Hospital.',
+      channel: 'IN_APP',
+      recipientRole: 'CITIZEN',
+      timestamp: '2026-10-29T08:28:40Z',
+      read: false,
+    },
+  ],
+  'inc-pune-005': [
+    {
+      id: 'notif-inc-005-1',
+      incidentId: 'inc-pune-005',
+      incidentNumber: 'INC-2026-0005',
+      type: INCIDENT_NOTIFICATION_TYPES.INCIDENT_RECORDED_UNVERIFIED,
+      title: 'Critical Incident Recorded (UNVERIFIED)',
+      message: 'Accident reported at University Flyover. CivIQ has retained UNVERIFIED local status and initiated 112 handoff.',
+      channel: 'IN_APP',
+      recipientRole: 'CITIZEN',
+      timestamp: '2026-10-29T09:11:45Z',
+      read: false,
+    },
+    {
+      id: 'notif-inc-005-2',
+      incidentId: 'inc-pune-005',
+      incidentNumber: 'INC-2026-0005',
+      type: INCIDENT_NOTIFICATION_TYPES.CALL_112_HANDOFF_ALERT,
+      title: '112 Emergency Dispatch Alert',
+      message: 'High-severity accident on Ganeshkhind Road. Pinned driver and CNG risk flagged.',
+      channel: 'IN_APP',
+      recipientRole: 'DISASTER_COORDINATOR',
+      timestamp: '2026-10-29T09:12:00Z',
+      read: false,
+    },
+  ],
+};

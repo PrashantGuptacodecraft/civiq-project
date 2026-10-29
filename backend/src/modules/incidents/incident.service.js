@@ -1,41 +1,62 @@
 /**
  * Critical Incident & Accident Reporting Service
  * Phase 55: Build accident/incident reporting model
+ * Phase 56: Build accident response workflow
  */
 
 import {
   INCIDENT_TYPES,
   INCIDENT_STATUS,
+  VERIFICATION_STATUS,
   INCIDENT_SEVERITY,
   INCIDENT_HAZARDS,
   VEHICLE_TYPES,
   REPORTER_TYPES,
   INCIDENT_SOURCES,
+  OFFICIAL_RESPONDER_AGENCIES,
+  TIMELINE_EVENT_TYPES,
+  INCIDENT_NOTIFICATION_TYPES,
   REDACTED_PII_VALUE,
   REDACTED_CONTACT_MASK,
   REDACTED_GRAPHIC_MEDIA,
 } from './incident.types.js';
-import { SYNTHETIC_INCIDENTS } from './incident.fixtures.js';
+import {
+  SYNTHETIC_INCIDENTS,
+  SYNTHETIC_TIMELINES,
+  SYNTHETIC_INCIDENT_NOTIFICATIONS,
+} from './incident.fixtures.js';
 import { getPermissionsForRole } from '@civiq/auth';
 
 export class IncidentService {
   constructor() {
     this.incidents = new Map();
+    this.timelines = new Map();
+    this.notifications = new Map();
     this.auditLogs = [];
     this.sequenceCounter = 100;
     this.init();
   }
 
   /**
-   * Initializes store with synthetic baseline incident fixtures.
+   * Initializes store with synthetic baseline incident fixtures, timelines, and notifications.
    */
   init() {
     this.incidents.clear();
+    this.timelines.clear();
+    this.notifications.clear();
     this.auditLogs = [];
     this.sequenceCounter = 100;
 
     for (const fixture of SYNTHETIC_INCIDENTS) {
       this.incidents.set(fixture.id, JSON.parse(JSON.stringify(fixture)));
+    }
+
+    for (const [id, events] of Object.entries(SYNTHETIC_TIMELINES)) {
+      this.timelines.set(id, JSON.parse(JSON.stringify(events)));
+    }
+
+    for (const [id, notifs] of Object.entries(SYNTHETIC_INCIDENT_NOTIFICATIONS)) {
+      this.notifications.set(id, JSON.parse(JSON.stringify(notifs)));
     }
   }
 
@@ -44,6 +65,26 @@ export class IncidentService {
    */
   reset() {
     this.init();
+  }
+
+  /**
+   * Helper to append a timeline event.
+   */
+  addTimelineEvent(incidentId, event) {
+    if (!this.timelines.has(incidentId)) {
+      this.timelines.set(incidentId, []);
+    }
+    this.timelines.get(incidentId).push(event);
+  }
+
+  /**
+   * Helper to append an incident notification.
+   */
+  addNotification(incidentId, notification) {
+    if (!this.notifications.has(incidentId)) {
+      this.notifications.set(incidentId, []);
+    }
+    this.notifications.get(incidentId).push(notification);
   }
 
   /**
@@ -60,6 +101,7 @@ export class IncidentService {
 
   /**
    * Checks if a user has permission to manage incident lifecycle status.
+   * Authorized roles: Super Admin, ULB Admin, Disaster Coordinator, and First Responders.
    */
   canManageIncidents(user) {
     if (!user) return false;
@@ -67,7 +109,11 @@ export class IncidentService {
     if (
       userRole === 'PLATFORM_SUPER_ADMIN' ||
       userRole === 'DISTRICT_ULB_ADMIN' ||
-      userRole === 'DISASTER_COORDINATOR'
+      userRole === 'DISASTER_COORDINATOR' ||
+      userRole === 'FIRST_RESPONDER' ||
+      userRole === 'TRAFFIC_POLICE' ||
+      userRole === 'POLICE' ||
+      userRole === 'FIRE'
     ) {
       return true;
     }
@@ -194,7 +240,12 @@ export class IncidentService {
     // 6. Validate and normalize Casualties
     const casualtiesInput = data.casualties || {};
     const casualties = {
-      hasCasualties: Boolean(casualtiesInput.hasCasualties || (casualtiesInput.injuredCount || 0) > 0 || (casualtiesInput.fatalitiesCount || 0) > 0),
+      hasCasualties: Boolean(
+        casualtiesInput.hasCasualties ||
+          (casualtiesInput.injuredCount || 0) > 0 ||
+          (casualtiesInput.fatalitiesCount || 0) > 0 ||
+          (casualtiesInput.trappedCount || 0) > 0
+      ),
       injuredCount: Number(casualtiesInput.injuredCount || 0),
       fatalitiesCount: Number(casualtiesInput.fatalitiesCount || 0),
       trappedCount: Number(casualtiesInput.trappedCount || 0),
@@ -269,7 +320,17 @@ export class IncidentService {
       isContactNumberVerified: Boolean(reporterInput.isContactNumberVerified || user?.phoneVerifiedAt),
     };
 
-    // 12. Build Incident Entity
+    // 12. Normalize Initial Status & Verification State
+    const status = data.status || INCIDENT_STATUS.REPORTED;
+    const verificationStatus =
+      data.verificationStatus ||
+      (status === INCIDENT_STATUS.UNVERIFIED ? VERIFICATION_STATUS.UNVERIFIED : VERIFICATION_STATUS.UNVERIFIED);
+
+    const officialResponderHandoff = data.officialResponderHandoff || {
+      isHandedOffTo112: false,
+    };
+
+    // 13. Build Incident Entity
     const incident = {
       id,
       incidentNumber,
@@ -277,7 +338,8 @@ export class IncidentService {
       description: data.description ? data.description.trim() : title,
       incidentType: data.incidentType,
       severity,
-      status: INCIDENT_STATUS.REPORTED,
+      status,
+      verificationStatus,
       occurredAt: occurredDate.toISOString(),
       reportedAt: now.toISOString(),
       location: {
@@ -295,15 +357,15 @@ export class IncidentService {
       evidence,
       reporter,
       source: data.source || INCIDENT_SOURCES.CITIZEN_MOBILE_APP,
-      officialResponderHandoff: data.officialResponderHandoff || {
-        isHandedOffTo112: false,
-      },
+      officialResponderHandoff,
       statusHistory: [
         {
-          status: INCIDENT_STATUS.REPORTED,
+          status,
           timestamp: now.toISOString(),
           actorId: reporter.reporterId,
-          notes: 'Incident initially recorded in CivIQ',
+          notes: status === INCIDENT_STATUS.UNVERIFIED
+            ? 'Incident initially recorded as UNVERIFIED via emergency workflow'
+            : 'Incident initially recorded in CivIQ',
         },
       ],
       metadata: data.metadata || {},
@@ -312,6 +374,61 @@ export class IncidentService {
     };
 
     this.incidents.set(incident.id, incident);
+
+    // Initial timeline event: INCIDENT_RECORDED
+    this.addTimelineEvent(incident.id, {
+      id: `tl-${incident.id}-rec`,
+      incidentId: incident.id,
+      eventType: TIMELINE_EVENT_TYPES.INCIDENT_RECORDED,
+      status,
+      title: status === INCIDENT_STATUS.UNVERIFIED ? 'Emergency Report Recorded (UNVERIFIED)' : 'Incident Recorded',
+      description: incident.description,
+      actorId: reporter.reporterId,
+      actorRole: reporter.reporterType,
+      timestamp: now.toISOString(),
+    });
+
+    // If official 112 handoff was flagged at creation, record timeline event and alert
+    if (officialResponderHandoff.isHandedOffTo112) {
+      this.addTimelineEvent(incident.id, {
+        id: `tl-${incident.id}-h112`,
+        incidentId: incident.id,
+        eventType: TIMELINE_EVENT_TYPES.CALL_112_HANDOFF_INITIATED,
+        status,
+        title: 'Official Call 112 Handoff Initiated',
+        description: officialResponderHandoff.notes || 'Emergency 112 hotline handoff registered upon submission.',
+        actorId: reporter.reporterId,
+        actorRole: reporter.reporterType,
+        timestamp: officialResponderHandoff.handoffTimestamp || now.toISOString(),
+      });
+
+      this.addNotification(incident.id, {
+        id: `notif-${incident.id}-h112`,
+        incidentId: incident.id,
+        incidentNumber: incident.incidentNumber,
+        type: INCIDENT_NOTIFICATION_TYPES.CALL_112_HANDOFF_ALERT,
+        title: 'Call 112 Handoff Recorded',
+        message: `Official emergency handoff initiated for incident #${incident.incidentNumber}.`,
+        channel: 'IN_APP',
+        recipientRole: 'DISASTER_COORDINATOR',
+        timestamp: now.toISOString(),
+        read: false,
+      });
+    }
+
+    // Citizen acknowledgement notification
+    this.addNotification(incident.id, {
+      id: `notif-${incident.id}-ack`,
+      incidentId: incident.id,
+      incidentNumber: incident.incidentNumber,
+      type: INCIDENT_NOTIFICATION_TYPES.INCIDENT_RECORDED_UNVERIFIED,
+      title: 'Incident Recorded in CivIQ',
+      message: `Your report #${incident.incidentNumber} is recorded as ${status}. For life-threatening emergencies, dial 112 immediately.`,
+      channel: 'IN_APP',
+      recipientRole: 'CITIZEN',
+      timestamp: now.toISOString(),
+      read: true,
+    });
 
     // Audit log
     this.auditLogs.push({
@@ -326,11 +443,298 @@ export class IncidentService {
   }
 
   /**
-   * Retrieves an incident by ID or incidentNumber with role-based sensitive data protection.
+   * Phase 56: Rapid Incident Submission for active emergencies.
+   * Minimal required inputs, sets status to UNVERIFIED, links Call 112 handoff if requested.
    */
-  async getIncidentById(idOrNumber, options = {}) {
+  async submitRapidIncident(data = {}, options = {}) {
+    const now = new Date();
+
+    // Auto-generate title if omitted or too brief
+    let title = typeof data.title === 'string' ? data.title.trim() : '';
+    if (title.length < 5) {
+      const typeLabel = (data.incidentType || 'CRITICAL_INCIDENT').replace(/_/g, ' ');
+      const addressPart = data.location?.address ? ` near ${data.location.address}` : ' reported via GPS';
+      title = `Emergency: ${typeLabel}${addressPart}`;
+    }
+
+    // Default occurredAt to now if omitted
+    const occurredAt = data.occurredAt || now.toISOString();
+
+    // Process 112 handoff flag
+    const isHandedOffTo112 = Boolean(data.handoffTo112 || data.isEmergencyHandoffInitiated);
+    const officialResponderHandoff = isHandedOffTo112
+      ? {
+          isHandedOffTo112: true,
+          handoffChannel: 'CALL_112',
+          handoffTimestamp: now.toISOString(),
+          externalReferenceNumber: data.externalReferenceNumber || `CAD-112-${Date.now().toString(36).toUpperCase()}`,
+          notes: data.handoffNotes || 'Immediate 112 emergency call initiated during rapid submission',
+        }
+      : { isHandedOffTo112: false };
+
+    const rapidPayload = {
+      ...data,
+      title,
+      occurredAt,
+      status: INCIDENT_STATUS.UNVERIFIED,
+      verificationStatus: VERIFICATION_STATUS.UNVERIFIED,
+      source: data.source || INCIDENT_SOURCES.CITIZEN_MOBILE_APP,
+      officialResponderHandoff,
+    };
+
+    return this.createIncident(rapidPayload, options);
+  }
+
+  /**
+   * Phase 56: Records an official Call 112 handoff for an incident.
+   */
+  async recordCall112Handoff(idOrNumber, handoffDetails = {}, options = {}) {
+    const incident = await this.getIncidentRaw(idOrNumber);
+    const now = new Date().toISOString();
+    const actorId = options.user?.userId || options.user?.id || incident.reporter.reporterId;
+
+    incident.officialResponderHandoff = {
+      isHandedOffTo112: true,
+      handoffChannel: 'CALL_112',
+      handoffTimestamp: now,
+      externalReferenceNumber:
+        handoffDetails.externalReferenceNumber || `CAD-112-${Date.now().toString(36).toUpperCase()}`,
+      agencyNotified: handoffDetails.agencyNotified || OFFICIAL_RESPONDER_AGENCIES.POLICE,
+      notes: handoffDetails.notes || 'Official Call 112 national emergency handoff initiated by user',
+      ...handoffDetails,
+    };
+    incident.updatedAt = now;
+
+    // Timeline event
+    this.addTimelineEvent(incident.id, {
+      id: `tl-${incident.id}-${Date.now().toString(36)}`,
+      incidentId: incident.id,
+      eventType: TIMELINE_EVENT_TYPES.CALL_112_HANDOFF_INITIATED,
+      status: incident.status,
+      title: 'Official Call 112 Handoff Initiated',
+      description: handoffDetails.notes || 'Emergency 112 hotline call initiated by citizen/reporter.',
+      actorId,
+      actorRole: options.user?.role || REPORTER_TYPES.CITIZEN,
+      timestamp: now,
+    });
+
+    // Alert notification for coordinators
+    this.addNotification(incident.id, {
+      id: `notif-${incident.id}-${Date.now().toString(36)}`,
+      incidentId: incident.id,
+      incidentNumber: incident.incidentNumber,
+      type: INCIDENT_NOTIFICATION_TYPES.CALL_112_HANDOFF_ALERT,
+      title: '112 Emergency Handoff Alert',
+      message: `Citizen initiated Call 112 for incident #${incident.incidentNumber} (${incident.title}).`,
+      channel: 'IN_APP',
+      recipientRole: 'DISASTER_COORDINATOR',
+      timestamp: now,
+      read: false,
+    });
+
+    // Audit log
+    this.auditLogs.push({
+      action: 'CALL_112_HANDOFF_RECORDED',
+      incidentId: incident.id,
+      incidentNumber: incident.incidentNumber,
+      actorId,
+      timestamp: now,
+    });
+
+    return { ...incident };
+  }
+
+  /**
+   * Phase 56: Responder confirmation transitions incident from UNVERIFIED to RESPONDER_CONFIRMED.
+   * Requires first-responder or administrative authorization.
+   */
+  async confirmIncident(idOrNumber, confirmationData = {}, options = {}) {
     const { user } = options;
 
+    if (!user || !this.canManageIncidents(user)) {
+      const err = new Error(
+        'Forbidden: Incident responder confirmation requires first-responder or administrative authorization.'
+      );
+      err.statusCode = 403;
+      throw err;
+    }
+
+    const incident = await this.getIncidentRaw(idOrNumber);
+    const now = new Date().toISOString();
+    const actorId = user.userId || user.id || 'responder-actor';
+
+    incident.status = INCIDENT_STATUS.RESPONDER_CONFIRMED;
+    incident.verificationStatus = VERIFICATION_STATUS.CONFIRMED;
+
+    if (
+      confirmationData.confirmedSeverity &&
+      Object.values(INCIDENT_SEVERITY).includes(confirmationData.confirmedSeverity)
+    ) {
+      incident.severity = confirmationData.confirmedSeverity;
+    }
+
+    if (Array.isArray(confirmationData.confirmedHazards) && confirmationData.confirmedHazards.length > 0) {
+      incident.hazards = confirmationData.confirmedHazards;
+    }
+
+    incident.responderConfirmation = {
+      confirmedAt: now,
+      responderId: actorId,
+      officerName: confirmationData.officerName || 'Duty Officer',
+      agency: confirmationData.agency || OFFICIAL_RESPONDER_AGENCIES.POLICE,
+      badgeNumber: confirmationData.badgeNumber || 'UNIT-01',
+      notes: confirmationData.notes || 'Scene ground truth confirmed by first responder on-site',
+    };
+    incident.updatedAt = now;
+
+    // Status history
+    if (!incident.statusHistory) incident.statusHistory = [];
+    incident.statusHistory.push({
+      status: INCIDENT_STATUS.RESPONDER_CONFIRMED,
+      timestamp: now,
+      actorId,
+      notes: confirmationData.notes || 'Incident confirmed on scene by first responder',
+    });
+
+    // Timeline event
+    this.addTimelineEvent(incident.id, {
+      id: `tl-${incident.id}-${Date.now().toString(36)}`,
+      incidentId: incident.id,
+      eventType: TIMELINE_EVENT_TYPES.RESPONDER_CONFIRMED,
+      status: INCIDENT_STATUS.RESPONDER_CONFIRMED,
+      title: 'Responder Ground Confirmation',
+      description: `${confirmationData.agency || 'Emergency Responder'} (${confirmationData.officerName || 'Officer'}) confirmed incident scene. ${confirmationData.notes || ''}`.trim(),
+      actorId,
+      actorRole: confirmationData.agency || 'FIRST_RESPONDER',
+      timestamp: now,
+    });
+
+    // Notification to citizen reporter
+    this.addNotification(incident.id, {
+      id: `notif-${incident.id}-${Date.now().toString(36)}`,
+      incidentId: incident.id,
+      incidentNumber: incident.incidentNumber,
+      type: INCIDENT_NOTIFICATION_TYPES.RESPONDER_CONFIRMATION_NOTICE,
+      title: 'Incident Confirmed on Scene',
+      message: `Incident #${incident.incidentNumber} ground truth has been verified by ${confirmationData.agency || 'first responders'}.`,
+      channel: 'IN_APP',
+      recipientRole: 'CITIZEN',
+      timestamp: now,
+      read: false,
+    });
+
+    this.auditLogs.push({
+      action: 'INCIDENT_RESPONDER_CONFIRMED',
+      incidentId: incident.id,
+      incidentNumber: incident.incidentNumber,
+      actorId,
+      timestamp: now,
+    });
+
+    return { ...incident };
+  }
+
+  /**
+   * Phase 56: Closes an incident with resolution notes and optional proof.
+   * Requires first-responder or administrative authorization.
+   */
+  async closeIncident(idOrNumber, closureData = {}, options = {}) {
+    const { user } = options;
+
+    if (!user || !this.canManageIncidents(user)) {
+      const err = new Error('Forbidden: Closing an incident requires first-responder or administrative authorization.');
+      err.statusCode = 403;
+      throw err;
+    }
+
+    const incident = await this.getIncidentRaw(idOrNumber);
+    const now = new Date().toISOString();
+    const actorId = user.userId || user.id || 'responder-actor';
+
+    const notes = typeof closureData.notes === 'string'
+      ? closureData.notes.trim()
+      : typeof closureData.closureReason === 'string'
+      ? closureData.closureReason.trim()
+      : '';
+
+    if (notes.length < 5) {
+      const err = new Error('Closure notes or reason is required and must be at least 5 characters long.');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const targetStatus = closureData.status || INCIDENT_STATUS.CLOSED;
+    if (
+      targetStatus !== INCIDENT_STATUS.CLOSED &&
+      targetStatus !== INCIDENT_STATUS.RESOLVED &&
+      targetStatus !== INCIDENT_STATUS.FALSE_ALARM
+    ) {
+      const err = new Error(
+        `Invalid closure status '${targetStatus}'. Must be CLOSED, RESOLVED, or FALSE_ALARM.`
+      );
+      err.statusCode = 400;
+      throw err;
+    }
+
+    incident.status = targetStatus;
+    incident.closedAt = now;
+    incident.closedBy = actorId;
+    incident.closureReason = notes;
+    incident.resolutionProof = Array.isArray(closureData.resolutionProof) ? closureData.resolutionProof : [];
+    incident.updatedAt = now;
+
+    // Status history
+    if (!incident.statusHistory) incident.statusHistory = [];
+    incident.statusHistory.push({
+      status: targetStatus,
+      timestamp: now,
+      actorId,
+      notes: `Incident closed: ${notes}`,
+    });
+
+    // Timeline event
+    this.addTimelineEvent(incident.id, {
+      id: `tl-${incident.id}-${Date.now().toString(36)}`,
+      incidentId: incident.id,
+      eventType: TIMELINE_EVENT_TYPES.INCIDENT_CLOSED,
+      status: targetStatus,
+      title: targetStatus === INCIDENT_STATUS.FALSE_ALARM ? 'Incident Marked False Alarm' : 'Incident Closed & Cleared',
+      description: notes,
+      actorId,
+      actorRole: 'OFFICIAL_RESPONDER',
+      timestamp: now,
+    });
+
+    // Closure notification
+    this.addNotification(incident.id, {
+      id: `notif-${incident.id}-${Date.now().toString(36)}`,
+      incidentId: incident.id,
+      incidentNumber: incident.incidentNumber,
+      type: INCIDENT_NOTIFICATION_TYPES.INCIDENT_CLOSURE_NOTICE,
+      title: `Incident #${incident.incidentNumber} Closed`,
+      message: `Incident #${incident.incidentNumber} is now marked ${targetStatus}. ${notes}`,
+      channel: 'IN_APP',
+      recipientRole: 'CITIZEN',
+      timestamp: now,
+      read: false,
+    });
+
+    this.auditLogs.push({
+      action: 'INCIDENT_CLOSED',
+      incidentId: incident.id,
+      incidentNumber: incident.incidentNumber,
+      newStatus: targetStatus,
+      actorId,
+      timestamp: now,
+    });
+
+    return { ...incident };
+  }
+
+  /**
+   * Helper to retrieve un-redacted incident by ID or Number.
+   */
+  async getIncidentRaw(idOrNumber) {
     let incident = this.incidents.get(idOrNumber);
     if (!incident) {
       incident = Array.from(this.incidents.values()).find(
@@ -343,7 +747,15 @@ export class IncidentService {
       err.statusCode = 404;
       throw err;
     }
+    return incident;
+  }
 
+  /**
+   * Retrieves an incident by ID or incidentNumber with role-based sensitive data protection.
+   */
+  async getIncidentById(idOrNumber, options = {}) {
+    const { user } = options;
+    const incident = await this.getIncidentRaw(idOrNumber);
     const canReadSensitive = this.canReadSensitiveDetails(user);
 
     if (!canReadSensitive) {
@@ -365,6 +777,52 @@ export class IncidentService {
   }
 
   /**
+   * Phase 56: Retrieves chronological timeline of events for an incident.
+   */
+  async getIncidentTimeline(idOrNumber, options = {}) {
+    const incident = await this.getIncidentRaw(idOrNumber);
+    const events = this.timelines.get(incident.id) || [];
+
+    // If no custom timeline events stored yet, generate from statusHistory
+    if (events.length === 0 && Array.isArray(incident.statusHistory)) {
+      for (let i = 0; i < incident.statusHistory.length; i++) {
+        const sh = incident.statusHistory[i];
+        events.push({
+          id: `tl-${incident.id}-${i}`,
+          incidentId: incident.id,
+          eventType: i === 0 ? TIMELINE_EVENT_TYPES.INCIDENT_RECORDED : TIMELINE_EVENT_TYPES.STATUS_UPDATED,
+          status: sh.status,
+          title: `Status: ${sh.status}`,
+          description: sh.notes || 'Status updated',
+          actorId: sh.actorId || 'system',
+          actorRole: 'SYSTEM',
+          timestamp: sh.timestamp,
+        });
+      }
+    }
+
+    // Sort chronologically ascending
+    const sorted = [...events].sort(
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+
+    return sorted;
+  }
+
+  /**
+   * Phase 56: Retrieves notifications generated for an incident.
+   */
+  async getIncidentNotifications(idOrNumber, options = {}) {
+    const incident = await this.getIncidentRaw(idOrNumber);
+    const notifs = this.notifications.get(incident.id) || [];
+
+    // Sort latest first
+    return [...notifs].sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+  }
+
+  /**
    * Lists incidents matching query filters with sensitive data redaction.
    */
   async listIncidents(query = {}, options = {}) {
@@ -372,6 +830,7 @@ export class IncidentService {
     const {
       incidentType,
       status,
+      verificationStatus,
       severity,
       jurisdictionId,
       corridorOrRoadName,
@@ -394,6 +853,10 @@ export class IncidentService {
 
     if (status) {
       items = items.filter((inc) => inc.status === status);
+    }
+
+    if (verificationStatus) {
+      items = items.filter((inc) => inc.verificationStatus === verificationStatus);
     }
 
     if (severity) {
@@ -471,7 +934,9 @@ export class IncidentService {
     const { user } = options;
 
     if (!user || !this.canManageIncidents(user)) {
-      const err = new Error('Forbidden: Updating incident status requires first-responder or administrative authorization.');
+      const err = new Error(
+        'Forbidden: Updating incident status requires first-responder or administrative authorization.'
+      );
       err.statusCode = 403;
       throw err;
     }
@@ -484,24 +949,16 @@ export class IncidentService {
       throw err;
     }
 
-    let incident = this.incidents.get(idOrNumber);
-    if (!incident) {
-      incident = Array.from(this.incidents.values()).find(
-        (inc) => inc.incidentNumber.toLowerCase() === idOrNumber.toLowerCase()
-      );
-    }
-
-    if (!incident) {
-      const err = new Error(`Incident with ID or Number '${idOrNumber}' not found.`);
-      err.statusCode = 404;
-      throw err;
-    }
-
+    const incident = await this.getIncidentRaw(idOrNumber);
     const now = new Date().toISOString();
     const actorId = user.userId || user.id || 'authorized-actor';
 
     incident.status = newStatus;
     incident.updatedAt = now;
+
+    if (newStatus === INCIDENT_STATUS.RESPONDER_CONFIRMED) {
+      incident.verificationStatus = VERIFICATION_STATUS.CONFIRMED;
+    }
 
     if (!incident.statusHistory) {
       incident.statusHistory = [];
@@ -513,6 +970,19 @@ export class IncidentService {
       actorId,
       notes: metadata.notes || `Status transitioned to ${newStatus}`,
       ...metadata,
+    });
+
+    // Timeline event
+    this.addTimelineEvent(incident.id, {
+      id: `tl-${incident.id}-${Date.now().toString(36)}`,
+      incidentId: incident.id,
+      eventType: TIMELINE_EVENT_TYPES.STATUS_UPDATED,
+      status: newStatus,
+      title: `Status Updated to ${newStatus}`,
+      description: metadata.notes || `Incident status updated to ${newStatus}`,
+      actorId,
+      actorRole: user.role || 'OFFICIAL',
+      timestamp: now,
     });
 
     this.auditLogs.push({
@@ -539,17 +1009,21 @@ export class IncidentService {
     }
 
     const activeStatuses = [
+      INCIDENT_STATUS.UNVERIFIED,
       INCIDENT_STATUS.REPORTED,
       INCIDENT_STATUS.DISPATCH_PENDING,
+      INCIDENT_STATUS.RESPONDER_CONFIRMED,
       INCIDENT_STATUS.RESPONDER_EN_ROUTE,
       INCIDENT_STATUS.ON_SCENE,
     ];
 
     const stats = {
       total: items.length,
+      unverifiedCount: items.filter((inc) => inc.status === INCIDENT_STATUS.UNVERIFIED).length,
       activeCount: items.filter((inc) => activeStatuses.includes(inc.status)).length,
       criticalCount: items.filter((inc) => inc.severity === INCIDENT_SEVERITY.CRITICAL).length,
       highCount: items.filter((inc) => inc.severity === INCIDENT_SEVERITY.HIGH).length,
+      closedCount: items.filter((inc) => inc.status === INCIDENT_STATUS.CLOSED || inc.status === INCIDENT_STATUS.RESOLVED).length,
       casualtiesReportedCount: items.filter((inc) => inc.casualties.hasCasualties).length,
       byType: {},
       byStatus: {},

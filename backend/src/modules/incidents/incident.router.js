@@ -1,6 +1,7 @@
 /**
  * Critical Incident & Accident Reporting Express Router
  * Phase 55: Build accident/incident reporting model
+ * Phase 56: Build accident response workflow
  */
 
 import { Router } from 'express';
@@ -73,6 +74,30 @@ export async function resolveAuthContext(req) {
 }
 
 /**
+ * POST /incidents/rapid
+ * Phase 56: Rapid incident submission for emergency situations.
+ * Low friction, minimal fields, records as UNVERIFIED, links Call 112 if requested.
+ */
+incidentRouter.post('/rapid', async (req, res) => {
+  try {
+    const authCtx = await resolveAuthContext(req);
+    const incident = await incidentService.submitRapidIncident(req.body, {
+      user: authCtx,
+    });
+
+    res.status(201).json({
+      success: true,
+      incident,
+    });
+  } catch (err) {
+    res.status(err.statusCode || 500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+/**
  * POST /incidents
  * Creates a new critical accident/incident report.
  */
@@ -128,6 +153,132 @@ incidentRouter.get('/', async (req, res) => {
     res.json({
       success: true,
       ...result,
+    });
+  } catch (err) {
+    res.status(err.statusCode || 500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * POST /incidents/:id/handoff-112
+ * Phase 56: Records Call 112 emergency hotline handoff.
+ */
+incidentRouter.post('/:id/handoff-112', async (req, res) => {
+  try {
+    const authCtx = await resolveAuthContext(req);
+    const updated = await incidentService.recordCall112Handoff(
+      req.params.id,
+      req.body || {},
+      { user: authCtx }
+    );
+
+    res.json({
+      success: true,
+      incident: updated,
+    });
+  } catch (err) {
+    res.status(err.statusCode || 500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * POST /incidents/:id/confirm
+ * Phase 56: Ground confirmation by official first responder.
+ * Transitions incident from UNVERIFIED to RESPONDER_CONFIRMED.
+ */
+incidentRouter.post('/:id/confirm', async (req, res) => {
+  try {
+    const authCtx = await resolveAuthContext(req);
+    const updated = await incidentService.confirmIncident(
+      req.params.id,
+      req.body || {},
+      { user: authCtx }
+    );
+
+    res.json({
+      success: true,
+      incident: updated,
+    });
+  } catch (err) {
+    res.status(err.statusCode || 500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * POST /incidents/:id/close
+ * Phase 56: Incident closure with resolution notes and proof.
+ */
+incidentRouter.post('/:id/close', async (req, res) => {
+  try {
+    const authCtx = await resolveAuthContext(req);
+    const updated = await incidentService.closeIncident(
+      req.params.id,
+      req.body || {},
+      { user: authCtx }
+    );
+
+    res.json({
+      success: true,
+      incident: updated,
+    });
+  } catch (err) {
+    res.status(err.statusCode || 500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * GET /incidents/:id/timeline
+ * Phase 56: Retrieves chronological timeline of events for an incident.
+ */
+incidentRouter.get('/:id/timeline', async (req, res) => {
+  try {
+    const authCtx = await resolveAuthContext(req);
+    const timeline = await incidentService.getIncidentTimeline(req.params.id, {
+      user: authCtx,
+    });
+
+    res.json({
+      success: true,
+      incidentId: req.params.id,
+      timeline,
+      count: timeline.length,
+    });
+  } catch (err) {
+    res.status(err.statusCode || 500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+/**
+ * GET /incidents/:id/notifications
+ * Phase 56: Retrieves incident notifications.
+ */
+incidentRouter.get('/:id/notifications', async (req, res) => {
+  try {
+    const authCtx = await resolveAuthContext(req);
+    const notifications = await incidentService.getIncidentNotifications(req.params.id, {
+      user: authCtx,
+    });
+
+    res.json({
+      success: true,
+      incidentId: req.params.id,
+      notifications,
+      count: notifications.length,
     });
   } catch (err) {
     res.status(err.statusCode || 500).json({

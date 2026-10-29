@@ -18,6 +18,7 @@ import { assetDecisionRouter } from './modules/asset-decisions/asset-decision.ro
 import { incidentRouter } from './modules/incidents/incident.router.js';
 import { incidentSourceRouter } from './integrations/incident-source/index.js';
 import { responderRouter } from './modules/responders/index.js';
+import { communicationRouter } from './modules/communications/index.js';
 
 export function createApp() {
   const app = express();
@@ -47,6 +48,7 @@ export function createApp() {
   app.use('/incidents', incidentRouter);
   app.use('/integrations/incident-source', incidentSourceRouter);
   app.use('/responders', responderRouter);
+  app.use('/communications', communicationRouter);
 
   // Global Error Handler
   app.use((err, req, res, next) => {

@@ -7,6 +7,7 @@ export const ROLE_PERMISSIONS = {
         'assets:read', 'assets:write', 'assets:delete',
         'maintenance:read', 'maintenance:write', 'maintenance:costs:read',
         'incidents:read', 'incidents:write', 'incidents:read:sensitive', 'incidents:manage',
+        'responders:read', 'responders:write', 'responders:dispatch',
     ],
     NATIONAL_ADMIN: [
         'issues:read', 'issues:write', 'issues:verify',
@@ -34,6 +35,7 @@ export const ROLE_PERMISSIONS = {
         'assets:read', 'assets:write', 'assets:delete',
         'maintenance:read', 'maintenance:write', 'maintenance:costs:read',
         'incidents:read', 'incidents:write', 'incidents:read:sensitive', 'incidents:manage',
+        'responders:read', 'responders:write', 'responders:dispatch',
     ],
     DEPARTMENT_OFFICER: [
         'issues:read', 'issues:write',
@@ -69,6 +71,25 @@ export const ROLE_PERMISSIONS = {
         'assets:read',
         'maintenance:read',
         'incidents:read', 'incidents:write', 'incidents:read:sensitive', 'incidents:manage',
+        'responders:read', 'responders:dispatch',
+    ],
+    AGENCY_ADMIN: [
+        'issues:read',
+        'reports:read',
+        'users:read',
+        'incidents:read', 'incidents:write', 'incidents:read:sensitive', 'incidents:manage',
+        'responders:read', 'responders:write', 'responders:dispatch',
+    ],
+    EMERGENCY_DISPATCHER: [
+        'issues:read',
+        'reports:read',
+        'incidents:read', 'incidents:write', 'incidents:read:sensitive', 'incidents:manage',
+        'responders:read', 'responders:dispatch',
+    ],
+    FIRST_RESPONDER: [
+        'issues:read',
+        'incidents:read', 'incidents:write', 'incidents:read:sensitive', 'incidents:manage',
+        'responders:read',
     ],
     AUDITOR: [
         'issues:read',

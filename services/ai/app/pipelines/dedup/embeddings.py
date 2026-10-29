@@ -1,5 +1,6 @@
 import math
 import re
+import zlib
 from abc import ABC, abstractmethod
 
 
@@ -39,6 +40,9 @@ class DenseNgramSemanticEmbedder(BaseTextEmbedder):
     def __init__(self, dimension: int = 256) -> None:
         self.dimension = dimension
 
+    def _hash(self, token: str) -> int:
+        return zlib.crc32(token.encode("utf-8")) % self.dimension
+
     def _clean_text(self, text: str) -> str:
         clean = re.sub(r"[^\w\s]", " ", text.lower())
         return " ".join(clean.split())
@@ -53,13 +57,13 @@ class DenseNgramSemanticEmbedder(BaseTextEmbedder):
 
         # 1. Unigram word features with log frequency
         for word in words:
-            idx = hash(word) % self.dimension
+            idx = self._hash(word)
             vector[idx] += 2.0
 
         # 2. Bigram phrases for local context
         for i in range(len(words) - 1):
             bigram = f"{words[i]}_{words[i + 1]}"
-            idx = hash(bigram) % self.dimension
+            idx = self._hash(bigram)
             vector[idx] += 3.0
 
         # 3. Subword character trigrams for typo resilience & root matching
@@ -67,7 +71,7 @@ class DenseNgramSemanticEmbedder(BaseTextEmbedder):
             padded = f"<{word}>"
             for j in range(len(padded) - 2):
                 tri = padded[j : j + 3]
-                idx = hash(tri) % self.dimension
+                idx = self._hash(tri)
                 vector[idx] += 0.5
 
         # L2 Normalize

@@ -14,8 +14,6 @@ from app.pipelines.asset_decision import (
     DecisionReasonCodeEnum,
     DecisionRecommendationEnum,
     PolicyThresholdManager,
-    get_asset_decision_model,
-    get_policy_manager,
     reset_asset_decision_registry,
 )
 
@@ -59,7 +57,7 @@ def test_replace_review_recommended_when_cumulative_cost_exceeds_threshold() -> 
 
 def test_rehabilitate_or_overhaul_when_near_warning_threshold() -> None:
     model = AssetDecisionModel()
-    # Transformer default threshold is 0.50 (50%), warning threshold is 0.35 (35%), baseline ₹1,200,000
+    # Transformer default threshold: 0.50, warning threshold: 0.35, baseline ₹1,200,000
     # Repairs: ₹500,000 -> Ratio = 41.67% (between 35% and 50%)
     asset = AssetDecisionInput(
         asset_id="ast-tr-01",
@@ -132,7 +130,7 @@ def test_fallback_to_category_baseline_replacement_cost_when_omitted() -> None:
 def test_exceeded_design_lifespan_and_severe_condition_escalation() -> None:
     model = AssetDecisionModel()
     # Culvert: warning 0.45, replacement 0.65.
-    # Cumulative repairs ratio 0.46 (normally overhaul), but age 26 >= 25 lifespan AND condition 32 < 40
+    # Cumulative repairs ratio 0.46, but age 26 >= 25 lifespan AND condition 32 < 40
     # triggers accelerated capital replacement review!
     asset = AssetDecisionInput(
         asset_id="ast-culvert-01",

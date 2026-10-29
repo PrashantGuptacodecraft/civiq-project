@@ -9,7 +9,6 @@ never automated replacement orders.
 """
 
 from datetime import datetime, timezone
-from typing import Any
 
 from .schemas import (
     AssetMaintenanceInput,
@@ -87,11 +86,17 @@ class PredictiveMaintenanceModel:
         # ─── 1. Failure Frequency & Recurrence Subscore (Weight: 0.35) ───
         if asset.recent_failure_count >= 3:
             failure_score = 1.00
-            desc = f"Critical chronic recurrence: {asset.recent_failure_count} repeat failures in recent operational window"
+            desc = (
+                f"Critical chronic recurrence: {asset.recent_failure_count} repeat failures "
+                "in recent operational window"
+            )
             reason_codes.append(ReasonCodeEnum.CHRONIC_RECURRENCE)
         elif asset.recent_failure_count >= 2:
             failure_score = 0.85
-            desc = f"Elevated recurrence: {asset.recent_failure_count} recent repeated failures detected"
+            desc = (
+                f"Elevated recurrence: {asset.recent_failure_count} "
+                "recent repeated failures detected"
+            )
             reason_codes.append(ReasonCodeEnum.CHRONIC_RECURRENCE)
         elif asset.failure_count >= 5:
             failure_score = 0.80
@@ -124,17 +129,29 @@ class PredictiveMaintenanceModel:
 
         if age_ratio >= 1.0:
             age_score = 1.00
-            desc = f"Exceeded design life: {age_years} years operating (design: {lifespan_years} yrs, {round(age_ratio*100)}% wear)"
+            desc = (
+                f"Exceeded design life: {age_years} years operating "
+                f"(design: {lifespan_years} yrs, {round(age_ratio * 100)}% wear)"
+            )
             reason_codes.append(ReasonCodeEnum.EXCEEDED_DESIGN_LIFESPAN)
         elif age_ratio >= 0.80:
             age_score = 0.75
-            desc = f"Nearing end of design life: {age_years} / {lifespan_years} yrs ({round(age_ratio*100)}%)"
+            desc = (
+                f"Nearing end of design life: {age_years} / {lifespan_years} yrs "
+                f"({round(age_ratio * 100)}%)"
+            )
         elif age_ratio >= 0.50:
             age_score = 0.45
-            desc = f"Mid-lifecycle operating age: {age_years} / {lifespan_years} yrs ({round(age_ratio*100)}%)"
+            desc = (
+                f"Mid-lifecycle operating age: {age_years} / {lifespan_years} yrs "
+                f"({round(age_ratio * 100)}%)"
+            )
         else:
             age_score = max(0.05, round(age_ratio * 0.4, 2))
-            desc = f"Early lifecycle operating age: {age_years} / {lifespan_years} yrs ({round(age_ratio*100)}%)"
+            desc = (
+                f"Early lifecycle operating age: {age_years} / {lifespan_years} yrs "
+                f"({round(age_ratio * 100)}%)"
+            )
 
         factors.append(
             ContributingFactor(
@@ -150,11 +167,17 @@ class PredictiveMaintenanceModel:
         if days_lag is not None:
             if days_lag >= 365:
                 maint_score = 1.00
-                desc = f"Severe maintenance lag: {days_lag} days since last recorded servicing (> 1 year)"
+                desc = (
+                    f"Severe maintenance lag: {days_lag} days since "
+                    "last recorded servicing (> 1 year)"
+                )
                 reason_codes.append(ReasonCodeEnum.MAINTENANCE_OVERDUE)
             elif days_lag >= 180:
                 maint_score = 0.70
-                desc = f"Overdue for scheduled servicing: {days_lag} days elapsed without preventive check"
+                desc = (
+                    f"Overdue for scheduled servicing: {days_lag} days "
+                    "elapsed without preventive check"
+                )
                 reason_codes.append(ReasonCodeEnum.MAINTENANCE_OVERDUE)
             elif days_lag >= 90:
                 maint_score = 0.35
@@ -183,7 +206,6 @@ class PredictiveMaintenanceModel:
 
         # ─── 4. Physical Condition & Degradation Subscore (Weight: 0.20) ───
         condition = asset.current_condition_score
-        condition_deficit = max(0.0, min(1.0, (100.0 - condition) / 100.0))
 
         if condition < 40.0:
             cond_score = 1.00
@@ -233,7 +255,7 @@ class PredictiveMaintenanceModel:
             risk_level = RiskLevelEnum.LOW
 
         # Recommended Action: strictly non-authoritative
-        # Always 'MAINTENANCE_REVIEW_RECOMMENDED' when risk is elevated (never automatic replacement)
+        # Always 'MAINTENANCE_REVIEW_RECOMMENDED' when risk is elevated (never replacement)
         if risk_score >= 0.30:
             recommended_action = MaintenanceActionRecommendationEnum.MAINTENANCE_REVIEW_RECOMMENDED
         else:
@@ -262,7 +284,7 @@ class PredictiveMaintenanceModel:
             confidence=confidence,
             is_authoritative=False,
             disclaimer=(
-                "AI-generated risk advisory for decision support only. Maintenance review is recommended; "
-                "final engineering authority rests with municipal department officers."
+                "AI-generated risk advisory for decision support only. Maintenance review is "
+                "recommended; final engineering authority rests with municipal department officers."
             ),
         )

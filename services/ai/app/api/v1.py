@@ -6,29 +6,28 @@ from fastapi import APIRouter
 from app.api.schemas import (
     AI_GATEWAY_VERSION,
     AiModelMetadata,
+    AssetDecisionBatchRequest,
+    AssetDecisionBatchResponse,
+    AssetDecisionRequest,
+    AssetDecisionResponse,
+    CategoryPolicyResponse,
     CategoryPrediction,
     ClassificationFeedbackRequest,
     ClassificationFeedbackResponse,
     ClassifyRequest,
     ClassifyResponse,
     ContributingFactor,
+    DecisionFactorSchema,
     DepartmentOption,
     DuplicateCandidateResult,
     DuplicateScoreRequest,
     DuplicateScoreResponse,
     EvidenceCheckRequest,
     EvidenceCheckResponse,
-    PredictRequest,
-    PredictResponse,
     PredictiveMaintenanceRequest,
     PredictiveMaintenanceResponse,
-    AssetDecisionRequest,
-    AssetDecisionResponse,
-    AssetDecisionBatchRequest,
-    AssetDecisionBatchResponse,
-    CategoryPolicyResponse,
-    UpdateCategoryPolicyRequest,
-    DecisionFactorSchema,
+    PredictRequest,
+    PredictResponse,
     PriorityBreakdown,
     PriorityScoreRequest,
     PriorityScoreResponse,
@@ -36,18 +35,19 @@ from app.api.schemas import (
     RouteResponse,
     SummarizeRequest,
     SummarizeResponse,
+    UpdateCategoryPolicyRequest,
 )
-from app.pipelines.classification import get_classifier, get_feedback_store
-from app.pipelines.dedup import IssueSummary, get_dedup_engine
-from app.pipelines.priority import IssuePriorityInput, get_priority_engine
-from app.pipelines.vision import get_analyzer
-from app.pipelines.maintenance import AssetMaintenanceInput, get_maintenance_predictor
 from app.pipelines.asset_decision import (
     AssetDecisionInput,
     CategoryPolicyThreshold,
     get_asset_decision_model,
     get_policy_manager,
 )
+from app.pipelines.classification import get_classifier, get_feedback_store
+from app.pipelines.dedup import IssueSummary, get_dedup_engine
+from app.pipelines.maintenance import AssetMaintenanceInput, get_maintenance_predictor
+from app.pipelines.priority import IssuePriorityInput, get_priority_engine
+from app.pipelines.vision import get_analyzer
 
 router = APIRouter(prefix="/v1", tags=["AI Gateway v1"])
 
@@ -311,8 +311,7 @@ def score_priority(payload: PriorityScoreRequest) -> PriorityScoreResponse:
 
     first_reason = result.reasons[0] if result.reasons else "Deterministic signals evaluated."
     explanation = (
-        f"Priority score {result.priority_score}/100 [{result.priority_tier}]: "
-        f"{first_reason}"
+        f"Priority score {result.priority_score}/100 [{result.priority_tier}]: {first_reason}"
     )
 
     return PriorityScoreResponse(
@@ -476,7 +475,6 @@ def predict_trend(payload: PredictRequest) -> PredictResponse:
     )
 
 
-
 @router.post("/predict/maintenance", response_model=PredictiveMaintenanceResponse)
 def predict_maintenance(payload: PredictiveMaintenanceRequest) -> PredictiveMaintenanceResponse:
     start_time = time.perf_counter()
@@ -515,8 +513,9 @@ def predict_maintenance(payload: PredictiveMaintenanceRequest) -> PredictiveMain
         confidence=result.confidence,
         model=DEFAULT_MODEL,
         explanation=(
-            f"Baseline predictive maintenance assessment for asset {payload.asset_id} ({payload.asset_type}): "
-            f"risk {result.risk_level.value} ({result.risk_score}). Recommended action: {result.recommended_action.value}."
+            f"Baseline predictive maintenance assessment for asset {payload.asset_id} "
+            f"({payload.asset_type}): risk {result.risk_level.value} ({result.risk_score}). "
+            f"Recommended action: {result.recommended_action.value}."
         ),
         latency_ms=latency,
         asset_id=result.asset_id,

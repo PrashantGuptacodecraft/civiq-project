@@ -16,7 +16,9 @@ DEFAULT_CATEGORY_POLICY_THRESHOLDS: Dict[str, CategoryPolicyThreshold] = {
         warning_threshold_ratio=0.40,
         baseline_replacement_cost_inr=5_000_000.0,  # 50 Lakhs per km standard carriageway
         annual_repair_budget_cap_inr=1_500_000.0,
-        description="IRC:37 standard arterial/collector road wearing course reconstruction threshold",
+        description=(
+            "IRC:37 standard arterial/collector road wearing course reconstruction threshold"
+        ),
     ),
     "ELECTRICAL_TRANSFORMER": CategoryPolicyThreshold(
         asset_type="ELECTRICAL_TRANSFORMER",
@@ -56,7 +58,9 @@ DEFAULT_CATEGORY_POLICY_THRESHOLDS: Dict[str, CategoryPolicyThreshold] = {
         warning_threshold_ratio=0.40,
         baseline_replacement_cost_inr=300_000.0,
         annual_repair_budget_cap_inr=100_000.0,
-        description="Sluice/butterfly pressure regulation valve mechanical life replacement threshold",
+        description=(
+            "Sluice/butterfly pressure regulation valve mechanical life replacement threshold"
+        ),
     ),
     "STREETLIGHT": CategoryPolicyThreshold(
         asset_type="STREETLIGHT",

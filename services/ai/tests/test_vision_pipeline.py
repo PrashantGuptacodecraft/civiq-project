@@ -208,8 +208,7 @@ def test_vision_eval_precision_recall_smoke_test() -> None:
         # No unsafe auto-reject: if unsupported format, decision must be REVIEW_REQUIRED
         if result.is_unsupported_format:
             assert result.review_decision == "REVIEW_REQUIRED", (
-                f"Unsupported format must route to REVIEW_REQUIRED, "
-                f"got {result.review_decision}"
+                f"Unsupported format must route to REVIEW_REQUIRED, got {result.review_decision}"
             )
 
         # Decision is always one of the valid states

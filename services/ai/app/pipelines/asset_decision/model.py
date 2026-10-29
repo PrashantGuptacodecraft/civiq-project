@@ -46,7 +46,6 @@ class AssetDecisionModel:
         ratio = round(cumulative_repairs / replacement_cost, 4)
 
         threshold_cost = round(replacement_cost * replacement_threshold_ratio, 2)
-        warning_cost = round(replacement_cost * warning_threshold_ratio, 2)
 
         cost_headroom = round(threshold_cost - cumulative_repairs, 2)
         cost_overrun = round(max(0.0, cumulative_repairs - threshold_cost), 2)
@@ -87,7 +86,8 @@ class AssetDecisionModel:
                     description=(
                         f"Cumulative maintenance expenditure of ₹{cumulative_repairs:,.2f} "
                         f"has reached {round(ratio * 100, 1)}% of the ₹{replacement_cost:,.2f} "
-                        f"replacement benchmark, exceeding the {round(replacement_threshold_ratio * 100, 1)}% policy ceiling."
+                        "replacement benchmark, exceeding the "
+                        f"{round(replacement_threshold_ratio * 100, 1)}% policy ceiling."
                     ),
                 )
             )
@@ -102,8 +102,9 @@ class AssetDecisionModel:
                     metric_value=f"{round(ratio * 100, 1)}%",
                     threshold_value=f"{round(warning_threshold_ratio * 100, 1)}%",
                     description=(
-                        f"Cumulative repairs of ₹{cumulative_repairs:,.2f} represent {round(ratio * 100, 1)}% "
-                        f"of replacement cost, approaching the capital replacement review horizon."
+                        f"Cumulative repairs of ₹{cumulative_repairs:,.2f} represent "
+                        f"{round(ratio * 100, 1)}% of replacement cost, approaching "
+                        "the capital replacement review horizon."
                     ),
                 )
             )
@@ -118,9 +119,10 @@ class AssetDecisionModel:
                     metric_value=f"{round(ratio * 100, 1)}%",
                     threshold_value=f"{round(warning_threshold_ratio * 100, 1)}%",
                     description=(
-                        f"Cumulative repairs of ₹{cumulative_repairs:,.2f} ({round(ratio * 100, 1)}%) "
-                        f"remain safely within the {round(warning_threshold_ratio * 100, 1)}% warning threshold. "
-                        f"Continued preventative maintenance is economically viable."
+                        f"Cumulative repairs of ₹{cumulative_repairs:,.2f} "
+                        f"({round(ratio * 100, 1)}%) remain safely within the "
+                        f"{round(warning_threshold_ratio * 100, 1)}% warning threshold. "
+                        "Continued preventative maintenance is economically viable."
                     ),
                 )
             )
@@ -136,7 +138,8 @@ class AssetDecisionModel:
                     threshold_value=f"{asset.expected_lifespan_years} years",
                     description=(
                         f"Asset has reached {asset.age_years} operating years, exceeding its "
-                        f"{asset.expected_lifespan_years}-year design life. Material fatigue accelerates repair costs."
+                        f"{asset.expected_lifespan_years}-year design life. "
+                        "Material fatigue accelerates repair costs."
                     ),
                 )
             )
@@ -150,8 +153,8 @@ class AssetDecisionModel:
                     metric_value=f"{asset.current_condition_score}/100",
                     threshold_value="60.0/100",
                     description=(
-                        f"Current condition index ({asset.current_condition_score}/100) indicates physical distress "
-                        f"diminishing return on localized repairs."
+                        f"Current condition index ({asset.current_condition_score}/100) "
+                        "indicates physical distress diminishing return on localized repairs."
                     ),
                 )
             )
@@ -176,7 +179,10 @@ class AssetDecisionModel:
                     weight=0.15,
                     metric_value=f"₹{asset.annual_repair_cost_inr:,.2f}",
                     threshold_value=f"₹{policy.annual_repair_budget_cap_inr:,.2f}",
-                    description="Past 12-month expenditures have breached the municipal category annual ceiling.",
+                    description=(
+                        "Past 12-month expenditures have breached the "
+                        "municipal category annual ceiling."
+                    ),
                 )
             )
 
@@ -187,27 +193,29 @@ class AssetDecisionModel:
         if recommendation == DecisionRecommendationEnum.REPLACE_REVIEW_RECOMMENDED:
             explanation = (
                 f"Capital replacement review recommended for {asset_label} ({type_label}). "
-                f"Cumulative repair expenditures of ₹{cumulative_repairs:,.2f} account for "
-                f"{round(ratio * 100, 1)}% of the ₹{replacement_cost:,.2f} estimated replacement benchmark, "
-                f"exceeding the municipal {round(replacement_threshold_ratio * 100, 1)}% policy ceiling by ₹{cost_overrun:,.2f}. "
-                f"Continued localized repairs are no longer cost-effective; municipal engineering should prepare "
-                f"a capital reconstruction budget proposal."
+                f"Cumulative repairs of ₹{cumulative_repairs:,.2f} account for "
+                f"{round(ratio * 100, 1)}% of the ₹{replacement_cost:,.2f} replacement benchmark, "
+                f"exceeding the municipal {round(replacement_threshold_ratio * 100, 1)}% "
+                f"policy ceiling by ₹{cost_overrun:,.2f}. Continued localized repairs are "
+                "no longer cost-effective; municipal engineering should prepare "
+                "a capital reconstruction budget proposal."
             )
         elif recommendation == DecisionRecommendationEnum.REHABILITATE_OR_OVERHAUL:
             explanation = (
-                f"Comprehensive overhaul or rehabilitation recommended for {asset_label} ({type_label}). "
-                f"Cumulative repairs of ₹{cumulative_repairs:,.2f} represent {round(ratio * 100, 1)}% "
-                f"of replacement cost (approaching the {round(replacement_threshold_ratio * 100, 1)}% ceiling with "
-                f"₹{cost_headroom:,.2f} headroom remaining). A planned major overhaul will arrest further degradation "
-                f"more efficiently than ad-hoc emergency patches."
+                f"Comprehensive overhaul or rehabilitation recommended for {asset_label} "
+                f"({type_label}). Cumulative repairs of ₹{cumulative_repairs:,.2f} represent "
+                f"{round(ratio * 100, 1)}% of replacement cost (approaching the "
+                f"{round(replacement_threshold_ratio * 100, 1)}% ceiling with "
+                f"₹{cost_headroom:,.2f} headroom remaining). A planned major overhaul will arrest "
+                "further degradation more efficiently than ad-hoc emergency patches."
             )
         else:
             explanation = (
                 f"Routine maintenance remains cost-effective for {asset_label} ({type_label}). "
-                f"Cumulative repairs of ₹{cumulative_repairs:,.2f} remain at {round(ratio * 100, 1)}% "
-                f"of the ₹{replacement_cost:,.2f} replacement benchmark, well below the "
-                f"{round(warning_threshold_ratio * 100, 1)}% warning threshold (₹{cost_headroom:,.2f} headroom remaining). "
-                f"Continue scheduled preventative servicing."
+                f"Cumulative repairs of ₹{cumulative_repairs:,.2f} remain at "
+                f"{round(ratio * 100, 1)}% of the ₹{replacement_cost:,.2f} benchmark, "
+                f"well below the {round(warning_threshold_ratio * 100, 1)}% warning threshold "
+                f"(₹{cost_headroom:,.2f} headroom remaining). Continue preventative servicing."
             )
 
         return AssetDecisionResult(

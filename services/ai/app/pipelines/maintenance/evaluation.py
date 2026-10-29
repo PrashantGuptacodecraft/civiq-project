@@ -263,8 +263,14 @@ def run_offline_evaluation(model: PredictiveMaintenanceModel | None = None) -> d
             reason_code_matches += 1
 
         # Confusion matrix calculations
-        if item["expected_action"] == MaintenanceActionRecommendationEnum.MAINTENANCE_REVIEW_RECOMMENDED:
-            if res.recommended_action == MaintenanceActionRecommendationEnum.MAINTENANCE_REVIEW_RECOMMENDED:
+        if (
+            item["expected_action"]
+            == MaintenanceActionRecommendationEnum.MAINTENANCE_REVIEW_RECOMMENDED
+        ):
+            if (
+                res.recommended_action
+                == MaintenanceActionRecommendationEnum.MAINTENANCE_REVIEW_RECOMMENDED
+            ):
                 true_positives += 1
             else:
                 false_negatives += 1
@@ -274,16 +280,18 @@ def run_offline_evaluation(model: PredictiveMaintenanceModel | None = None) -> d
             else:
                 false_positives += 1
 
-        eval_results.append({
-            "asset_id": asset_input.asset_id,
-            "predicted_risk_score": res.risk_score,
-            "predicted_risk_level": res.risk_level.value,
-            "predicted_action": res.recommended_action.value,
-            "expected_action": item["expected_action"].value,
-            "reason_codes": [rc.value for rc in res.reason_codes],
-            "action_correct": is_action_correct,
-            "risk_level_correct": is_risk_level_correct,
-        })
+        eval_results.append(
+            {
+                "asset_id": asset_input.asset_id,
+                "predicted_risk_score": res.risk_score,
+                "predicted_risk_level": res.risk_level.value,
+                "predicted_action": res.recommended_action.value,
+                "expected_action": item["expected_action"].value,
+                "reason_codes": [rc.value for rc in res.reason_codes],
+                "action_correct": is_action_correct,
+                "risk_level_correct": is_risk_level_correct,
+            }
+        )
 
     accuracy = action_matches / total_cases
     precision = (
@@ -296,11 +304,7 @@ def run_offline_evaluation(model: PredictiveMaintenanceModel | None = None) -> d
         if (true_positives + false_negatives) > 0
         else 1.0
     )
-    f1 = (
-        2 * (precision * recall) / (precision + recall)
-        if (precision + recall) > 0
-        else 0.0
-    )
+    f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0
 
     return {
         "total_cases": total_cases,

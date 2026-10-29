@@ -89,9 +89,7 @@ def extract_severity_score(
         )
     elif severity.upper() == "CRITICAL":
         final_score = base
-        reasons.append(
-            f"Reported at CRITICAL severity level ({final_score:.1f}/100)"
-        )
+        reasons.append(f"Reported at CRITICAL severity level ({final_score:.1f}/100)")
     else:
         final_score = base
         reasons.append(f"Standard {severity} severity level assigned ({base:.1f}/100)")
@@ -125,9 +123,7 @@ def extract_safety_risk_score(
     if detected_critical:
         score = max(score, 90.0)
         flags.append("LIFE_SAFETY_CRITICAL")
-        reasons.append(
-            f"Direct physical hazard detected: {', '.join(detected_critical[:2])}"
-        )
+        reasons.append(f"Direct physical hazard detected: {', '.join(detected_critical[:2])}")
 
     # Open manhole or falling hazard
     if "manhole" in combined or "drain cover" in combined or "pit" in combined:
@@ -241,16 +237,12 @@ def extract_age_score(age_hours: float) -> tuple[float, float, list[str]]:
     elif safe_hours < 72.0:
         score = 65.0
         decay = 1.15
-        reasons.append(
-            f"Pending for {safe_hours / 24.0:.1f} days without resolution (SLA warning)"
-        )
+        reasons.append(f"Pending for {safe_hours / 24.0:.1f} days without resolution (SLA warning)")
     elif safe_hours < 168.0:
         score = 85.0
         decay = 1.30
         days_str = f"{safe_hours / 24.0:.1f}"
-        reasons.append(
-            f"Long-pending unresolved issue ({days_str} days); starvation boost applied"
-        )
+        reasons.append(f"Long-pending unresolved issue ({days_str} days); starvation boost applied")
     else:
         score = 95.0
         decay = 1.45

@@ -9,12 +9,10 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 from app.pipelines.maintenance.evaluation import (
-    SEEDED_EVALUATION_DATASET,
     run_offline_evaluation,
 )
 from app.pipelines.maintenance.model import PredictiveMaintenanceModel
 from app.pipelines.maintenance.registry import (
-    get_maintenance_predictor,
     reset_maintenance_registry,
 )
 from app.pipelines.maintenance.schemas import (
@@ -50,7 +48,10 @@ def test_chronic_recurrence_detection() -> None:
 
     assert result.risk_score >= 0.65
     assert result.risk_level in [RiskLevelEnum.HIGH, RiskLevelEnum.CRITICAL]
-    assert result.recommended_action == MaintenanceActionRecommendationEnum.MAINTENANCE_REVIEW_RECOMMENDED
+    assert (
+        result.recommended_action
+        == MaintenanceActionRecommendationEnum.MAINTENANCE_REVIEW_RECOMMENDED
+    )
     assert ReasonCodeEnum.CHRONIC_RECURRENCE in result.reason_codes
     assert ReasonCodeEnum.RAPID_CONDITION_DEGRADATION in result.reason_codes
     assert ReasonCodeEnum.ELEVATED_DOWNTIME in result.reason_codes
@@ -77,7 +78,10 @@ def test_aging_asset_exceeded_lifespan() -> None:
 
     assert result.risk_score >= 0.55
     assert result.risk_level in [RiskLevelEnum.HIGH, RiskLevelEnum.CRITICAL]
-    assert result.recommended_action == MaintenanceActionRecommendationEnum.MAINTENANCE_REVIEW_RECOMMENDED
+    assert (
+        result.recommended_action
+        == MaintenanceActionRecommendationEnum.MAINTENANCE_REVIEW_RECOMMENDED
+    )
     assert ReasonCodeEnum.EXCEEDED_DESIGN_LIFESPAN in result.reason_codes
     assert ReasonCodeEnum.MAINTENANCE_OVERDUE in result.reason_codes
 
@@ -99,7 +103,10 @@ def test_maintenance_overdue_flag() -> None:
     result = model.predict(asset)
 
     assert ReasonCodeEnum.MAINTENANCE_OVERDUE in result.reason_codes
-    assert result.recommended_action == MaintenanceActionRecommendationEnum.MAINTENANCE_REVIEW_RECOMMENDED
+    assert (
+        result.recommended_action
+        == MaintenanceActionRecommendationEnum.MAINTENANCE_REVIEW_RECOMMENDED
+    )
 
 
 def test_pristine_asset_routine_monitoring() -> None:
@@ -148,7 +155,10 @@ def test_non_authoritative_advisory_guarantee() -> None:
     assert result.risk_score >= 0.85
     assert result.risk_level == RiskLevelEnum.CRITICAL
     # MUST be 'MAINTENANCE_REVIEW_RECOMMENDED', NOT 'AUTOMATIC_REPLACEMENT'
-    assert result.recommended_action == MaintenanceActionRecommendationEnum.MAINTENANCE_REVIEW_RECOMMENDED
+    assert (
+        result.recommended_action
+        == MaintenanceActionRecommendationEnum.MAINTENANCE_REVIEW_RECOMMENDED
+    )
     assert result.is_authoritative is False
     assert "AI-generated risk advisory" in result.disclaimer
 

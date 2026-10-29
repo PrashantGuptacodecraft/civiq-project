@@ -351,7 +351,9 @@ class AssetDecisionResponse(BaseAiResponse):
     asset_id: str
     asset_name: str | None = None
     asset_type: str
-    recommendation: Literal["REPLACE_REVIEW_RECOMMENDED", "REHABILITATE_OR_OVERHAUL", "CONTINUE_MAINTENANCE"]
+    recommendation: Literal[
+        "REPLACE_REVIEW_RECOMMENDED", "REHABILITATE_OR_OVERHAUL", "CONTINUE_MAINTENANCE"
+    ]
     cumulative_repair_cost_inr: float
     estimated_replacement_cost_inr: float
     repair_to_replacement_ratio: float
@@ -392,4 +394,3 @@ class UpdateCategoryPolicyRequest(BaseModel):
     baseline_replacement_cost_inr: float = Field(..., ge=1000.0)
     annual_repair_budget_cap_inr: float | None = Field(default=None, ge=0.0)
     description: str | None = None
-

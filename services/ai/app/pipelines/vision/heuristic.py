@@ -262,9 +262,7 @@ class HeuristicVisionAnalyzer(BaseVisionAnalyzer):
         is_too_dark = False
         is_too_small = False
 
-        context_hint = " ".join(
-            filter(None, [storage_key, media_url])
-        ).lower()
+        context_hint = " ".join(filter(None, [storage_key, media_url])).lower()
 
         # Low quality signals in filename/URL
         low_q_matches = _match_keywords(context_hint, _LOW_QUALITY_SIGNALS)
@@ -469,9 +467,7 @@ class HeuristicVisionAnalyzer(BaseVisionAnalyzer):
                 f"Decision: {review_decision.replace('_', ' ')}."
             )
             if is_low_confidence:
-                explanation += (
-                    " Low confidence — image routed to human review for verification."
-                )
+                explanation += " Low confidence — image routed to human review for verification."
         else:
             explanation = (
                 "Insufficient visual context signals to determine category relevance. "

@@ -16,7 +16,7 @@ dashboardRouter.get('/kpis', async (req, res) => {
       jurisdictionId: typeof jurisdictionId === 'string' ? jurisdictionId : undefined,
       timeRange: typeof timeRange === 'string' ? timeRange : '30d',
     });
-
+    
     res.status(200).json({
       success: true,
       data: result,

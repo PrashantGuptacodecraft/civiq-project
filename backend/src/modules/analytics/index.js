@@ -7,3 +7,8 @@ export * from './recurrence/recurrence.types.js';
 export * from './recurrence/recurrence.fixtures.js';
 export * from './recurrence/recurrence.service.js';
 export * from './recurrence/recurrence.router.js';
+
+export * from './safety/safety.types.js';
+export * from './safety/safety.fixtures.js';
+export * from './safety/safety.service.js';
+export * from './safety/safety.router.js';

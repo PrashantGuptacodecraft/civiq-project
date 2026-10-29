@@ -95,6 +95,13 @@ describe('Authorization (AuthZ)', () => {
             } else {
                 expect(can(ctx, 'maintenance:costs:read')).toBe(false);
             }
+            // Phase 55: Critical Incident & Sensitive Data permissions
+            expect(can(ctx, 'incidents:read')).toBe(true);
+            if (['PLATFORM_SUPER_ADMIN', 'NATIONAL_ADMIN', 'STATE_ADMIN', 'DISTRICT_ULB_ADMIN', 'DEPARTMENT_OFFICER', 'DISASTER_COORDINATOR', 'AUDITOR'].includes(role)) {
+                expect(can(ctx, 'incidents:read:sensitive')).toBe(true);
+            } else {
+                expect(can(ctx, 'incidents:read:sensitive')).toBe(false);
+            }
         });
     });
 

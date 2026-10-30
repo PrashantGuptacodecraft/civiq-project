@@ -1,0 +1,72 @@
+/**
+ * Disaster Event Model Types & Enumerations
+ * Phase 61: Build disaster event model
+ */
+
+export const DISASTER_TYPES = {
+  URBAN_FLOODING_WATERLOGGING: 'URBAN_FLOODING_WATERLOGGING',
+  FLASH_FLOOD: 'FLASH_FLOOD',
+  RIVER_FLOOD: 'RIVER_FLOOD',
+  CYCLONE_OR_STORM_SURGE: 'CYCLONE_OR_STORM_SURGE',
+  SEVERE_THUNDERSTORM_LIGHTNING: 'SEVERE_THUNDERSTORM_LIGHTNING',
+  LANDSLIDE_DEBRIS_FLOW: 'LANDSLIDE_DEBRIS_FLOW',
+  EARTHQUAKE: 'EARTHQUAKE',
+  EXTREME_HEATWAVE: 'EXTREME_HEATWAVE',
+  INDUSTRIAL_CHEMICAL_HAZMAT: 'INDUSTRIAL_CHEMICAL_HAZMAT',
+  MAJOR_STRUCTURAL_COLLAPSE: 'MAJOR_STRUCTURAL_COLLAPSE',
+  WILDFIRE_URBAN_CONFLAGRATION: 'WILDFIRE_URBAN_CONFLAGRATION',
+  OTHER: 'OTHER',
+};
+
+export const DISASTER_SEVERITY = {
+  ADVISORY: 'ADVISORY',
+  WATCH: 'WATCH',
+  WARNING: 'WARNING',
+  SEVERE_EMERGENCY: 'SEVERE_EMERGENCY',
+  CATASTROPHIC: 'CATASTROPHIC',
+};
+
+export const DISASTER_LIFECYCLE_STATE = {
+  DETECTED: 'DETECTED',
+  ALERTED: 'ALERTED',
+  ACTIVE_RESPONSE: 'ACTIVE_RESPONSE',
+  CONTAINMENT_AND_RELIEF: 'CONTAINMENT_AND_RELIEF',
+  STAND_DOWN_RECOVERY: 'STAND_DOWN_RECOVERY',
+  CLOSED_RESOLVED: 'CLOSED_RESOLVED',
+  CANCELLED_FALSE_ALARM: 'CANCELLED_FALSE_ALARM',
+};
+
+export const SIGNAL_SOURCE_TYPE = {
+  OFFICIAL_GOVERNMENT_ALERT: 'OFFICIAL_GOVERNMENT_ALERT',
+  USER_REPORTED_SIGNAL: 'USER_REPORTED_SIGNAL',
+  IOT_SENSOR_SIGNAL: 'IOT_SENSOR_SIGNAL',
+  FIELD_RESPONDER_CONFIRMATION: 'FIELD_RESPONDER_CONFIRMATION',
+};
+
+export const OFFICIAL_ALERT_AUTHORITIES = {
+  SACHET_NDMA: 'SACHET_NDMA',
+  MAHA_SDMA: 'MAHA_SDMA',
+  PUNE_DDMA: 'PUNE_DDMA',
+  IMD: 'IMD',
+  CWC: 'CWC',
+  STATE_POLICE: 'STATE_POLICE',
+  PMC_DISASTER_CELL: 'PMC_DISASTER_CELL',
+  PCMC_DISASTER_CELL: 'PCMC_DISASTER_CELL',
+};
+
+export const BOUNDARY_GEOMETRY_TYPE = {
+  POLYGON: 'Polygon',
+  MULTI_POLYGON: 'MultiPolygon',
+};
+
+/**
+ * Statutory Boundary Disclaimer (ADR 0002):
+ * CivIQ provides operational correlation and municipal civic hazard tracking.
+ * CivIQ does NOT supersede or replace statutory emergency declarations by NDMA, SDMA, DDMA, or SACHET.
+ */
+export const DISASTER_STATUTORY_DISCLAIMER =
+  'CivIQ Disaster Event Tracking & Situational Awareness Platform. ' +
+  'CivIQ provides operational correlation and municipal coordination aids. ' +
+  'Official statutory disaster declarations, mandatory evacuations, and authoritative emergency notices ' +
+  'remain under the sole jurisdiction of NDMA, State Disaster Management Authorities (SDMA), ' +
+  'District Disaster Management Authorities (DDMA), and SACHET.';

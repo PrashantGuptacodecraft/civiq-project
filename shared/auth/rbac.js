@@ -8,6 +8,7 @@ export const ROLE_PERMISSIONS = {
         'maintenance:read', 'maintenance:write', 'maintenance:costs:read',
         'incidents:read', 'incidents:write', 'incidents:read:sensitive', 'incidents:manage',
         'responders:read', 'responders:write', 'responders:dispatch',
+        'disasters:read', 'disasters:write', 'disasters:manage',
     ],
     NATIONAL_ADMIN: [
         'issues:read', 'issues:write', 'issues:verify',
@@ -36,6 +37,7 @@ export const ROLE_PERMISSIONS = {
         'maintenance:read', 'maintenance:write', 'maintenance:costs:read',
         'incidents:read', 'incidents:write', 'incidents:read:sensitive', 'incidents:manage',
         'responders:read', 'responders:write', 'responders:dispatch',
+        'disasters:read', 'disasters:write', 'disasters:manage',
     ],
     DEPARTMENT_OFFICER: [
         'issues:read', 'issues:write',
@@ -72,6 +74,7 @@ export const ROLE_PERMISSIONS = {
         'maintenance:read',
         'incidents:read', 'incidents:write', 'incidents:read:sensitive', 'incidents:manage',
         'responders:read', 'responders:dispatch',
+        'disasters:read', 'disasters:write', 'disasters:manage',
     ],
     AGENCY_ADMIN: [
         'issues:read',
@@ -79,17 +82,20 @@ export const ROLE_PERMISSIONS = {
         'users:read',
         'incidents:read', 'incidents:write', 'incidents:read:sensitive', 'incidents:manage',
         'responders:read', 'responders:write', 'responders:dispatch',
+        'disasters:read', 'disasters:write',
     ],
     EMERGENCY_DISPATCHER: [
         'issues:read',
         'reports:read',
         'incidents:read', 'incidents:write', 'incidents:read:sensitive', 'incidents:manage',
         'responders:read', 'responders:dispatch',
+        'disasters:read', 'disasters:write',
     ],
     FIRST_RESPONDER: [
         'issues:read',
         'incidents:read', 'incidents:write', 'incidents:read:sensitive', 'incidents:manage',
         'responders:read',
+        'disasters:read',
     ],
     AUDITOR: [
         'issues:read',
@@ -99,12 +105,14 @@ export const ROLE_PERMISSIONS = {
         'assets:read',
         'maintenance:read', 'maintenance:costs:read',
         'incidents:read', 'incidents:read:sensitive',
+        'disasters:read',
     ],
     CITIZEN: [
         'issues:read', 'issues:write',
         'assets:read',
         'maintenance:read',
         'incidents:read', 'incidents:write',
+        'disasters:read',
     ],
 };
 export function getPermissionsForRole(role) {

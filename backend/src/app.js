@@ -20,6 +20,7 @@ import { incidentSourceRouter } from './integrations/incident-source/index.js';
 import { responderRouter } from './modules/responders/index.js';
 import { communicationRouter } from './modules/communications/index.js';
 import { disasterRouter } from './modules/disasters/index.js';
+import { alertRouter } from './integrations/alerts/index.js';
 
 export function createApp() {
   const app = express();
@@ -51,6 +52,7 @@ export function createApp() {
   app.use('/responders', responderRouter);
   app.use('/communications', communicationRouter);
   app.use('/disasters', disasterRouter);
+  app.use('/alerts', alertRouter);
 
   // Global Error Handler
   app.use((err, req, res, next) => {

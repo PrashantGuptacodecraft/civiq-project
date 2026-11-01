@@ -351,4 +351,57 @@ export const SEEDED_DISASTER_RESOURCES = [
     createdAt: '2026-10-30T04:45:00Z',
     lastUpdatedAt: '2026-10-30T06:00:00Z',
   },
+
+  // ─── 7. PMC Fire Brigade Flood Rescue Boat Fleet (PMC) ───
+  {
+    id: 'res-pune-rescue-boat-fleet',
+    resourceNumber: 'RES-2026-0007',
+    title: 'PMC Fire Brigade Flood Rescue Inflatable Boats Division',
+    description:
+      'Emergency boat deployment station equipped with rigid-hull inflatable rescue boats, outboard motors, sonar locators, and trained aquatic divers.',
+    resourceType: RESOURCE_TYPES.EMERGENCY_VEHICLE,
+    status: RESOURCE_STATUS.ACTIVE_OPERATIONAL,
+    verificationStatus: VERIFICATION_STATUS.VERIFIED_OFFICIAL,
+    verifiedBy: {
+      agency: 'PMC Fire & Emergency Services',
+      officerId: 'pmc-fire-chief-01',
+      verifiedAt: '2026-10-30T04:00:00Z',
+    },
+    jurisdictionId: 'mh-pune-pmc',
+    ward: 'Ward 9 - Sinhagad Road',
+    location: {
+      latitude: 18.5020,
+      longitude: 73.8560,
+      address: 'Central Fire Station, Station Road, Pune - 411001',
+      landmark: 'Near Pune Railway Station / Mutha River Bridge',
+    },
+    capacity: {
+      totalCapacity: 8,
+      currentOccupancy: 2,
+      availableCapacity: 6,
+      occupancyPercentage: 25.0,
+      unit: 'BOATS',
+      lastUpdatedAt: '2026-10-30T05:30:00Z',
+      updatedBy: { id: 'usr-boat-chief-01', role: 'FIELD_SUPERVISOR' },
+      updateSource: CAPACITY_UPDATE_SOURCE.FIELD_INSPECTION,
+    },
+    capacityHistory: [
+      {
+        timestamp: '2026-10-30T04:00:00Z',
+        previousOccupancy: 0,
+        newOccupancy: 2,
+        updatedBy: { id: 'usr-boat-chief-01', role: 'FIELD_SUPERVISOR' },
+        updateSource: CAPACITY_UPDATE_SOURCE.INITIAL_REGISTRATION,
+        notes: '2 motorized zodiacs deployed to Sinhagad riverbank evacuation; 6 remain ready on trailers.',
+      },
+    ],
+    facilities: ['INFLATABLE_ZODIAC_BOATS', 'OUTBOARD_40HP_MOTORS', 'RESCUE_DIVERS', 'SURFACE_SWIM_HARNESSES'],
+    contact: {
+      coordinatorName: 'Chief Fire Officer Devendra Potphode',
+      contactPhoneMasked: '+91-98XXXX8899',
+    },
+    statutoryNotice: DISASTER_RESOURCE_DISCLAIMER,
+    createdAt: '2026-10-30T04:00:00Z',
+    lastUpdatedAt: '2026-10-30T05:30:00Z',
+  },
 ];

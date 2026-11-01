@@ -24,6 +24,7 @@ from app.api.schemas import (
     DuplicateScoreResponse,
     EvidenceCheckRequest,
     EvidenceCheckResponse,
+    MatchFactorSchema,
     PredictiveMaintenanceRequest,
     PredictiveMaintenanceResponse,
     PredictRequest,
@@ -31,6 +32,9 @@ from app.api.schemas import (
     PriorityBreakdown,
     PriorityScoreRequest,
     PriorityScoreResponse,
+    ResourceMatchItemSchema,
+    ResourceMatchRequest,
+    ResourceMatchResponse,
     RouteRequest,
     RouteResponse,
     SummarizeRequest,
@@ -47,6 +51,11 @@ from app.pipelines.classification import get_classifier, get_feedback_store
 from app.pipelines.dedup import IssueSummary, get_dedup_engine
 from app.pipelines.maintenance import AssetMaintenanceInput, get_maintenance_predictor
 from app.pipelines.priority import IssuePriorityInput, get_priority_engine
+from app.pipelines.resource_matching import (
+    DISASTER_RESOURCE_MATCHING_DISCLAIMER,
+    NeedMatchInput,
+    get_resource_matcher,
+)
 from app.pipelines.vision import get_analyzer
 
 router = APIRouter(prefix="/v1", tags=["AI Gateway v1"])
@@ -708,4 +717,78 @@ def update_asset_decision_policy(
         baseline_replacement_cost_inr=updated.baseline_replacement_cost_inr,
         annual_repair_budget_cap_inr=updated.annual_repair_budget_cap_inr,
         description=updated.description,
+    )
+
+
+
+@router.post("/resource-matching/match", response_model=ResourceMatchResponse)
+def match_resources(payload: ResourceMatchRequest) -> ResourceMatchResponse:
+    t0 = time.perf_counter()
+    matcher = get_resource_matcher()
+
+    need_input = NeedMatchInput(
+        need_id=payload.need_id,
+        need_type=payload.need_type,
+        required_quantity=payload.required_quantity,
+        unit=payload.unit,
+        latitude=payload.latitude,
+        longitude=payload.longitude,
+        severity=payload.severity,
+        jurisdiction_id=payload.jurisdiction_id,
+        max_distance_km=payload.max_distance_km,
+        candidate_resources=payload.candidate_resources,
+    )
+
+    results = matcher.match(need_input)
+    latency = round((time.perf_counter() - t0) * 1000, 2)
+
+    matches = [
+        ResourceMatchItemSchema(
+            resource_id=r.resource_id,
+            title=r.title,
+            resource_type=r.resource_type,
+            match_score=r.match_score,
+            rank=r.rank,
+            distance_km=r.distance_km,
+            capacity_fit=r.capacity_fit,
+            is_eligible=r.is_eligible,
+            ineligibility_reasons=r.ineligibility_reasons,
+            factor_breakdown=[
+                MatchFactorSchema(
+                    factor=f.factor,
+                    score=f.score,
+                    weight=f.weight,
+                    weighted_score=f.weighted_score,
+                    detail=f.detail,
+                )
+                for f in r.factor_breakdown
+            ],
+            recommendation_summary=r.recommendation_summary,
+        )
+        for r in results
+    ]
+
+    eligible_count = sum(1 for m in matches if m.is_eligible)
+    top_summary = (
+        f"Evaluated {len(matches)} candidates ({eligible_count} eligible). "
+        + (
+            f"Top match: {matches[0].title} (score: {matches[0].match_score}/100)."
+            if matches
+            else "No candidate resources provided."
+        )
+    )
+
+    return ResourceMatchResponse(
+        version=AI_GATEWAY_VERSION,
+        confidence=0.95 if matches and matches[0].is_eligible else 0.5,
+        model=DEFAULT_MODEL,
+        explanation=top_summary,
+        latency_ms=latency,
+        need_id=payload.need_id,
+        need_type=payload.need_type,
+        total_candidates_evaluated=len(matches),
+        eligible_candidates_count=eligible_count,
+        matches=matches,
+        is_authoritative=False,
+        disclaimer=DISASTER_RESOURCE_MATCHING_DISCLAIMER,
     )

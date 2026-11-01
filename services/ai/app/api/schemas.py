@@ -394,3 +394,53 @@ class UpdateCategoryPolicyRequest(BaseModel):
     baseline_replacement_cost_inr: float = Field(..., ge=1000.0)
     annual_repair_budget_cap_inr: float | None = Field(default=None, ge=0.0)
     description: str | None = None
+
+
+# ─────────────────────────────────────────────
+# 9. NEED-TO-RESOURCE MATCHING (Phase 65)
+# ─────────────────────────────────────────────
+
+
+class MatchFactorSchema(BaseModel):
+    factor: str
+    score: float
+    weight: float
+    weighted_score: float
+    detail: str
+
+
+class ResourceMatchItemSchema(BaseModel):
+    resource_id: str
+    title: str
+    resource_type: str
+    match_score: float
+    rank: int
+    distance_km: float
+    capacity_fit: Literal["EXCEEDS_REQUIREMENT", "EXACT_FIT", "PARTIAL_FIT", "ZERO_CAPACITY"]
+    is_eligible: bool
+    ineligibility_reasons: list[str] = Field(default_factory=list)
+    factor_breakdown: list[MatchFactorSchema] = Field(default_factory=list)
+    recommendation_summary: str
+
+
+class ResourceMatchRequest(BaseModel):
+    need_id: str = Field(..., min_length=1)
+    need_type: str = Field(...)
+    required_quantity: float = Field(default=1.0, ge=0.0)
+    unit: str = Field(default="UNITS")
+    latitude: float = Field(..., ge=-90.0, le=90.0)
+    longitude: float = Field(..., ge=-180.0, le=180.0)
+    severity: str = Field(default="HIGH_URGENT")
+    jurisdiction_id: str | None = None
+    max_distance_km: float = Field(default=50.0, ge=1.0)
+    candidate_resources: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class ResourceMatchResponse(BaseAiResponse):
+    need_id: str
+    need_type: str
+    total_candidates_evaluated: int
+    eligible_candidates_count: int
+    matches: list[ResourceMatchItemSchema]
+    is_authoritative: bool = False
+    disclaimer: str

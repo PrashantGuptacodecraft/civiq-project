@@ -136,13 +136,14 @@ export function VoiceRecordingModal({
       aria-modal="true"
       aria-labelledby="voice-modal-title"
       data-testid="voice-recording-modal"
-      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 bg-surface-overlay backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose?.(); }}
     >
-      <div className="bg-slate-900 border-t sm:border border-slate-700/80 rounded-t-3xl sm:rounded-2xl w-full max-w-xl p-5 sm:p-6 shadow-2xl text-slate-100 max-h-[90vh] overflow-y-auto">
+      <div className="animate-slide-in-bottom sm:animate-scale-in bg-[#0F172A] border-t sm:border border-[#1E293B] rounded-t-3xl sm:rounded-2xl w-full max-w-xl p-5 sm:p-6 shadow-elevation-4 text-text-inverse max-h-[90vh] overflow-y-auto">
         {/* Modal Top Bar */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div className="flex items-center justify-between pb-4 border-b border-white/10">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse" />
+            <span className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse" aria-hidden="true" />
             <h2 id="voice-modal-title" className="font-bold text-base sm:text-lg text-white">
               Voice Report Assistant
             </h2>
@@ -152,9 +153,11 @@ export function VoiceRecordingModal({
             onClick={onClose}
             aria-label="Close voice assistant"
             data-testid="close-voice-modal-btn"
-            className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="btn-press min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors"
           >
-            ✕
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
@@ -179,10 +182,10 @@ export function VoiceRecordingModal({
                       key={l.code}
                       type="button"
                       onClick={() => setLanguage(l.code)}
-                      className={`min-h-[44px] px-3.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                      className={`btn-press min-h-[44px] px-3.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
                         language === l.code
-                          ? 'bg-blue-600 border-blue-500 text-white font-semibold'
-                          : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
+                          ? 'bg-primary border-primary text-white font-semibold'
+                          : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:text-white'
                       }`}
                     >
                       {l.label}
@@ -197,7 +200,7 @@ export function VoiceRecordingModal({
                   type="button"
                   onClick={handleStartRecording}
                   data-testid="start-recording-btn"
-                  className="w-20 h-20 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white shadow-xl shadow-blue-500/25 flex items-center justify-center transition-transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-blue-500/50"
+                  className="btn-press w-20 h-20 rounded-full bg-gradient-to-tr from-primary to-accent hover:opacity-90 text-white shadow-elevation-3 shadow-primary/30 flex items-center justify-center transition-opacity focus:outline-none focus:ring-4 focus:ring-primary/50"
                   aria-label="Start recording voice report"
                 >
                   <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
@@ -226,16 +229,19 @@ export function VoiceRecordingModal({
                 </div>
               </div>
 
-              {/* Pulsing Audio Waveform Visualizer */}
+              {/* Staggered Audio Waveform Visualizer */}
               <div
-                className="flex items-center justify-center gap-1.5 h-16 py-2"
+                className="flex items-center justify-center gap-1 h-16 py-2"
                 aria-hidden="true"
               >
-                {[40, 75, 55, 90, 65, 80, 45, 95, 70, 50, 85, 60, 40].map((h, i) => (
+                {[0.4, 0.75, 0.55, 0.9, 0.65, 0.8, 0.45, 0.95, 0.70, 0.50, 0.85, 0.60, 0.4].map((scale, i) => (
                   <span
                     key={i}
-                    style={{ height: `${h}%` }}
-                    className="w-1.5 rounded-full bg-blue-500 animate-pulse transition-all duration-150"
+                    className="w-1.5 rounded-full bg-primary will-change-transform animate-waveform-bar"
+                    style={{
+                      height: `${Math.round(scale * 100)}%`,
+                      animationDelay: `${i * 60}ms`,
+                    }}
                   />
                 ))}
               </div>

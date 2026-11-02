@@ -9,7 +9,7 @@
 }
 
 @layer utilities {
-  /* Shimmer skeleton loading — respects reduced-motion */
+  /* ─── Skeleton / Shimmer ──────────────────────────────────── */
   .skeleton {
     @apply relative overflow-hidden bg-surface-tertiary rounded-md;
   }
@@ -20,16 +20,76 @@
     animation: shimmer 2s infinite;
   }
 
-  /* Reduced motion: disable all non-essential animations */
+  /* ─── Entrance animations ─────────────────────────────────── */
+  /* Use Tailwind's animate-fade-up, animate-scale-in, etc. classes generated from tailwind.config keyframes */
+
+  /* Stagger helpers — add delay via inline style or these utility classes */
+  .anim-delay-50  { animation-delay:  50ms; }
+  .anim-delay-100 { animation-delay: 100ms; }
+  .anim-delay-150 { animation-delay: 150ms; }
+  .anim-delay-200 { animation-delay: 200ms; }
+  .anim-delay-250 { animation-delay: 250ms; }
+  .anim-delay-300 { animation-delay: 300ms; }
+  .anim-delay-400 { animation-delay: 400ms; }
+
+  /* ─── Button press ────────────────────────────────────────── */
+  /* Apply to any interactive element for tactile scale feedback */
+  .btn-press {
+    @apply transition-transform duration-150;
+  }
+  .btn-press:active {
+    transform: scale(0.97);
+  }
+
+  /* ─── Skip to content (accessibility) ────────────────────── */
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100]
+           focus:bg-primary focus:text-white focus:px-4 focus:py-2 focus:rounded-md
+           focus:font-semibold focus:text-sm;
+  }
+
+  /* ─── Nav active indicator ────────────────────────────────── */
+  .nav-link-active {
+    @apply text-primary font-semibold relative;
+  }
+  .nav-link-active::after {
+    content: '';
+    @apply absolute -bottom-px left-0 right-0 h-0.5 bg-primary rounded-full;
+  }
+
+  /* ─── Mobile bottom nav ──────────────────────────────────── */
+  .mobile-nav-item {
+    @apply flex flex-col items-center gap-0.5 px-3 py-2 rounded-lg text-text-tertiary
+           transition-colors duration-150 min-h-[44px] justify-center;
+  }
+  .mobile-nav-item.active,
+  .mobile-nav-item:hover {
+    @apply text-primary;
+  }
+
+  /* ─── Card hover lift ─────────────────────────────────────── */
+  .card-hover {
+    @apply transition-all duration-200 hover:shadow-elevation-3 hover:-translate-y-0.5;
+  }
+
+  /* ─── Reduced motion — disable ALL non-essential animations ─ */
   @media (prefers-reduced-motion: reduce) {
-    .skeleton::after {
-      animation: none;
-    }
-    .animate-fade-in {
+    .skeleton::after,
+    .animate-fade-in,
+    .animate-fade-up,
+    .animate-fade-down,
+    .animate-scale-in,
+    .animate-slide-in-right,
+    .animate-slide-in-bottom,
+    .animate-waveform-bar {
       animation: none !important;
+      transition: none !important;
     }
     .animate-ping {
       animation: none !important;
+    }
+    .card-hover {
+      @apply hover:shadow-none hover:translate-y-0;
     }
   }
 }

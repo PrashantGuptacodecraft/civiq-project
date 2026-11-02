@@ -139,11 +139,15 @@ export function SituationRoomDashboard({
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 py-6 px-3 sm:px-6 lg:px-8 space-y-6">
-      {/* Toast Notification */}
+    <div className="min-h-screen bg-surface-secondary py-6 px-3 sm:px-6 lg:px-8 space-y-6">
+      {/* ─── Toast Notification ─── */}
       {toastMessage && (
-        <div className="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 text-xs font-bold flex items-center gap-2">
-          <span>✓</span>
+        <div className="fixed bottom-5 right-5 z-50 animate-slide-in-right bg-[#0F172A] text-white px-4 py-3 rounded-xl shadow-elevation-4 border border-white/10 text-xs font-bold flex items-center gap-2 min-w-[220px]">
+          <span className="w-4 h-4 rounded-full bg-status-success flex items-center justify-center flex-shrink-0" aria-hidden="true">
+            <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+            </svg>
+          </span>
           <span>{toastMessage}</span>
         </div>
       )}
@@ -159,14 +163,14 @@ export function SituationRoomDashboard({
         <PostEventMetricsCards metrics={metrics} />
 
         {/* Command Navigation Tabs */}
-        <nav className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-2 border-b border-slate-200">
+        <nav aria-label="Situation Room tabs" className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-2 border-b border-border-primary">
           <button
             type="button"
             onClick={() => setActiveTab(SITUATION_ROOM_TABS.COMMAND_OVERVIEW)}
-            className={`px-4 py-2.5 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all min-h-[44px] ${
+            className={`px-4 py-2.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all duration-150 min-h-[44px] ${
               activeTab === SITUATION_ROOM_TABS.COMMAND_OVERVIEW
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+                ? 'bg-text-primary text-white shadow-elevation-1'
+                : 'bg-surface-elevated text-text-secondary hover:bg-surface-tertiary border border-border-primary'
             }`}
           >
             Command Overview
@@ -174,35 +178,35 @@ export function SituationRoomDashboard({
           <button
             type="button"
             onClick={() => setActiveTab(SITUATION_ROOM_TABS.RESPONSE_TASKS)}
-            className={`px-4 py-2.5 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all min-h-[44px] flex items-center gap-1.5 ${
+            className={`px-4 py-2.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all duration-150 min-h-[44px] flex items-center gap-1.5 ${
               activeTab === SITUATION_ROOM_TABS.RESPONSE_TASKS
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+                ? 'bg-text-primary text-white shadow-elevation-1'
+                : 'bg-surface-elevated text-text-secondary hover:bg-surface-tertiary border border-border-primary'
             }`}
           >
             <span>Response Tasks</span>
-            <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-blue-100 text-blue-800">
+            <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-status-info/15 text-status-info font-bold">
               {responseTasks.length}
             </span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab(SITUATION_ROOM_TABS.NEEDS_RESOURCES)}
-            className={`px-4 py-2.5 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all min-h-[44px] ${
+            className={`px-4 py-2.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all duration-150 min-h-[44px] ${
               activeTab === SITUATION_ROOM_TABS.NEEDS_RESOURCES
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+                ? 'bg-text-primary text-white shadow-elevation-1'
+                : 'bg-surface-elevated text-text-secondary hover:bg-surface-tertiary border border-border-primary'
             }`}
           >
-            Needs & Resources
+            Needs &amp; Resources
           </button>
           <button
             type="button"
             onClick={() => setActiveTab(SITUATION_ROOM_TABS.EVENT_TIMELINE)}
-            className={`px-4 py-2.5 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all min-h-[44px] ${
+            className={`px-4 py-2.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all duration-150 min-h-[44px] ${
               activeTab === SITUATION_ROOM_TABS.EVENT_TIMELINE
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+                ? 'bg-text-primary text-white shadow-elevation-1'
+                : 'bg-surface-elevated text-text-secondary hover:bg-surface-tertiary border border-border-primary'
             }`}
           >
             Event Timeline
@@ -210,52 +214,60 @@ export function SituationRoomDashboard({
           <button
             type="button"
             onClick={() => setActiveTab(SITUATION_ROOM_TABS.AFTER_ACTION_REVIEW)}
-            className={`px-4 py-2.5 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all min-h-[44px] flex items-center gap-1.5 ${
+            className={`px-4 py-2.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all duration-150 min-h-[44px] flex items-center gap-1.5 ${
               activeTab === SITUATION_ROOM_TABS.AFTER_ACTION_REVIEW
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+                ? 'bg-accent text-white shadow-elevation-1'
+                : 'bg-surface-elevated text-text-secondary hover:bg-surface-tertiary border border-border-primary'
             }`}
           >
-            <span>✨</span>
+            <span aria-hidden="true">✨</span>
             <span>After-Action Review</span>
           </button>
         </nav>
 
-        {/* Tab Content Display */}
+        {/* Tab Content — fade-up on each panel switch */}
         {activeTab === SITUATION_ROOM_TABS.COMMAND_OVERVIEW && (
-          <div className="space-y-6">
+          <div key="command-overview" className="animate-fade-up space-y-6">
             <ImpactClustersPanel clusters={initialImpactClusters} />
             <BlockedRoutesPanel routes={initialBlockedRoutes} />
           </div>
         )}
 
         {activeTab === SITUATION_ROOM_TABS.RESPONSE_TASKS && (
-          <ResponseTasksPanel
-            tasks={responseTasks}
-            onStatusUpdate={handleTaskStatusUpdate}
-            onTaskCreate={handleTaskCreate}
-          />
+          <div key="response-tasks" className="animate-fade-up">
+            <ResponseTasksPanel
+              tasks={responseTasks}
+              onStatusUpdate={handleTaskStatusUpdate}
+              onTaskCreate={handleTaskCreate}
+            />
+          </div>
         )}
 
         {activeTab === SITUATION_ROOM_TABS.NEEDS_RESOURCES && (
-          <NeedsResourcesPanel
-            needs={initialNeeds}
-            resources={initialResources}
-          />
+          <div key="needs-resources" className="animate-fade-up">
+            <NeedsResourcesPanel
+              needs={initialNeeds}
+              resources={initialResources}
+            />
+          </div>
         )}
 
         {activeTab === SITUATION_ROOM_TABS.EVENT_TIMELINE && (
-          <EventTimelinePanel timeline={timeline} />
+          <div key="event-timeline" className="animate-fade-up">
+            <EventTimelinePanel timeline={timeline} />
+          </div>
         )}
 
         {activeTab === SITUATION_ROOM_TABS.AFTER_ACTION_REVIEW && (
-          <AfterActionReviewPanel
-            aar={aar}
-            onGenerateAar={handleGenerateAar}
-            onApproveAar={handleApproveAar}
-            isGenerating={isGeneratingAar}
-            isApproving={isApprovingAar}
-          />
+          <div key="after-action-review" className="animate-fade-up">
+            <AfterActionReviewPanel
+              aar={aar}
+              onGenerateAar={handleGenerateAar}
+              onApproveAar={handleApproveAar}
+              isGenerating={isGeneratingAar}
+              isApproving={isApprovingAar}
+            />
+          </div>
         )}
       </div>
     </div>

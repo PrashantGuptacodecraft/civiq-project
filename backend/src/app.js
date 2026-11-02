@@ -27,6 +27,7 @@ import { resourceMatchingRouter } from './modules/resource-matching/index.js';
 import { disasterOpsRouter } from './modules/disaster-ops/index.js';
 import { i18nRouter, i18nMiddleware } from './modules/i18n/index.js';
 import { speechRouter } from './integrations/speech/index.js';
+import { syncRouter } from './modules/sync/index.js';
 
 export function createApp() {
   const app = express();
@@ -66,6 +67,7 @@ export function createApp() {
   app.use('/resource-matching', resourceMatchingRouter);
   app.use('/disaster-ops', disasterOpsRouter);
   app.use('/i18n', i18nRouter);
+  app.use('/sync', syncRouter);
 
   // Global Error Handler
   app.use((err, req, res, next) => {

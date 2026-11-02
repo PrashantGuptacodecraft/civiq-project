@@ -24,6 +24,7 @@ import { alertRouter } from './integrations/alerts/index.js';
 import { disasterImpactRouter } from './modules/disaster-impact/index.js';
 import { resourceRouter } from './modules/resources/index.js';
 import { resourceMatchingRouter } from './modules/resource-matching/index.js';
+import { disasterOpsRouter } from './modules/disaster-ops/index.js';
 
 export function createApp() {
   const app = express();
@@ -59,6 +60,7 @@ export function createApp() {
   app.use('/disaster-impact', disasterImpactRouter);
   app.use('/resources', resourceRouter);
   app.use('/resource-matching', resourceMatchingRouter);
+  app.use('/disaster-ops', disasterOpsRouter);
 
   // Global Error Handler
   app.use((err, req, res, next) => {

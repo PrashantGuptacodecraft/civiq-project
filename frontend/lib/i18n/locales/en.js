@@ -1,0 +1,121 @@
+/**
+ * English (en) Frontend Locale Dictionary
+ * Phase 67: Add multilingual architecture
+ */
+
+export const en = {
+  common: {
+    save: 'Save',
+    cancel: 'Cancel',
+    submit: 'Submit',
+    back: 'Back',
+    next: 'Next',
+    close: 'Close',
+    retry: 'Retry',
+    loading: 'Loading...',
+    error: 'An error occurred',
+    success: 'Action completed successfully',
+    search: 'Search',
+    filter: 'Filter',
+    select: 'Select',
+    view: 'View',
+    dismiss: 'Dismiss',
+    required: 'Required',
+    optional: 'Optional',
+    offline: 'Offline Mode',
+    offlineNotice:
+      'Operating in offline mode. Changes will synchronize automatically when connection is restored.',
+  },
+  nav: {
+    home: 'Home',
+    issues: 'Civic Issues',
+    reports: 'Reports',
+    map: 'City Map',
+    emergency: 'Emergency & Disasters',
+    situationRoom: 'Situation Room',
+    profile: 'Profile',
+    settings: 'Settings',
+    notifications: 'Notifications',
+    language: 'Language',
+  },
+  disaster: {
+    alerts: 'Disaster Alerts',
+    evacuation: 'Evacuation Directives',
+    shelter: 'Relief Shelters',
+    safeZones: 'Identified Safe Zones',
+    helpline: 'Emergency Helplines',
+    emergencyHandoff:
+      'For life-threatening emergencies, call national emergency response at 112 immediately.',
+    reportHazard: 'Report Disaster Impact',
+    roadBlocked: 'Road Blocked',
+    waterlogged: 'Waterlogged Area',
+    situationRoomLive: 'Active Situation Room',
+    severityNotice: 'Severity: {{severity}} — Issued by {{authority}}',
+  },
+  issues: {
+    categories: {
+      pothole: 'Pothole',
+      waterLeakage: 'Water Pipeline Leakage',
+      garbage: 'Garbage & Waste Accumulation',
+      streetLight: 'Broken or Flickering Streetlight',
+      roadDamage: 'Damaged Road Surface',
+      trafficSignal: 'Traffic Signal Failure',
+      sewage: 'Open or Overflowing Sewage',
+      treeFall: 'Fallen Tree or Heavy Branch',
+      waterlogging: 'Waterlogging & Inundation',
+    },
+    statuses: {
+      reported: 'Reported',
+      triaged: 'Triaged',
+      assigned: 'Assigned',
+      inProgress: 'In Progress',
+      resolved: 'Resolved',
+      closed: 'Closed',
+      rejected: 'Rejected',
+    },
+    priorities: {
+      critical: 'Critical',
+      high: 'High',
+      medium: 'Medium',
+      low: 'Low',
+    },
+  },
+  safety: {
+    officialDisclaimer:
+      'CivIQ is a civic operations platform. Official statutory emergency directives are issued exclusively by NDMA, SDMA, DDMA, and SACHET.',
+    nonEmergencyNotice: 'Do not use this portal for immediate distress calls. Contact 112.',
+    call112: 'National Emergency (112)',
+    call108: 'Ambulance / Medical Emergency (108)',
+    call100: 'Police Assistance (100)',
+    call101: 'Fire Department (101)',
+    sachetNotice: 'Verified CAP-RSS alerts sourced from NDMA SACHET early warning network.',
+    ndmaAuthorityNotice:
+      'Disaster declarations remain under NDMA/SDMA statutory jurisdiction.',
+  },
+  settings: {
+    languagePreference: 'Language Preference',
+    chooseLanguage: 'Select your preferred language',
+    languageDescription: 'CivIQ will display interface text and notifications in this language.',
+    theme: 'Display Theme',
+    notifications: 'Notification Preferences',
+    offlineMode: 'Offline Storage',
+    syncStatus: 'Sync Status',
+    savePreferences: 'Save Preferences',
+    preferencesSaved: 'Your preferences have been saved successfully.',
+  },
+  accessibility: {
+    skipToContent: 'Skip to main content',
+    languageSelectorAria: 'Change interface language',
+    menuAria: 'Navigation menu',
+    alertAria: 'Safety alert banner',
+    closeAria: 'Close modal dialog',
+  },
+  ai: {
+    aiAssisted: 'AI-Assisted',
+    advisoryOnly: 'Advisory only',
+    nonAuthoritative: 'Non-authoritative draft',
+    modelDisclaimer:
+      'AI recommendations require human review and official field verification.',
+    sourceLabel: 'Data Source: {{source}}',
+  },
+};

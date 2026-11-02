@@ -1,0 +1,121 @@
+/**
+ * Hindi (hi) Frontend Locale Dictionary
+ * Phase 67: Add multilingual architecture
+ */
+
+export const hi = {
+  common: {
+    save: 'सहेजें',
+    cancel: 'रद्द करें',
+    submit: 'जमा करें',
+    back: 'पीछे जाएं',
+    next: 'आगे बढ़ें',
+    close: 'बंद करें',
+    retry: 'पुनः प्रयास करें',
+    loading: 'लोड हो रहा है...',
+    error: 'एक त्रुटि उत्पन्न हुई',
+    success: 'कार्य सफलतापूर्वक पूरा हुआ',
+    search: 'खोजें',
+    filter: 'फ़िल्टर',
+    select: 'चुनें',
+    view: 'देखें',
+    dismiss: 'खारिज करें',
+    required: 'आवश्यक',
+    optional: 'वैकल्पिक',
+    offline: 'ऑफ़लाइन मोड',
+    offlineNotice:
+      'ऑफ़लाइन मोड में कार्यरत। नेटवर्क उपलब्ध होने पर परिवर्तन स्वतः सिंक हो जाएंगे।',
+  },
+  nav: {
+    home: 'मुखपृष्ठ',
+    issues: 'नागरिक समस्याएं',
+    reports: 'रिपोर्ट्स',
+    map: 'नगर मानचित्र',
+    emergency: 'आपातकाल और आपदा',
+    situationRoom: 'स्थिति नियंत्रण कक्ष',
+    profile: 'प्रोफ़ाइल',
+    settings: 'सेटिंग्स',
+    notifications: 'सूचनाएं',
+    language: 'भाषा',
+  },
+  disaster: {
+    alerts: 'आपदा अलर्ट',
+    evacuation: 'निकासी निर्देश',
+    shelter: 'राहत शिविर',
+    safeZones: 'चिह्नित सुरक्षित क्षेत्र',
+    helpline: 'आपातकालीन हेल्पलाइन',
+    emergencyHandoff:
+      'जीवन-घातक आपात स्थिति के लिए तुरंत 112 पर राष्ट्रीय आपातकालीन सेवा को कॉल करें।',
+    reportHazard: 'आपदा प्रभाव रिपोर्ट करें',
+    roadBlocked: 'मार्ग अवरुद्ध',
+    waterlogged: 'जलभराव क्षेत्र',
+    situationRoomLive: 'सक्रिय स्थिति कक्ष',
+    severityNotice: 'गंभीरता: {{severity}} — प्राधिकारी: {{authority}}',
+  },
+  issues: {
+    categories: {
+      pothole: 'गड्ढा',
+      waterLeakage: 'पानी की पाइपलाइन रिसाव',
+      garbage: 'कचरा और अपशिष्ट संचय',
+      streetLight: 'टूटी या टिमटिमाती स्ट्रीटलाइट',
+      roadDamage: 'क्षतिग्रस्त सड़क सतह',
+      trafficSignal: 'ट्रैफिक सिग्नल खराबी',
+      sewage: 'खुला या उफनता सीवेज',
+      treeFall: 'गिरा हुआ पेड़ या भारी टहनी',
+      waterlogging: 'जलभराव और जलमग्नता',
+    },
+    statuses: {
+      reported: 'दर्ज',
+      triaged: 'समीक्षित',
+      assigned: 'आवंटित',
+      inProgress: 'प्रगति पर',
+      resolved: 'समाधान हुआ',
+      closed: 'बंद',
+      rejected: 'अस्वीकृत',
+    },
+    priorities: {
+      critical: 'अत्यंत गंभीर',
+      high: 'उच्च',
+      medium: 'मध्यम',
+      low: 'निम्न',
+    },
+  },
+  safety: {
+    officialDisclaimer:
+      'सिविक्यू एक नागरिक संचालन मंच है। आधिकारिक वैधानिक आपातकालीन निर्देश केवल NDMA, SDMA, DDMA और SACHET द्वारा जारी किए जाते हैं।',
+    nonEmergencyNotice: 'तत्काल संकट कॉलों के लिए इस पोर्टल का उपयोग न करें। 112 पर संपर्क करें।',
+    call112: 'राष्ट्रीय आपातकालीन सेवा (112)',
+    call108: 'एम्बुलेंस / चिकित्सा आपातकाल (108)',
+    call100: 'पुलिस सहायता (100)',
+    call101: 'अग्निशमन विभाग (101)',
+    sachetNotice: 'NDMA SACHET पूर्व चेतावनी नेटवर्क से सत्यापित CAP-RSS अलर्ट।',
+    ndmaAuthorityNotice:
+      'आपदा घोषणाएं NDMA/SDMA के वैधानिक अधिकार क्षेत्र में रहती हैं।',
+  },
+  settings: {
+    languagePreference: 'भाषा प्राथमिकता',
+    chooseLanguage: 'अपनी पसंदीदा भाषा चुनें',
+    languageDescription: 'सिविक्यू इस भाषा में इंटरफ़ेस पाठ और सूचनाएं प्रदर्शित करेगा।',
+    theme: 'डिस्प्ले थीम',
+    notifications: 'सूचना प्राथमिकताएं',
+    offlineMode: 'ऑफ़लाइन संग्रहण',
+    syncStatus: 'सिंक स्थिति',
+    savePreferences: 'प्राथमिकताएं सहेजें',
+    preferencesSaved: 'आपकी प्राथमिकताएं सफलतापूर्वक सहेजी गईं।',
+  },
+  accessibility: {
+    skipToContent: 'मुख्य सामग्री पर जाएं',
+    languageSelectorAria: 'इंटरफ़ेस भाषा बदलें',
+    menuAria: 'नेविगेशन मेनू',
+    alertAria: 'सुरक्षा अलर्ट बैनर',
+    closeAria: 'संवाद बंद करें',
+  },
+  ai: {
+    aiAssisted: 'एआई-सहायक',
+    advisoryOnly: 'केवल सलाहकारी',
+    nonAuthoritative: 'गैर-प्राधिकारिक मसौदा',
+    modelDisclaimer:
+      'एआई अनुशंसाओं के लिए मानवीय समीक्षा और आधिकारिक क्षेत्रीय सत्यापन आवश्यक है।',
+    sourceLabel: 'डेटा स्रोत: {{source}}',
+  },
+};

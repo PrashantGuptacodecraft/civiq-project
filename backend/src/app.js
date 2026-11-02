@@ -25,6 +25,7 @@ import { disasterImpactRouter } from './modules/disaster-impact/index.js';
 import { resourceRouter } from './modules/resources/index.js';
 import { resourceMatchingRouter } from './modules/resource-matching/index.js';
 import { disasterOpsRouter } from './modules/disaster-ops/index.js';
+import { i18nRouter, i18nMiddleware } from './modules/i18n/index.js';
 
 export function createApp() {
   const app = express();
@@ -32,6 +33,7 @@ export function createApp() {
   app.use(cors());
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
+  app.use(i18nMiddleware());
 
   // Observability & Health
   app.use('/', healthRouter);
@@ -61,6 +63,7 @@ export function createApp() {
   app.use('/resources', resourceRouter);
   app.use('/resource-matching', resourceMatchingRouter);
   app.use('/disaster-ops', disasterOpsRouter);
+  app.use('/i18n', i18nRouter);
 
   // Global Error Handler
   app.use((err, req, res, next) => {

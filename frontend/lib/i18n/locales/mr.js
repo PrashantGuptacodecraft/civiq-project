@@ -1,0 +1,121 @@
+/**
+ * Marathi (mr) Frontend Locale Dictionary
+ * Phase 67: Add multilingual architecture
+ */
+
+export const mr = {
+  common: {
+    save: 'जतन करा',
+    cancel: 'रद्द करा',
+    submit: 'सादर करा',
+    back: 'मागे जा',
+    next: 'पुढे जा',
+    close: 'बंद करा',
+    retry: 'पुन्हा प्रयत्न करा',
+    loading: 'लोड होत आहे...',
+    error: 'एक त्रुटी आली',
+    success: 'क्रिया यशस्वीरीत्या पूर्ण झाली',
+    search: 'शोधा',
+    filter: 'फिल्टर',
+    select: 'निवडा',
+    view: 'पहा',
+    dismiss: 'दुर्लक्ष करा',
+    required: 'आवश्यक',
+    optional: 'पर्यायी',
+    offline: 'ऑफलाइन मोड',
+    offlineNotice:
+      'ऑफलाइन मोडमध्ये कार्यरत. इंटरनेट उपलब्ध झाल्यावर बदल आपोआप सिंक होतील.',
+  },
+  nav: {
+    home: 'मुख्यपृष्ठ',
+    issues: 'नागरी समस्या',
+    reports: 'अहवाल',
+    map: 'शहर नकाशा',
+    emergency: 'आपत्कालीन व आपत्ती',
+    situationRoom: 'नियंत्रण कक्ष',
+    profile: 'प्रोफाइल',
+    settings: 'सेटिंग्ज',
+    notifications: 'सूचना',
+    language: 'भाषा',
+  },
+  disaster: {
+    alerts: 'आपत्ती इशारे',
+    evacuation: 'स्थलांतर सूचना',
+    shelter: 'मदत व निवारा केंद्र',
+    safeZones: 'निश्चित सुरक्षित भाग',
+    helpline: 'आपत्कालीन हेल्पलाइन',
+    emergencyHandoff:
+      'जीवघेण्या आणीबाणीसाठी त्वरित 112 वर राष्ट्रीय आपत्कालीन सेवेस संपर्क करा.',
+    reportHazard: 'आपत्ती परिणाम नोंदवा',
+    roadBlocked: 'रस्ता बंद',
+    waterlogged: 'पाणी साचलेला परिसर',
+    situationRoomLive: 'सक्रिय नियंत्रण कक्ष',
+    severityNotice: 'तीव्रता: {{severity}} — जारीकर्ता: {{authority}}',
+  },
+  issues: {
+    categories: {
+      pothole: 'खड्डा',
+      waterLeakage: 'पाण्याची पाइपलाइन गळती',
+      garbage: 'कचरा व टाकाऊ पदार्थांचे संकलन',
+      streetLight: 'बंद किंवा तुटलेला पथदिवा',
+      roadDamage: 'खराब झालेला रस्ता',
+      trafficSignal: 'वाहतूक दिवा बिघाड',
+      sewage: 'उघडी किंवा तुंबलेली गटार',
+      treeFall: 'पडलेले झाड किंवा फांदी',
+      waterlogging: 'पाणी साचणे व पूरस्थिती',
+    },
+    statuses: {
+      reported: 'नोंदवले',
+      triaged: 'तपासले',
+      assigned: 'नेमले',
+      inProgress: 'प्रगतीपथावर',
+      resolved: 'निवारण झाले',
+      closed: 'बंद केले',
+      rejected: 'नाकारले',
+    },
+    priorities: {
+      critical: 'अत्यंत गंभीर',
+      high: 'उच्च',
+      medium: 'मध्यम',
+      low: 'कमी',
+    },
+  },
+  safety: {
+    officialDisclaimer:
+      'सिविक्यू हे नागरी कार्यप्रणाली व्यासपीठ आहे. अधिकृत वैधानिक आपत्कालीन आदेश केवळ NDMA, SDMA, DDMA आणि SACHET द्वारेच दिले जातात.',
+    nonEmergencyNotice: 'तातडीच्या संकटाच्या वेळी या पोर्टलचा वापर करू नका. 112 वर संपर्क साधा.',
+    call112: 'राष्ट्रीय आपत्कालीन सेवा (112)',
+    call108: 'रुग्णवाहिका / वैद्यकीय मदत (108)',
+    call100: 'पोलीस मदत (100)',
+    call101: 'अग्निशामक दल (101)',
+    sachetNotice: 'NDMA SACHET पूर्वइशारा प्रणालीद्वारे पडताळलेले CAP-RSS इशारे.',
+    ndmaAuthorityNotice:
+      'आपत्ती घोषणा NDMA/SDMA च्या वैधानिक अधिकारक्षेत्रात येतात.',
+  },
+  settings: {
+    languagePreference: 'भाषा प्राधान्य',
+    chooseLanguage: 'आपली पसंतीची भाषा निवडा',
+    languageDescription: 'सिविक्यू या भाषेत इंटरफेस मजकूर आणि सूचना दर्शवेल.',
+    theme: 'डिस्प्ले थीम',
+    notifications: 'सूचना प्राधान्ये',
+    offlineMode: 'ऑफलाइन साठवण',
+    syncStatus: 'सिंक स्थिती',
+    savePreferences: 'प्राधान्ये जतन करा',
+    preferencesSaved: 'आपली प्राधान्ये यशस्वीरीत्या जतन केली आहेत.',
+  },
+  accessibility: {
+    skipToContent: 'मुख्य घटकाकडे जा',
+    languageSelectorAria: 'इंटरफेस भाषा बदला',
+    menuAria: 'नेव्हिगेशन मेनू',
+    alertAria: 'सुरक्षा इशारा बॅनर',
+    closeAria: 'संवाद बंद करा',
+  },
+  ai: {
+    aiAssisted: 'एआय-साहाय्यित',
+    advisoryOnly: 'केवळ सल्लागार',
+    nonAuthoritative: 'अवैधानिक मसुदा',
+    modelDisclaimer:
+      'एआय शिफारशींना मानवी पुनरावलोकन आणि अधिकृत क्षेत्रीय पडताळणी आवश्यक आहे.',
+    sourceLabel: 'माहिती स्त्रोत: {{source}}',
+  },
+};

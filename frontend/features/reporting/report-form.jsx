@@ -7,6 +7,7 @@ import { VerificationNotice } from './verification-notice.jsx';
 import { CategorySelector } from './category-selector.jsx';
 import { LocationPicker } from './location-picker.jsx';
 import { UploadZone } from './upload-zone.jsx';
+import { VoiceReportingFlow } from '../voice/index.js';
 const DRAFT_STORAGE_KEY = 'civiq_report_draft_v1';
 const INITIAL_VALUES = {
     title: '',
@@ -391,9 +392,26 @@ export function CitizenReportForm() {
               <label htmlFor="description-input" className="block text-sm font-bold text-text-primary">
                 Detailed Description <span className="text-red-500" aria-hidden="true">*</span>
               </label>
-              <span className={`text-xs ${values.description.length < 10 ? 'text-text-tertiary' : 'text-green-700'}`}>
-                {values.description.length} chars (min 10)
-              </span>
+              <div className="flex items-center gap-2">
+                <VoiceReportingFlow
+                  buttonVariant="compact"
+                  buttonLabel="Voice Dictation (आवाज़ से लिखें)"
+                  onTranscriptApplied={(result) => {
+                    if (result?.transcript) {
+                      handleFieldChange('description', result.transcript);
+                    }
+                    if (result?.acceptedCategory) {
+                      handleFieldChange('categoryId', result.acceptedCategory);
+                    }
+                    if (result?.acceptedLocation && !values.address) {
+                      handleFieldChange('address', result.acceptedLocation);
+                    }
+                  }}
+                />
+                <span className={`text-xs ${values.description.length < 10 ? 'text-text-tertiary' : 'text-green-700'}`}>
+                  {values.description.length} chars (min 10)
+                </span>
+              </div>
             </div>
             <textarea id="description-input" rows={4} value={values.description} onChange={(e) => handleFieldChange('description', e.target.value)} placeholder="Provide specific details about the issue, surrounding hazards, and how long it has been present..." className={`w-full px-3.5 py-2.5 rounded-lg border bg-surface-elevated text-sm text-text-primary placeholder:text-text-tertiary transition-colors focus:outline-none focus:ring-2 focus:ring-primary ${formErrors.description ? 'border-red-500 ring-1 ring-red-500' : 'border-border-primary'}`} aria-invalid={!!formErrors.description} aria-describedby={formErrors.description ? 'description-error' : undefined}/>
             {formErrors.description && (<p id="description-error" className="text-xs font-semibold text-red-600 mt-1" role="alert">

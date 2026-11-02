@@ -26,6 +26,7 @@ import { resourceRouter } from './modules/resources/index.js';
 import { resourceMatchingRouter } from './modules/resource-matching/index.js';
 import { disasterOpsRouter } from './modules/disaster-ops/index.js';
 import { i18nRouter, i18nMiddleware } from './modules/i18n/index.js';
+import { speechRouter } from './integrations/speech/index.js';
 
 export function createApp() {
   const app = express();
@@ -55,6 +56,7 @@ export function createApp() {
   app.use('/asset-decisions', assetDecisionRouter);
   app.use('/incidents', incidentRouter);
   app.use('/integrations/incident-source', incidentSourceRouter);
+  app.use('/integrations/speech', speechRouter);
   app.use('/responders', responderRouter);
   app.use('/communications', communicationRouter);
   app.use('/disasters', disasterRouter);

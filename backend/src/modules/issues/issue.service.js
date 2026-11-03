@@ -133,6 +133,7 @@ export class IssueService {
         catch {
             // Non-blocking notification dispatch
         }
+        operationalMapCache.clear();
         return result;
     }
     /**
@@ -198,6 +199,7 @@ export class IssueService {
         catch {
             // Non-blocking notification dispatch
         }
+        operationalMapCache.clear();
         return updated;
     }
     /**
@@ -268,6 +270,13 @@ export class IssueService {
             user.role !== 'CITIZEN' &&
             user.status === 'ACTIVE'
         );
+
+        const cacheKey = `map:${status || 'ALL'}:${severity || 'ALL'}:${department || 'ALL'}:${verificationStatus || 'ALL'}:${jurisdictionId || 'ALL'}:${bbox ? `${bbox.minLat},${bbox.maxLat},${bbox.minLng},${bbox.maxLng}` : 'NO_BBOX'}:${cluster}:${clusterGridSize}:${page}:${limit}:${isAuthorizedOfficial ? (user?.id || 'OFFICIAL') : 'PUBLIC'}`;
+
+        const cached = operationalMapCache.get(cacheKey);
+        if (cached) {
+            return cached;
+        }
 
         const where = { deletedAt: null };
 
@@ -388,7 +397,7 @@ export class IssueService {
             clusters = calculateClusters(sanitizedIssues, clusterGridSize);
         }
 
-        return {
+        const result = {
             items: paginatedItems,
             clusters,
             total,
@@ -398,6 +407,8 @@ export class IssueService {
             isPublicView: !isAuthorizedOfficial,
             isAuthorizedOfficial,
         };
+        operationalMapCache.set(cacheKey, result, 20000);
+        return result;
     }
 }
 

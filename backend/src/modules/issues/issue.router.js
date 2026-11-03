@@ -83,12 +83,7 @@ export async function optionalAuthenticateUser(req, res, next) {
 
 export const issueRouter = Router();
 
-/**
- * GET /issues/operational-map
- * Fetch clustered, filtered, and paginated issues for the operational map.
- * Enforces privacy redaction of exact evidence and citizen PII for public viewers.
- */
-issueRouter.get('/operational-map', optionalAuthenticateUser, async (req, res) => {
+const handleOperationalMap = async (req, res) => {
     try {
         const {
             status,
@@ -141,7 +136,21 @@ issueRouter.get('/operational-map', optionalAuthenticateUser, async (req, res) =
             error: error.message || 'Failed to fetch operational map data.',
         });
     }
-});
+};
+
+/**
+ * GET /issues/operational-map
+ * Fetch clustered, filtered, and paginated issues for the operational map.
+ * Enforces privacy redaction of exact evidence and citizen PII for public viewers.
+ */
+issueRouter.get('/operational-map', optionalAuthenticateUser, handleOperationalMap);
+
+/**
+ * GET /issues/map
+ * Clustered geospatial operational map with bounding-box query support per API specification.
+ */
+issueRouter.get('/map', optionalAuthenticateUser, handleOperationalMap);
+
 /**
  * POST /issues
  * Create a new civic issue. Requires authenticated user.

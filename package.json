@@ -21,6 +21,7 @@
     "test": "npm run test --workspaces --if-present",
     "test:backend": "npm --workspace=@civiq/backend run test",
     "test:frontend": "npm --workspace=@civiq/frontend run test",
+    "test:load": "vitest run tests/load",
     "build": "npm run build --workspaces --if-present"
   },
   "optionalDependencies": {

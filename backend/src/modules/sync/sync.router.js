@@ -9,11 +9,7 @@ import { SYNC_CONFLICT_RESOLUTION } from './sync.types.js';
 
 export const syncRouter = Router();
 
-/**
- * GET /sync/tasks
- * Retrieve tasks delta or initial cache for authenticated worker
- */
-syncRouter.get('/tasks', async (req, res) => {
+const handleGetTasks = async (req, res) => {
   try {
     const { workerId, jurisdictionId, since } = req.query;
     const result = await syncService.getTasksForWorker({
@@ -25,7 +21,19 @@ syncRouter.get('/tasks', async (req, res) => {
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
-});
+};
+
+/**
+ * GET /sync/tasks
+ * Retrieve tasks delta or initial cache for authenticated worker
+ */
+syncRouter.get('/tasks', handleGetTasks);
+
+/**
+ * GET /sync/delta
+ * Offline mobile synchronization delta for field workers per API specification
+ */
+syncRouter.get('/delta', handleGetTasks);
 
 /**
  * POST /sync/batch

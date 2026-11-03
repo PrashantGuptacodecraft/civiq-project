@@ -7,6 +7,7 @@ import { describe, it, expect } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../../backend/src/app.js';
 import { dashboardCache } from '../../backend/src/modules/dashboard/dashboard.service.js';
+import { operationalMapCache } from '../../backend/src/modules/issues/issue.service.js';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -87,5 +88,65 @@ describe('Phase 72 — Production Pilot UAT & Verification', () => {
     expect(floodDisaster.severity).toBe('CRITICAL');
     expect(floodDisaster.situationRoomActive).toBe(true);
     expect(floodDisaster.statutoryDisclaimer).toContain('OFFICIAL_NDMA');
+  });
+
+  it('validates API specification routes for delta sync, map clusters, and disaster command', async () => {
+    // 1. Offline field delta sync
+    const syncRes = await request(app).get('/sync/delta?workerId=wrk_991');
+    expect(syncRes.status).toBe(200);
+    expect(syncRes.body.tasks).toBeDefined();
+
+    // 2. Clustered operational map (served via SafeCache)
+    operationalMapCache.set('map:ALL:ALL:ALL:ALL:ALL:NO_BBOX:true:0.02:1:50:PUBLIC', {
+      items: [],
+      clusters: [],
+      total: 0,
+      page: 1,
+      limit: 50,
+      totalPages: 1,
+      isPublicView: true,
+      isAuthorizedOfficial: false,
+    }, 20000);
+
+    const mapRes = await request(app).get('/issues/map');
+    expect(mapRes.status).toBe(200);
+    expect(mapRes.body.success).toBe(true);
+
+    // 3. Disaster situation room endpoint
+    const sitRoomRes = await request(app)
+      .get('/disasters/dis-pune-mutha-flood-2026/situation-room')
+      .set('x-user-id', 'usr-coord-1')
+      .set('x-user-role', 'DISASTER_COORDINATOR')
+      .set('x-user-jurisdiction', 'mh-pune-pmc');
+    expect(sitRoomRes.status).toBe(200);
+    expect(sitRoomRes.body.disaster.id).toBe('dis-pune-mutha-flood-2026');
+
+    // 4. Disaster declaration endpoint
+    const declareRes = await request(app)
+      .post('/disasters/declare')
+      .set('x-user-id', 'usr-coord-1')
+      .set('x-user-role', 'DISASTER_COORDINATOR')
+      .send({
+        disasterType: 'URBAN_FLOODING_WATERLOGGING',
+        title: 'Emergency Multi-Ward Inundation',
+        severity: 'SEVERE_EMERGENCY',
+        jurisdictionId: 'mh-pune-pmc',
+        affectedJurisdictionIds: ['mh-pune-pmc'],
+        affectedPolygon: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [73.80, 18.50],
+              [73.85, 18.50],
+              [73.85, 18.55],
+              [73.80, 18.55],
+              [73.80, 18.50]
+            ]
+          ]
+        }
+      });
+    expect(declareRes.status).toBe(201);
+    expect(declareRes.body.success).toBe(true);
+    expect(declareRes.body.disaster.id).toBeDefined();
   });
 });

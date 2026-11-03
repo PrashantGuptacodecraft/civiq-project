@@ -119,6 +119,15 @@ describe('Phase 71 — Observability, Performance & Resilience', () => {
       const status = breaker.getStatus();
       expect(status.state).toBe(CIRCUIT_STATE.OPEN);
       expect(status.name).toBe('mock-service');
+
+      const snapshot = metricsCollector.getSnapshot();
+      expect(snapshot.integrations['mock-service'].circuitOpen).toBe(true);
+
+      // Reset restores circuit and metrics state
+      breaker.reset();
+      expect(breaker.state).toBe(CIRCUIT_STATE.CLOSED);
+      const resetSnapshot = metricsCollector.getSnapshot();
+      expect(resetSnapshot.integrations['mock-service'].circuitOpen).toBe(false);
     });
 
     it('handles operation timeout through breaker wrapper', async () => {

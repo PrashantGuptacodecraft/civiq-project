@@ -78,11 +78,13 @@ export class MetricsCollector {
   }
 
   // --- External Integration Resilience Tracking ---
-  recordIntegrationFailure(name, error) {
+  recordIntegrationFailure(name, error, circuitOpen = undefined) {
     const current = this.externalFailures.get(name) || { failures: 0, lastError: null, circuitOpen: false };
     current.failures++;
     current.lastError = error ? String(error.message || error) : 'Unknown failure';
-    if (current.failures >= 5) {
+    if (circuitOpen !== undefined) {
+      current.circuitOpen = Boolean(circuitOpen);
+    } else if (current.failures >= 5) {
       current.circuitOpen = true;
     }
     this.externalFailures.set(name, current);

@@ -6,6 +6,7 @@
 import { Router } from 'express';
 import { disasterService } from './disaster.service.js';
 import { DISASTER_STATUTORY_DISCLAIMER } from './disaster.types.js';
+import { disasterOpsService } from '../disaster-ops/disaster-ops.service.js';
 
 export const disasterRouter = Router();
 
@@ -84,6 +85,26 @@ disasterRouter.get('/at-point', async (req, res) => {
 });
 
 /**
+ * GET /disasters/:id/situation-room
+ * Retrieves real-time emergency dashboard situation room command payload.
+ * Direct alias for /disaster-ops/situation-room/:id per API specification.
+ */
+disasterRouter.get('/:id/situation-room', async (req, res, next) => {
+  try {
+    const userContext = {
+      id: req.headers['x-user-id'] || 'usr-anonymous',
+      role: req.headers['x-user-role'] || 'CITIZEN',
+      jurisdictionId: req.headers['x-user-jurisdiction'] || 'mh-pune-pmc',
+      name: req.headers['x-user-name'] || 'Duty Officer',
+    };
+    const data = await disasterOpsService.getSituationRoomData(req.params.id, userContext);
+    res.json(data);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
  * GET /disasters/:id
  * Retrieves disaster event details by ID.
  */
@@ -150,11 +171,7 @@ disasterRouter.get('/:id/signals', async (req, res) => {
   }
 });
 
-/**
- * POST /disasters
- * Creates a new disaster event.
- */
-disasterRouter.post('/', async (req, res) => {
+const handleCreateDisaster = async (req, res) => {
   try {
     const actor = req.body.actor || {
       id: req.headers['x-user-id'] || 'system',
@@ -173,7 +190,19 @@ disasterRouter.post('/', async (req, res) => {
       error: err.message,
     });
   }
-});
+};
+
+/**
+ * POST /disasters
+ * Creates a new disaster event.
+ */
+disasterRouter.post('/', handleCreateDisaster);
+
+/**
+ * POST /disasters/declare
+ * Authoritative disaster declaration (NDMA/SEOC protocol) per API specification.
+ */
+disasterRouter.post('/declare', handleCreateDisaster);
 
 /**
  * PATCH /disasters/:id/state

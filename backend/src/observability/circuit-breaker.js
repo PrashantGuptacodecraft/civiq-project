@@ -55,12 +55,12 @@ export class CircuitBreaker {
     } catch (err) {
       this.consecutiveFailures++;
       this.lastFailureTime = Date.now();
-      metricsCollector.recordIntegrationFailure(this.name, err);
 
       // Trip circuit if threshold reached or if failure occurred during HALF_OPEN probe
       if (this.consecutiveFailures >= this.failureThreshold || this.state === CIRCUIT_STATE.HALF_OPEN) {
         this.state = CIRCUIT_STATE.OPEN;
       }
+      metricsCollector.recordIntegrationFailure(this.name, err, this.state === CIRCUIT_STATE.OPEN);
 
       if (fallbackFn) {
         return await fallbackFn(err);
@@ -99,5 +99,6 @@ export class CircuitBreaker {
     this.state = CIRCUIT_STATE.CLOSED;
     this.consecutiveFailures = 0;
     this.lastFailureTime = 0;
+    metricsCollector.recordIntegrationSuccess(this.name);
   }
 }

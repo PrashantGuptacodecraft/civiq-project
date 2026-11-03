@@ -1,0 +1,193 @@
+{
+  "pilotContext": {
+    "jurisdiction": "Pune Municipal Corporation (PMC)",
+    "district": "Pune",
+    "state": "Maharashtra",
+    "lgdCode": "250529",
+    "pilotPeriod": "Q4 2026",
+    "syntheticDataLabel": "SYNTHETIC_PMC_PCMC_PILOT_2026"
+  },
+  "users": [
+    {
+      "id": "usr_pilot_superadmin",
+      "email": "superadmin@civiq.gov.in",
+      "phone": "+919876500001",
+      "role": "PLATFORM_SUPER_ADMIN",
+      "status": "ACTIVE",
+      "verificationLevel": "KYC_VERIFIED",
+      "displayName": "Dr. Rajesh Varma",
+      "jurisdictionId": "ind"
+    },
+    {
+      "id": "usr_pilot_ulbadmin",
+      "email": "commissioner.pmc@civiq.gov.in",
+      "phone": "+919876500002",
+      "role": "DISTRICT_ULB_ADMIN",
+      "status": "ACTIVE",
+      "verificationLevel": "KYC_VERIFIED",
+      "displayName": "Vikram Shinde, IAS",
+      "jurisdictionId": "mh-pune-pmc"
+    },
+    {
+      "id": "usr_pilot_road_officer",
+      "email": "roads.officer@pmc.gov.in",
+      "phone": "+919876500003",
+      "role": "DEPARTMENT_OFFICER",
+      "status": "ACTIVE",
+      "verificationLevel": "KYC_VERIFIED",
+      "displayName": "Er. Sunita Kulkarni",
+      "department": "Road Maintenance",
+      "jurisdictionId": "mh-pune-pmc"
+    },
+    {
+      "id": "usr_pilot_water_officer",
+      "email": "water.officer@pmc.gov.in",
+      "phone": "+919876500004",
+      "role": "DEPARTMENT_OFFICER",
+      "status": "ACTIVE",
+      "verificationLevel": "KYC_VERIFIED",
+      "displayName": "Er. Amit Deshmukh",
+      "department": "Water Supply & Sewerage",
+      "jurisdictionId": "mh-pune-pmc"
+    },
+    {
+      "id": "usr_pilot_disaster_coord",
+      "email": "disaster.coord@pmc.gov.in",
+      "phone": "+919876500005",
+      "role": "DISASTER_COORDINATOR",
+      "status": "ACTIVE",
+      "verificationLevel": "KYC_VERIFIED",
+      "displayName": "Capt. Milind Joshi",
+      "jurisdictionId": "mh-pune-pmc"
+    },
+    {
+      "id": "usr_pilot_verifier",
+      "email": "verifier01@pmc.gov.in",
+      "phone": "+919876500006",
+      "role": "VERIFICATION_OFFICER",
+      "status": "ACTIVE",
+      "verificationLevel": "KYC_VERIFIED",
+      "displayName": "Pooja Patil",
+      "jurisdictionId": "mh-pune-pmc"
+    },
+    {
+      "id": "usr_pilot_field_worker",
+      "email": "fieldworker01@pmc.gov.in",
+      "phone": "+919876500007",
+      "role": "FIELD_WORKER",
+      "status": "ACTIVE",
+      "verificationLevel": "KYC_VERIFIED",
+      "displayName": "Ramesh Jadhav",
+      "department": "Road Maintenance",
+      "jurisdictionId": "mh-pune-pmc-aundh"
+    },
+    {
+      "id": "usr_pilot_auditor",
+      "email": "cag.auditor@civiq.gov.in",
+      "phone": "+919876500008",
+      "role": "AUDITOR",
+      "status": "ACTIVE",
+      "verificationLevel": "KYC_VERIFIED",
+      "displayName": "Meera Iyer",
+      "jurisdictionId": "mh-pune"
+    },
+    {
+      "id": "usr_pilot_citizen_priya",
+      "email": "priya.sharma@example.in",
+      "phone": "+919876500009",
+      "role": "CITIZEN",
+      "status": "ACTIVE",
+      "verificationLevel": "BASIC_VERIFIED",
+      "displayName": "Priya Sharma",
+      "jurisdictionId": "mh-pune-pmc-aundh"
+    },
+    {
+      "id": "usr_pilot_citizen_rahul",
+      "email": "rahul.khanna@example.in",
+      "phone": "+919876500010",
+      "role": "CITIZEN",
+      "status": "ACTIVE",
+      "verificationLevel": "BASIC_VERIFIED",
+      "displayName": "Rahul Khanna",
+      "jurisdictionId": "mh-pune-pmc"
+    }
+  ],
+  "issues": [
+    {
+      "id": "iss_pilot_001",
+      "title": "Severe deep pothole on IT Park Main Road",
+      "description": "Large dangerous pothole causing traffic slowdown and two-wheeler skidding near Hinjawadi Phase 1 underpass.",
+      "categoryId": "roads.potholes",
+      "severity": "HIGH",
+      "status": "ASSIGNED",
+      "verificationStatus": "VERIFIED",
+      "reportedById": "usr_pilot_citizen_priya",
+      "assignedToId": "usr_pilot_field_worker",
+      "jurisdictionId": "mh-pune-pmc-aundh",
+      "latitude": 18.5913,
+      "longitude": 73.7389,
+      "address": "Opposite Hinjawadi IT Park Phase 1, Pune",
+      "source": "CITIZEN_WEB"
+    },
+    {
+      "id": "iss_pilot_002",
+      "title": "Major water pipe rupture flooding Baner Road",
+      "description": "High pressure municipal main pipe leak resulting in massive clean water wastage and waterlogging across 100m.",
+      "categoryId": "water.pipeline_leak",
+      "severity": "CRITICAL",
+      "status": "IN_PROGRESS",
+      "verificationStatus": "VERIFIED",
+      "reportedById": "usr_pilot_citizen_rahul",
+      "jurisdictionId": "mh-pune-pmc-aundh",
+      "latitude": 18.5597,
+      "longitude": 73.7799,
+      "address": "Baner Main Road, near D-Mart, Pune",
+      "source": "CITIZEN_MOBILE"
+    },
+    {
+      "id": "iss_pilot_003",
+      "title": "Uncollected municipal garbage heap near school",
+      "description": "Secondary solid waste collection point overflowing for 4 days, causing severe foul odor and health hazard.",
+      "categoryId": "sanitation.garbage_dump",
+      "severity": "MEDIUM",
+      "status": "SUBMITTED",
+      "verificationStatus": "PENDING",
+      "reportedById": "usr_pilot_citizen_priya",
+      "jurisdictionId": "mh-pune-pmc-aundh",
+      "latitude": 18.5626,
+      "longitude": 73.8087,
+      "address": "Aundh D.P. Road, Pune",
+      "source": "VOICE_ASSISTANT_MARATHI"
+    },
+    {
+      "id": "iss_pilot_004",
+      "title": "Non-functional streetlights along university road",
+      "description": "Stretch of 8 LED street poles dark since storm on Tuesday. Poses safety concern for night commuters.",
+      "categoryId": "lighting.street_light_out",
+      "severity": "LOW",
+      "status": "RESOLVED",
+      "verificationStatus": "VERIFIED",
+      "reportedById": "usr_pilot_citizen_rahul",
+      "jurisdictionId": "mh-pune-pmc",
+      "latitude": 18.5529,
+      "longitude": 73.8268,
+      "address": "Ganeshkhind University Road, Pune",
+      "source": "CITIZEN_WEB"
+    }
+  ],
+  "disasters": [
+    {
+      "id": "dis_pilot_monsoon_01",
+      "title": "Mula-Mutha River Flash Flood Warning & Situation Room",
+      "disasterType": "FLOOD",
+      "severity": "CRITICAL",
+      "status": "ACTIVE",
+      "jurisdictionId": "mh-pune-pmc",
+      "declaredById": "usr_pilot_disaster_coord",
+      "affectedPopulationEstimate": 35000,
+      "incidentCommander": "Capt. Milind Joshi",
+      "statutoryDisclaimer": "OFFICIAL_NDMA_SDRF_COMMAND_PROTOCOL_ENFORCED",
+      "situationRoomActive": true
+    }
+  ]
+}

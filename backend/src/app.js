@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { healthRouter } from './observability/health.js';
+import { securityHeaders, sanitizeInput } from './middleware/security.middleware.js';
 import { issueRouter } from './modules/issues/issue.router.js';
 import { mediaRouter } from './modules/media/media.router.js';
 import { geographyRouter } from './modules/geography/geography.router.js';
@@ -32,9 +33,14 @@ import { syncRouter } from './modules/sync/index.js';
 export function createApp() {
   const app = express();
 
+  // Security Hardening (Phase 70)
+  app.disable('x-powered-by');
+  app.use(securityHeaders());
+
   app.use(cors());
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
+  app.use(sanitizeInput());
   app.use(i18nMiddleware());
 
   // Observability & Health

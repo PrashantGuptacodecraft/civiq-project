@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import { prisma } from '@civiq/db';
 import { redactPiiAndSecrets } from './redaction.js';
+import { metricsCollector } from '../../observability/metrics.js';
 export class AiAuditService {
     inMemoryRecords = new Map();
     /**
@@ -38,6 +39,9 @@ export class AiAuditService {
         };
         // 1. Maintain in-memory mirror for low latency & test stability
         this.inMemoryRecords.set(id, record);
+        if (params.latencyMs !== undefined) {
+            metricsCollector.recordAiLatency(params.latencyMs);
+        }
         // 2. Persist to database if prisma.aiAuditRecord is available and not in test environment
         if (process.env.NODE_ENV !== 'test') {
             try {

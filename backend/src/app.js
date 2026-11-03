@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { healthRouter } from './observability/health.js';
+import { metricsCollector } from './observability/metrics.js';
 import { securityHeaders, sanitizeInput } from './middleware/security.middleware.js';
 import { issueRouter } from './modules/issues/issue.router.js';
 import { mediaRouter } from './modules/media/media.router.js';
@@ -42,6 +43,16 @@ export function createApp() {
   app.use(express.urlencoded({ extended: true }));
   app.use(sanitizeInput());
   app.use(i18nMiddleware());
+
+  // Observability & Latency Tracking (Phase 71)
+  app.use((req, res, next) => {
+    const start = Date.now();
+    res.on('finish', () => {
+      const duration = Date.now() - start;
+      metricsCollector.recordApiLatency(duration);
+    });
+    next();
+  });
 
   // Observability & Health
   app.use('/', healthRouter);

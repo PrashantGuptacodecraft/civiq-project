@@ -316,6 +316,10 @@ model Issue {
   @@index([jurisdictionId])
   @@index([state, district])
   @@index([deletedAt])
+  @@index([createdAt])
+  @@index([jurisdictionId, status, createdAt])
+  @@index([verificationStatus, createdAt])
+  @@index([latitude, longitude])
   @@map("issues")
 }
 

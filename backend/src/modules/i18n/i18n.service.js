@@ -10,6 +10,7 @@ import {
 } from './i18n.types.js';
 import { LOCALES } from './i18n.locales.js';
 import { getBhashiniAdapter } from '../../integrations/bhashini/index.js';
+import { CircuitBreaker } from '../../observability/circuit-breaker.js';
 
 export class I18nService {
   constructor(options = {}) {
@@ -18,6 +19,7 @@ export class I18nService {
     this.locales = { ...LOCALES, ...(options.locales || {}) };
     this.userPreferences = new Map();
     this.bhashiniAdapter = options.bhashiniAdapter || getBhashiniAdapter();
+    this.circuitBreaker = new CircuitBreaker('bhashini-translation', { failureThreshold: 3, cooldownMs: 10000 });
   }
 
   /**
@@ -257,17 +259,48 @@ export class I18nService {
   }
 
   /**
-   * Dynamic on-the-fly text translation using the BHASHINI adapter.
+   * Dynamic on-the-fly text translation using the BHASHINI adapter protected by Circuit Breaker.
    */
   async translateDynamicText({ text, sourceLang = 'en', targetLang = 'hi' }) {
-    return this.bhashiniAdapter.translateText({ text, sourceLang, targetLang });
+    return this.circuitBreaker.execute(
+      async () => {
+        return await this.bhashiniAdapter.translateText({ text, sourceLang, targetLang });
+      },
+      async (err) => {
+        // Safe fallback: return original text with fallback provider flag
+        return {
+          translatedText: text,
+          sourceLang,
+          targetLang,
+          provider: 'CIRCUIT_BREAKER_FALLBACK',
+          cached: false,
+          fallbackReason: err?.message || 'External service unavailable',
+        };
+      }
+    );
   }
 
   /**
-   * Dynamic batch translation using the BHASHINI adapter.
+   * Dynamic batch translation using the BHASHINI adapter protected by Circuit Breaker.
    */
   async translateBatchDynamic({ texts, sourceLang = 'en', targetLang = 'hi' }) {
-    return this.bhashiniAdapter.translateBatch({ texts, sourceLang, targetLang });
+    return this.circuitBreaker.execute(
+      async () => {
+        return await this.bhashiniAdapter.translateBatch({ texts, sourceLang, targetLang });
+      },
+      async (err) => {
+        return {
+          translations: (texts || []).map((t) => ({
+            source: t,
+            target: t,
+          })),
+          sourceLang,
+          targetLang,
+          provider: 'CIRCUIT_BREAKER_FALLBACK',
+          fallbackReason: err?.message || 'External service unavailable',
+        };
+      }
+    );
   }
 }
 

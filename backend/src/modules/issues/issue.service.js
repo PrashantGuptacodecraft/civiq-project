@@ -1,6 +1,9 @@
 import { prisma, IssueStatus, VerificationStatus } from '@civiq/db';
 import { CIVIC_ISSUE_TAXONOMY_V1 } from '@civiq/contracts';
 import { notificationService } from '../notifications/notification.service.js';
+import { SafeCache, withQueryBudget } from '../../observability/cache.js';
+
+export const operationalMapCache = new SafeCache({ defaultTtlMs: 20000, maxEntries: 200 });
 export function getTaxonomyCategory(categoryId) {
     for (const group of CIVIC_ISSUE_TAXONOMY_V1.groups) {
         for (const cat of group.categories) {
@@ -297,24 +300,26 @@ export class IssueService {
             };
         }
 
-        // Fetch issues with evidence and reporter details
-        const allMatchingIssues = await prisma.issue.findMany({
-            where,
-            include: {
-                evidence: true,
-                jurisdiction: true,
-                reportedBy: {
-                    select: {
-                        id: true,
-                        email: isAuthorizedOfficial,
-                        phone: isAuthorizedOfficial,
-                        role: true,
-                        status: true,
+        // Fetch issues with evidence and reporter details protected by query budget
+        const allMatchingIssues = await withQueryBudget('issues:getOperationalMap', async () => {
+            return await prisma.issue.findMany({
+                where,
+                include: {
+                    evidence: true,
+                    jurisdiction: true,
+                    reportedBy: {
+                        select: {
+                            id: true,
+                            email: isAuthorizedOfficial,
+                            phone: isAuthorizedOfficial,
+                            role: true,
+                            status: true,
+                        },
                     },
                 },
-            },
-            orderBy: { createdAt: 'desc' },
-        });
+                orderBy: { createdAt: 'desc' },
+            });
+        }, { budgetMs: 1000 });
 
         // Filter by department if specified
         let filteredIssues = allMatchingIssues;

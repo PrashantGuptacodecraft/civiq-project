@@ -1,8 +1,12 @@
 import { prisma } from '@civiq/db';
 import { CIVIC_ISSUE_TAXONOMY_V1 } from '@civiq/contracts';
+import { SafeCache, withQueryBudget } from '../../observability/cache.js';
 
 export const DATA_SOURCE_LABEL = 'OFFICIAL_LGD_PMC_PCMC_REPLICA';
 export const PIPELINE_VERSION = 'civiq-analytics-v1.0.0';
+
+// In-memory cache for aggregated command dashboard KPIs (TTL: 30s)
+export const dashboardCache = new SafeCache({ defaultTtlMs: 30000, maxEntries: 100 });
 
 /**
  * Resolves category taxonomy metadata (department and SLA in days).
@@ -24,6 +28,22 @@ export class DashboardService {
    * data freshness, and source labeling.
    */
   async getCommandKpis(filters = {}) {
+    const { department, jurisdictionId, timeRange = '30d' } = filters;
+    const cacheKey = `kpi:${department || 'ALL'}:${jurisdictionId || 'ALL'}:${timeRange}`;
+
+    const cached = dashboardCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    return await withQueryBudget('dashboard:getCommandKpis', async () => {
+      const result = await this._computeCommandKpis(filters);
+      dashboardCache.set(cacheKey, result, 30000);
+      return result;
+    }, { budgetMs: 1500 });
+  }
+
+  async _computeCommandKpis(filters = {}) {
     const { department, jurisdictionId, timeRange = '30d' } = filters;
 
     const where = { deletedAt: null };

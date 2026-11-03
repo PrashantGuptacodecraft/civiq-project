@@ -16,10 +16,17 @@ export function SyncStatusBadge({
 }) {
   const isSyncing = syncStatus === SYNC_STATUS.SYNCING;
 
-  // Format timestamp safely
-  const formattedLastSync = lastSyncedAt
-    ? new Date(lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    : 'Not yet synced';
+  // Format timestamp safely without throwing RangeError on invalid dates
+  const formattedLastSync = (() => {
+    if (!lastSyncedAt) return 'Not yet synced';
+    try {
+      const d = new Date(lastSyncedAt);
+      if (isNaN(d.getTime())) return 'Not yet synced';
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return 'Not yet synced';
+    }
+  })();
 
   return (
     <aside

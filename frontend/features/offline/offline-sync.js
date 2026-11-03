@@ -84,10 +84,22 @@ export class TaskCacheManager {
     const updated = {
       ...existing,
       ...patch,
-      _isDirty: true,
-      updatedAt: new Date().toISOString(),
+      _isDirty: patch._isDirty !== undefined ? patch._isDirty : true,
+      updatedAt: patch.updatedAt || new Date().toISOString(),
     };
     this.cache.set(taskId, updated);
+    this.saveToStorage();
+    return updated;
+  }
+
+  upsertTask(task) {
+    if (!task || !task.id) return null;
+    const updated = {
+      ...task,
+      _isDirty: task._isDirty !== undefined ? task._isDirty : false,
+      updatedAt: task.updatedAt || new Date().toISOString(),
+    };
+    this.cache.set(task.id, updated);
     this.saveToStorage();
     return updated;
   }

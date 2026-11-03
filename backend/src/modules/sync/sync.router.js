@@ -41,10 +41,14 @@ syncRouter.post('/batch', async (req, res) => {
       });
     }
 
+    const userContext = req.user || {
+      workerId: req.headers['x-worker-id'] || req.headers['x-user-id'] || req.body?.workerId || 'unknown',
+    };
+
     const result = await syncService.processBatchSync({
       mutations,
       conflictStrategy: conflictStrategy || SYNC_CONFLICT_RESOLUTION.LATEST_TIMESTAMP_WINS,
-      userContext: req.user || null,
+      userContext,
     });
 
     return res.status(200).json(result);

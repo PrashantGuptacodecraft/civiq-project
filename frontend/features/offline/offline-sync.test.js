@@ -53,6 +53,30 @@ describe('Phase 69: Frontend Offline Field Sync & Simulation', () => {
       const retrieved = taskCache.getTask('tsk_10');
       expect(retrieved.status).toBe('IN_PROGRESS');
     });
+
+    it('upserts server-synced tasks clearing dirty flag', () => {
+      taskCache.setTasks([
+        { id: 'tsk_20', title: 'Drain cleaning', status: 'IN_PROGRESS', version: 1, _isDirty: true },
+      ]);
+
+      const syncedTask = {
+        id: 'tsk_20',
+        title: 'Drain cleaning',
+        status: 'RESOLVED',
+        version: 2,
+        _isDirty: false,
+        updatedAt: '2026-03-01T12:00:00.000Z',
+      };
+
+      const result = taskCache.upsertTask(syncedTask);
+      expect(result._isDirty).toBe(false);
+      expect(result.status).toBe('RESOLVED');
+      expect(result.version).toBe(2);
+
+      const stored = taskCache.getTask('tsk_20');
+      expect(stored._isDirty).toBe(false);
+      expect(stored.updatedAt).toBe('2026-03-01T12:00:00.000Z');
+    });
   });
 
   describe('Offline Mutation Queue & Idempotency Generation', () => {
@@ -132,6 +156,103 @@ describe('Phase 69: Frontend Offline Field Sync & Simulation', () => {
 
       const queued = mutationQueueManager.getQueue();
       expect(queued[0].retryCount).toBe(1);
+    });
+  });
+
+  describe('Offline/Online E2E Simulation (Phase 69 Exit Check)', () => {
+    it('executes full offline lifecycle: cache -> offline actions -> queue -> online flush -> reconciliation', async () => {
+      // 1. Initial State: cached task on worker's device
+      const initialTask = {
+        id: 'tsk_e2e_101',
+        title: 'Repair water main valve',
+        status: 'ASSIGNED',
+        version: 1,
+        notes: 'Initial assignment',
+        updatedAt: '2026-03-01T08:00:00.000Z',
+      };
+      taskCache.setTasks([initialTask]);
+      expect(taskCache.getAllTasks().length).toBe(1);
+
+      // 2. Worker goes offline and starts work
+      let currentTask = taskCache.getTask('tsk_e2e_101');
+      const startMutation = mutationQueueManager.enqueue('tsk_e2e_101', 'START_PROGRESS', {}, currentTask.version);
+      currentTask = mutationQueueManager.applyOptimistic(currentTask, 'START_PROGRESS', {});
+      taskCache.updateTaskLocally('tsk_e2e_101', currentTask);
+
+      expect(startMutation.idempotencyKey).toBeDefined();
+      expect(currentTask.status).toBe('IN_PROGRESS');
+      expect(taskCache.getTask('tsk_e2e_101')._isDirty).toBe(true);
+      expect(mutationQueueManager.getPendingCount()).toBe(1);
+
+      // 3. Worker updates notes and submits evidence while still offline
+      const notesMutation = mutationQueueManager.enqueue(
+        'tsk_e2e_101',
+        'UPDATE_NOTES',
+        { notes: 'Excavated 1m pit, valve seal replaced' },
+        currentTask.version
+      );
+      currentTask = mutationQueueManager.applyOptimistic(currentTask, 'UPDATE_NOTES', {
+        notes: 'Excavated 1m pit, valve seal replaced',
+      });
+      taskCache.updateTaskLocally('tsk_e2e_101', currentTask);
+
+      expect(notesMutation.idempotencyKey).not.toBe(startMutation.idempotencyKey);
+      expect(mutationQueueManager.getPendingCount()).toBe(2);
+
+      // 4. Worker marks task resolved offline
+      const resolveMutation = mutationQueueManager.enqueue(
+        'tsk_e2e_101',
+        'RESOLVE_TASK',
+        { resolutionNotes: 'Valve tested under 6 bar pressure - leak free' },
+        currentTask.version
+      );
+      currentTask = mutationQueueManager.applyOptimistic(currentTask, 'RESOLVE_TASK', {
+        resolutionNotes: 'Valve tested under 6 bar pressure - leak free',
+      });
+      taskCache.updateTaskLocally('tsk_e2e_101', currentTask);
+
+      expect(mutationQueueManager.getPendingCount()).toBe(3);
+      expect(currentTask.status).toBe('RESOLVED');
+
+      // 5. Worker reconnects to network -> Dispatch batch sync to server
+      const serverSimulatedTask = {
+        ...currentTask,
+        version: 4,
+        _isDirty: false,
+        updatedAt: '2026-03-01T09:30:00.000Z',
+      };
+
+      const serverDispatcher = vi.fn().mockImplementation(async (mutations) => {
+        expect(mutations).toHaveLength(3);
+        // Verify every mutation carries a unique idempotency key
+        const keys = new Set(mutations.map((m) => m.idempotencyKey));
+        expect(keys.size).toBe(3);
+
+        return {
+          success: true,
+          appliedCount: 3,
+          duplicateCount: 0,
+          conflictCount: 0,
+          results: [
+            { taskId: 'tsk_e2e_101', status: 'APPLIED', task: serverSimulatedTask },
+            { taskId: 'tsk_e2e_101', status: 'APPLIED', task: serverSimulatedTask },
+            { taskId: 'tsk_e2e_101', status: 'APPLIED', task: serverSimulatedTask },
+          ],
+        };
+      });
+
+      const syncResult = await mutationQueueManager.flush(serverDispatcher);
+      expect(syncResult.success).toBe(true);
+      expect(syncResult.syncedCount).toBe(3);
+      expect(mutationQueueManager.getPendingCount()).toBe(0);
+
+      // 6. Client reconciles server response into local cache
+      taskCache.upsertTask(serverSimulatedTask);
+      const reconciledTask = taskCache.getTask('tsk_e2e_101');
+      expect(reconciledTask.version).toBe(4);
+      expect(reconciledTask._isDirty).toBe(false);
+      expect(reconciledTask.status).toBe('RESOLVED');
+      expect(reconciledTask.notes).toBe('Excavated 1m pit, valve seal replaced');
     });
   });
 });

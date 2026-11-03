@@ -5,7 +5,7 @@
  * Implements:
  * - Server-side mutation processing queue with idempotency keys
  * - Task synchronization and delta queries for field workers
- * - Configurable sync conflict resolution strategy (LATEST_TIMESTAMP_WINS / CLIENT_WINS / SERVER_WINS)
+ * - Configurable sync conflict resolution strategy (LATEST_TIMESTAMP_WINS / CLIENT_WINS / SERVER_WINS / MERGE)
  * - Safe optimistic reconciliation
  */
 
@@ -139,6 +139,14 @@ export class SyncService {
     let conflictCount = 0;
 
     for (const mutation of mutations) {
+      if (!mutation || typeof mutation !== 'object') {
+        results.push({
+          status: SYNC_ITEM_STATUS.REJECTED,
+          error: 'Invalid mutation object',
+        });
+        continue;
+      }
+
       const { id, idempotencyKey, taskId, action, payload, queuedAt, baseVersion } = mutation;
 
       if (!idempotencyKey) {
@@ -146,6 +154,16 @@ export class SyncService {
           mutationId: id,
           status: SYNC_ITEM_STATUS.REJECTED,
           error: 'Missing required idempotencyKey',
+        });
+        continue;
+      }
+
+      if (!taskId) {
+        results.push({
+          mutationId: id,
+          idempotencyKey,
+          status: SYNC_ITEM_STATUS.REJECTED,
+          error: 'Missing required taskId',
         });
         continue;
       }
@@ -199,9 +217,21 @@ export class SyncService {
           finalTask = this._applyMutation(existingTask, action, payload, clientTimestamp);
           finalTask.version = existingTask.version + 1;
           resolutionStatus = SYNC_ITEM_STATUS.CONFLICT_RESOLVED;
+          appliedCount++;
           conflictInfo = {
             strategy: SYNC_CONFLICT_RESOLUTION.CLIENT_WINS,
             chosen: 'client',
+            newVersion: finalTask.version,
+          };
+        } else if (conflictStrategy === SYNC_CONFLICT_RESOLUTION.MERGE) {
+          finalTask = this._applyMutation(existingTask, action, payload, clientTimestamp);
+          finalTask.version = existingTask.version + 1;
+          resolutionStatus = SYNC_ITEM_STATUS.CONFLICT_RESOLVED;
+          appliedCount++;
+          conflictInfo = {
+            strategy: SYNC_CONFLICT_RESOLUTION.MERGE,
+            chosen: 'merge',
+            mergedFields: Object.keys(payload || {}),
             newVersion: finalTask.version,
           };
         } else {
@@ -209,6 +239,7 @@ export class SyncService {
           if (clientTimestamp >= serverUpdatedAt) {
             finalTask = this._applyMutation(existingTask, action, payload, clientTimestamp);
             finalTask.version = existingTask.version + 1;
+            appliedCount++;
             conflictInfo = {
               strategy: SYNC_CONFLICT_RESOLUTION.LATEST_TIMESTAMP_WINS,
               chosen: 'client',

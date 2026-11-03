@@ -57,6 +57,7 @@ describe('Phase 69: Offline Field Sync & Conflict Strategy', () => {
 
       const res = await request(app)
         .post('/sync/batch')
+        .set('x-worker-id', 'wrk_991')
         .send({ mutations: [mutation] })
         .expect(200);
 
@@ -65,6 +66,10 @@ describe('Phase 69: Offline Field Sync & Conflict Strategy', () => {
       expect(res.body.results[0].status).toBe(SYNC_ITEM_STATUS.APPLIED);
       expect(res.body.results[0].task.status).toBe('IN_PROGRESS');
       expect(res.body.results[0].task.version).toBe(2);
+
+      // Verify audit history records workerId
+      expect(syncService.syncHistory.length).toBe(1);
+      expect(syncService.syncHistory[0].workerId).toBe('wrk_991');
     });
 
     it('safely handles duplicate mutation replays using idempotency keys without duplicate mutation execution', async () => {
@@ -111,6 +116,22 @@ describe('Phase 69: Offline Field Sync & Conflict Strategy', () => {
 
       expect(res.body.results[0].status).toBe(SYNC_ITEM_STATUS.REJECTED);
       expect(res.body.results[0].error).toMatch(/Missing required idempotencyKey/i);
+    });
+
+    it('rejects mutations missing required taskId', async () => {
+      const missingTaskMutation = {
+        id: 'mut_no_task',
+        idempotencyKey: 'idemp_no_task_1',
+        action: SYNC_MUTATION_ACTIONS.START_PROGRESS,
+      };
+
+      const res = await request(app)
+        .post('/sync/batch')
+        .send({ mutations: [missingTaskMutation] })
+        .expect(200);
+
+      expect(res.body.results[0].status).toBe(SYNC_ITEM_STATUS.REJECTED);
+      expect(res.body.results[0].error).toMatch(/Missing required taskId/i);
     });
   });
 
@@ -176,6 +197,78 @@ describe('Phase 69: Offline Field Sync & Conflict Strategy', () => {
       expect(result.status).toBe(SYNC_ITEM_STATUS.CONFLICT_RESOLVED);
       expect(result.conflict.chosen).toBe('server');
       expect(result.task.notes).toBe('Server authoritative note');
+    });
+
+    it('resolves conflicts with CLIENT_WINS when specified', async () => {
+      const serverTask = syncService.tasks.get('tsk_field_101');
+      serverTask.version = 2;
+      serverTask.notes = 'Server note to override';
+
+      const clientMutation = {
+        id: 'mut_conflict_client_wins',
+        idempotencyKey: 'idemp_key_client_wins_force',
+        taskId: 'tsk_field_101',
+        action: SYNC_MUTATION_ACTIONS.UPDATE_NOTES,
+        payload: { notes: 'Client forced override note' },
+        queuedAt: '2026-03-01T08:30:00.000Z', // Even if timestamp is older
+        baseVersion: 1,
+      };
+
+      const res = await request(app)
+        .post('/sync/batch')
+        .send({
+          mutations: [clientMutation],
+          conflictStrategy: SYNC_CONFLICT_RESOLUTION.CLIENT_WINS,
+        })
+        .expect(200);
+
+      expect(res.body.conflictCount).toBe(1);
+      const result = res.body.results[0];
+      expect(result.status).toBe(SYNC_ITEM_STATUS.CONFLICT_RESOLVED);
+      expect(result.conflict.chosen).toBe('client');
+      expect(result.task.notes).toBe('Client forced override note');
+      expect(result.task.version).toBe(3);
+    });
+
+    it('resolves conflicts with MERGE preserving non-conflicting mutation fields', async () => {
+      const serverTask = syncService.tasks.get('tsk_field_101');
+      serverTask.version = 2;
+      serverTask.notes = 'Server updated priority dispatch note';
+
+      const clientMutation = {
+        id: 'mut_conflict_merge',
+        idempotencyKey: 'idemp_key_merge_evidence',
+        taskId: 'tsk_field_101',
+        action: SYNC_MUTATION_ACTIONS.SUBMIT_EVIDENCE,
+        payload: {
+          evidence: {
+            id: 'ev_merge_1',
+            proofType: 'BEFORE',
+            mediaUrl: 'https://civiq.in/img_pothole_before.jpg',
+          },
+        },
+        queuedAt: '2026-03-01T09:10:00.000Z',
+        baseVersion: 1,
+      };
+
+      const res = await request(app)
+        .post('/sync/batch')
+        .send({
+          mutations: [clientMutation],
+          conflictStrategy: SYNC_CONFLICT_RESOLUTION.MERGE,
+        })
+        .expect(200);
+
+      expect(res.body.conflictCount).toBe(1);
+      const result = res.body.results[0];
+      expect(result.status).toBe(SYNC_ITEM_STATUS.CONFLICT_RESOLVED);
+      expect(result.conflict.chosen).toBe('merge');
+      // Server note preserved
+      expect(result.task.notes).toBe('Server updated priority dispatch note');
+      // Client evidence merged
+      expect(result.task.evidence).toHaveLength(1);
+      expect(result.task.evidence[0].id).toBe('ev_merge_1');
+      expect(result.task.version).toBe(3);
     });
   });
 });

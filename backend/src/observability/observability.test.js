@@ -41,25 +41,42 @@ describe('Phase 71 — Observability, Performance & Resilience', () => {
       expect(snapshot.backlogs.slaBacklog).toBe(15);
       expect(snapshot.queues['high-priority-alerts']).toBe(2500);
     });
+
+    it('exports metrics in standard Prometheus exposition format', () => {
+      metricsCollector.recordApiLatency(85);
+      metricsCollector.setVerificationBacklog(12);
+      const promText = metricsCollector.toPrometheusFormat();
+
+      expect(promText).toContain('civiq_api_latency_ms{quantile="0.5"}');
+      expect(promText).toContain('civiq_verification_backlog 12');
+    });
   });
 
   describe('SafeCache and Query Budget', () => {
-    it('manages LRU eviction, TTL expiration, and metrics recording', async () => {
+    it('manages LRU eviction, TTL expiration, access refresh, and pattern deletion', async () => {
       const cache = new SafeCache({ defaultTtlMs: 50, maxEntries: 2 });
-      cache.set('a', 1);
-      cache.set('b', 2);
+      cache.set('issue:1', { id: 1 });
+      cache.set('issue:2', { id: 2 });
 
-      expect(cache.get('a')).toBe(1);
+      // Access key 1 to make it most recently used
+      expect(cache.get('issue:1')).toEqual({ id: 1 });
       expect(metricsCollector.cacheStats.hits).toBe(1);
 
-      // Exceed max entries to trigger LRU eviction
-      cache.set('c', 3);
+      // Insert 3rd item -> key 2 should be evicted because key 1 was refreshed
+      cache.set('kpi:3', { id: 3 });
       expect(metricsCollector.cacheStats.evictions).toBe(1);
+      expect(cache.get('issue:2')).toBeNull();
+      expect(cache.get('issue:1')).toEqual({ id: 1 });
+
+      // Pattern deletion test
+      cache.set('issue:4', { id: 4 });
+      const deleted = cache.deletePattern('issue:');
+      expect(deleted).toBe(2);
+      expect(cache.get('issue:1')).toBeNull();
 
       // Wait for expiration
       await new Promise((r) => setTimeout(r, 60));
-      expect(cache.get('c')).toBeNull();
-      expect(metricsCollector.cacheStats.misses).toBe(1);
+      expect(cache.get('kpi:3')).toBeNull();
     });
 
     it('executes within query budget and tracks query latency', async () => {
@@ -74,8 +91,8 @@ describe('Phase 71 — Observability, Performance & Resilience', () => {
   });
 
   describe('CircuitBreaker Resilience', () => {
-    it('trips circuit after threshold failures and triggers safe fallback', async () => {
-      const breaker = new CircuitBreaker('mock-service', { failureThreshold: 3, cooldownMs: 100 });
+    it('trips circuit after threshold failures, handles timeouts, and triggers safe fallback', async () => {
+      const breaker = new CircuitBreaker('mock-service', { failureThreshold: 3, cooldownMs: 100, timeoutMs: 50 });
 
       const failingService = vi.fn().mockRejectedValue(new Error('Downstream network timeout'));
       const fallback = vi.fn().mockResolvedValue('fallback-value');
@@ -96,17 +113,29 @@ describe('Phase 71 — Observability, Performance & Resilience', () => {
       // 4th call: directly triggers fallback without invoking failingService
       const res4 = await breaker.execute(failingService, fallback);
       expect(res4).toBe('fallback-value');
-      expect(failingService).toHaveBeenCalledTimes(3); // was not called on 4th execution
+      expect(failingService).toHaveBeenCalledTimes(3);
 
-      const snapshot = metricsCollector.getSnapshot();
-      expect(snapshot.integrations['mock-service'].circuitOpen).toBe(false); // only at 5 in metrics or open state in breaker
+      // Verify diagnostics status
+      const status = breaker.getStatus();
+      expect(status.state).toBe(CIRCUIT_STATE.OPEN);
+      expect(status.name).toBe('mock-service');
+    });
+
+    it('handles operation timeout through breaker wrapper', async () => {
+      const breaker = new CircuitBreaker('slow-service', { failureThreshold: 2, cooldownMs: 200, timeoutMs: 25 });
+      const slowFn = () => new Promise((resolve) => setTimeout(() => resolve('too-late'), 100));
+
+      const fallback = vi.fn().mockImplementation((err) => `caught-${err.message}`);
+      const res = await breaker.execute(slowFn, fallback);
+
+      expect(res).toContain('timed out');
     });
   });
 
   describe('Integration with Live Application & I18n', () => {
     const app = createApp();
 
-    it('GET /metrics returns live snapshot', async () => {
+    it('GET /metrics returns JSON snapshot by default', async () => {
       const res = await request(app).get('/metrics');
       expect(res.status).toBe(200);
       expect(res.body.status).toBe('ok');
@@ -114,8 +143,17 @@ describe('Phase 71 — Observability, Performance & Resilience', () => {
       expect(res.body.metrics.apiLatency).toBeDefined();
     });
 
+    it('GET /metrics returns Prometheus text format when requested', async () => {
+      const res = await request(app)
+        .get('/metrics')
+        .set('Accept', 'text/plain');
+
+      expect(res.status).toBe(200);
+      expect(res.headers['content-type']).toContain('text/plain');
+      expect(res.text).toContain('civiq_api_latency_ms');
+    });
+
     it('i18n dynamic translation safely degrades when downstream fails', async () => {
-      // Mock bhashini adapter throwing error
       const mockFailingAdapter = {
         translateText: vi.fn().mockRejectedValue(new Error('BHASHINI gateway timeout')),
         translateBatch: vi.fn().mockRejectedValue(new Error('BHASHINI gateway timeout')),
@@ -131,7 +169,6 @@ describe('Phase 71 — Observability, Performance & Resilience', () => {
           targetLang: 'hi',
         });
 
-        // Graceful fallback returns original text without throwing
         expect(result.translatedText).toBe('Urgent road repair required');
         expect(result.provider).toBe('CIRCUIT_BREAKER_FALLBACK');
       } finally {

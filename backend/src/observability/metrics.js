@@ -158,6 +158,45 @@ export class MetricsCollector {
       integrations: externalHealth,
     };
   }
+
+  /**
+   * Formats metrics in standard Prometheus exposition format
+   * for cloud-native scrapers (Datadog, Prometheus, Grafana Agent).
+   */
+  toPrometheusFormat() {
+    const snapshot = this.getSnapshot();
+    const lines = [
+      '# HELP civiq_api_latency_ms API response latency percentiles',
+      '# TYPE civiq_api_latency_ms gauge',
+      `civiq_api_latency_ms{quantile="0.5"} ${snapshot.apiLatency.p50}`,
+      `civiq_api_latency_ms{quantile="0.95"} ${snapshot.apiLatency.p95}`,
+      `civiq_api_latency_ms{quantile="0.99"} ${snapshot.apiLatency.p99}`,
+      '',
+      '# HELP civiq_ai_latency_ms AI inference latency percentiles',
+      '# TYPE civiq_ai_latency_ms gauge',
+      `civiq_ai_latency_ms{quantile="0.5"} ${snapshot.aiLatency.p50}`,
+      `civiq_ai_latency_ms{quantile="0.95"} ${snapshot.aiLatency.p95}`,
+      `civiq_ai_latency_ms{quantile="0.99"} ${snapshot.aiLatency.p99}`,
+      '',
+      '# HELP civiq_verification_backlog Number of unverified civic issues',
+      '# TYPE civiq_verification_backlog gauge',
+      `civiq_verification_backlog ${snapshot.backlogs.verificationBacklog}`,
+      '',
+      '# HELP civiq_sla_breach_backlog Number of issues with breached SLA',
+      '# TYPE civiq_sla_breach_backlog gauge',
+      `civiq_sla_breach_backlog ${snapshot.backlogs.slaBacklog}`,
+      '',
+      '# HELP civiq_cache_hit_ratio Safe cache hit percentage',
+      '# TYPE civiq_cache_hit_ratio gauge',
+      `civiq_cache_hit_ratio ${snapshot.cache.hitRate}`,
+    ];
+
+    for (const [queue, age] of Object.entries(snapshot.queues)) {
+      lines.push(`civiq_queue_age_ms{queue="${queue}"} ${age}`);
+    }
+
+    return lines.join('\n') + '\n';
+  }
 }
 
 export const metricsCollector = new MetricsCollector();

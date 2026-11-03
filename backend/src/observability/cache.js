@@ -18,10 +18,13 @@ export class SafeCache {
   }
 
   set(key, value, ttlMs = this.defaultTtlMs) {
-    if (this.store.size >= this.maxEntries) {
+    // If key already exists, delete it first to refresh LRU order on set
+    if (this.store.has(key)) {
+      this.store.delete(key);
+    } else if (this.store.size >= this.maxEntries) {
       // Evict oldest (first) key
       const firstKey = this.store.keys().next().value;
-      if (firstKey) {
+      if (firstKey !== undefined) {
         this.store.delete(firstKey);
         metricsCollector.recordCacheEviction();
       }
@@ -41,6 +44,9 @@ export class SafeCache {
       metricsCollector.recordCacheMiss();
       return null;
     }
+    // Refresh access order for true LRU behavior
+    this.store.delete(key);
+    this.store.set(key, entry);
     metricsCollector.recordCacheHit();
     return entry.value;
   }
@@ -53,8 +59,28 @@ export class SafeCache {
     return this.store.delete(key);
   }
 
+  /**
+   * Delete entries matching a regex pattern or prefix.
+   * Useful for invalidating resource-specific cache keys.
+   */
+  deletePattern(pattern) {
+    const regex = typeof pattern === 'string' ? new RegExp(`^${pattern}`) : pattern;
+    let deletedCount = 0;
+    for (const key of this.store.keys()) {
+      if (regex.test(key)) {
+        this.store.delete(key);
+        deletedCount++;
+      }
+    }
+    return deletedCount;
+  }
+
   clear() {
     this.store.clear();
+  }
+
+  get size() {
+    return this.store.size;
   }
 }
 

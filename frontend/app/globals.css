@@ -1,10 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --header-height: 64px;
+    --sidebar-width: 240px;
+    --radius-card: 16px;
+    scroll-behavior: smooth;
+  }
+
+  html {
+    @apply antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   body {
     @apply bg-surface-primary text-text-primary font-sans antialiased;
+    font-optical-sizing: auto;
+  }
+
+  /* ─── Premium Custom Scrollbar ───────────────────────────── */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border-secondary rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-text-tertiary;
+  }
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #CBD5E1 transparent;
+  }
+
+  /* ─── Focus ring global style ───────────────────────────── */
+  :focus-visible {
+    outline: 2px solid #2563EB;
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  /* ─── Selection color ─────────────────────────────────────── */
+  ::selection {
+    background-color: rgba(37, 99, 235, 0.15);
+    color: #0F172A;
   }
 }
 
@@ -16,14 +67,12 @@
   .skeleton::after {
     content: '';
     @apply absolute inset-0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
-    animation: shimmer 2s infinite;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.7) 50%, transparent 100%);
+    transform: translateX(-100%);
+    animation: shimmer 1.8s ease-in-out infinite;
   }
 
-  /* ─── Entrance animations ─────────────────────────────────── */
-  /* Use Tailwind's animate-fade-up, animate-scale-in, etc. classes generated from tailwind.config keyframes */
-
-  /* Stagger helpers — add delay via inline style or these utility classes */
+  /* Stagger helpers */
   .anim-delay-50  { animation-delay:  50ms; }
   .anim-delay-100 { animation-delay: 100ms; }
   .anim-delay-150 { animation-delay: 150ms; }
@@ -31,21 +80,91 @@
   .anim-delay-250 { animation-delay: 250ms; }
   .anim-delay-300 { animation-delay: 300ms; }
   .anim-delay-400 { animation-delay: 400ms; }
+  .anim-delay-500 { animation-delay: 500ms; }
 
-  /* ─── Button press ────────────────────────────────────────── */
-  /* Apply to any interactive element for tactile scale feedback */
+  /* ─── Button press — tactile scale feedback ──────────────── */
   .btn-press {
-    @apply transition-transform duration-150;
+    @apply transition-transform duration-100 ease-spring;
   }
   .btn-press:active {
-    transform: scale(0.97);
+    transform: scale(0.96);
+  }
+
+  /* ─── Primary button ─────────────────────────────────────── */
+  .btn-primary {
+    @apply btn-press inline-flex items-center justify-center gap-2
+           bg-primary hover:bg-primary-hover active:bg-primary-active
+           text-white font-semibold text-sm
+           px-5 py-2.5 rounded-xl min-h-[44px]
+           shadow-elevation-2 shadow-primary/20
+           transition-all duration-150
+           outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2;
+  }
+
+  /* ─── Ghost button ───────────────────────────────────────── */
+  .btn-ghost {
+    @apply btn-press inline-flex items-center justify-center gap-2
+           bg-transparent hover:bg-surface-secondary active:bg-surface-tertiary
+           text-text-secondary hover:text-text-primary font-medium text-sm
+           px-4 py-2.5 rounded-xl min-h-[44px]
+           border border-border-primary hover:border-border-secondary
+           transition-all duration-150
+           outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2;
+  }
+
+  /* ─── Premium card ───────────────────────────────────────── */
+  .card {
+    @apply bg-surface-elevated border border-border-primary rounded-2xl shadow-card;
+  }
+  .card-hover {
+    @apply card transition-all duration-200
+           hover:shadow-card-hover hover:-translate-y-px hover:border-border-secondary;
+  }
+
+  /* ─── Glass panel ────────────────────────────────────────── */
+  .glass {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(16px) saturate(1.8);
+    -webkit-backdrop-filter: blur(16px) saturate(1.8);
+    @apply border border-white/60;
+  }
+
+  /* ─── Gradient text ──────────────────────────────────────── */
+  .gradient-text {
+    background: linear-gradient(135deg, #2563EB 0%, #8B5CF6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ─── Dot grid background ────────────────────────────────── */
+  .dot-grid {
+    background-image: radial-gradient(circle, #CBD5E1 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  /* ─── Line grid background ───────────────────────────────── */
+  .line-grid {
+    background-image:
+      linear-gradient(rgba(37,99,235,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(37,99,235,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  /* ─── Hide scrollbar (tabs, carousels) ───────────────────── */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 
   /* ─── Skip to content (accessibility) ────────────────────── */
   .skip-link {
     @apply sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100]
-           focus:bg-primary focus:text-white focus:px-4 focus:py-2 focus:rounded-md
-           focus:font-semibold focus:text-sm;
+           focus:bg-primary focus:text-white focus:px-4 focus:py-2 focus:rounded-xl
+           focus:font-semibold focus:text-sm focus:shadow-glow-primary;
   }
 
   /* ─── Nav active indicator ────────────────────────────────── */
@@ -59,17 +178,31 @@
 
   /* ─── Mobile bottom nav ──────────────────────────────────── */
   .mobile-nav-item {
-    @apply flex flex-col items-center gap-0.5 px-3 py-2 rounded-lg text-text-tertiary
-           transition-colors duration-150 min-h-[44px] justify-center;
+    @apply flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl text-text-tertiary
+           transition-all duration-200 min-h-[44px] justify-center;
   }
   .mobile-nav-item.active,
   .mobile-nav-item:hover {
     @apply text-primary;
   }
 
-  /* ─── Card hover lift ─────────────────────────────────────── */
-  .card-hover {
-    @apply transition-all duration-200 hover:shadow-elevation-3 hover:-translate-y-0.5;
+  /* ─── Status dot ──────────────────────────────────────────── */
+  .status-dot {
+    @apply relative flex h-2.5 w-2.5;
+  }
+  .status-dot span:first-child {
+    @apply animate-ping absolute inline-flex h-full w-full rounded-full opacity-75;
+  }
+  .status-dot span:last-child {
+    @apply relative inline-flex rounded-full h-2.5 w-2.5;
+  }
+
+  /* ─── Tablist ─────────────────────────────────────────────── */
+  .tab-active {
+    @apply bg-surface-primary text-text-primary shadow-elevation-1 font-semibold;
+  }
+  .tab-inactive {
+    @apply text-text-secondary hover:text-text-primary transition-colors duration-150;
   }
 
   /* ─── Reduced motion — disable ALL non-essential animations ─ */
@@ -81,7 +214,9 @@
     .animate-scale-in,
     .animate-slide-in-right,
     .animate-slide-in-bottom,
-    .animate-waveform-bar {
+    .animate-waveform-bar,
+    .animate-float,
+    .animate-gradient-shift {
       animation: none !important;
       transition: none !important;
     }

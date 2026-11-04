@@ -74,36 +74,64 @@ export function CommandDashboard({
   };
 
   return (
-    <div className="w-full max-w-[1440px] mx-auto px-4 md:px-8 py-6 space-y-6">
-      {/* Dashboard Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface-primary border border-border-primary p-4 sm:p-6 rounded-2xl shadow-elevation-1">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse" />
-            <span className="text-xs font-bold uppercase tracking-wider text-text-tertiary">
+    <div className="w-full max-w-[1440px] mx-auto px-4 md:px-8 py-6 space-y-5">
+      {/* Dashboard Top Header — Premium bento style */}
+      <div
+        className="relative flex flex-col md:flex-row md:items-start justify-between gap-5 p-5 sm:p-7 rounded-2xl overflow-hidden border border-border-primary/70"
+        style={{
+          background: 'linear-gradient(135deg, #0F172A 0%, #1E1B4B 60%, #0F172A 100%)',
+          boxShadow: '0 4px 24px rgba(37,99,235,0.08), 0 1px 3px rgba(0,0,0,0.12)',
+        }}
+      >
+        {/* Background grid */}
+        <div
+          className="absolute inset-0 opacity-15 pointer-events-none"
+          aria-hidden="true"
+          style={{
+            backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.12) 1px, transparent 0)',
+            backgroundSize: '28px 28px',
+          }}
+        />
+        {/* Glow */}
+        <div
+          className="absolute -top-20 -right-20 w-80 h-80 pointer-events-none"
+          aria-hidden="true"
+          style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.2) 0%, transparent 70%)' }}
+        />
+
+        <div className="relative">
+          <div className="flex items-center gap-2.5 mb-3">
+            <span className="relative flex h-2 w-2" aria-hidden="true">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+            </span>
+            <span className="text-[11px] font-bold uppercase tracking-widest text-white/50">
               Municipal Oversight • Pune PMC &amp; PCMC Command
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-text-primary tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
             Authority Command Dashboard
           </h1>
-          <p className="text-sm text-text-secondary mt-1 max-w-2xl">
-            Real-time executive oversight of civic issue resolution, SLA compliance, department accountability, and citizen reopening trends.
+          <p className="text-sm text-white/50 mt-2 max-w-xl leading-relaxed">
+            Executive oversight of civic issue resolution, SLA compliance, department accountability, and citizen feedback.
           </p>
         </div>
 
-        {/* Executive Scope Badge & Export Action */}
-        <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
-          <span className="px-3 py-1.5 rounded-xl border border-border-primary bg-surface-secondary text-xs font-semibold text-text-primary shadow-elevation-1">
-            🏛️ Authority Access Level: Executive Official
+        {/* Right side actions */}
+        <div className="relative flex items-center gap-2 self-start flex-shrink-0 flex-wrap">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/15 bg-white/8 text-xs font-semibold text-white/70 backdrop-blur-sm">
+            <svg className="w-3.5 h-3.5 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            Authority Access Level: Executive Official
           </span>
           <button
             type="button"
             onClick={() => setIsExportOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-border-primary bg-surface-elevated text-xs font-bold text-text-primary hover:bg-surface-secondary shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-primary min-h-[36px] transition-colors"
+            className="btn-press inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-xs font-bold text-white transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-white/50 min-h-[36px]"
             aria-label="Export operational reports"
           >
-            <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
             Export Reports
@@ -130,12 +158,20 @@ export function CommandDashboard({
 
       {/* 6 CORE REQUIRED KPIS GRID */}
       <div>
-        <div className="flex items-center justify-between mb-3 px-1">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-text-tertiary">
-            Core Operational Metrics ({totalIssues} issues evaluated)
-          </h2>
-          <span className="text-xs text-text-secondary">
-            Click any metric to drill down
+        <div className="flex items-center justify-between mb-4 px-0.5">
+          <div>
+            <h2 className="text-xs font-bold uppercase tracking-widest text-text-tertiary">
+              Core Operational Metrics
+            </h2>
+            <p className="text-xs text-text-tertiary mt-0.5">
+              {totalIssues} issues evaluated · Click any metric to drill down
+            </p>
+          </div>
+          <span className="hidden sm:inline-flex items-center gap-1 text-xs text-text-tertiary bg-surface-secondary px-2.5 py-1 rounded-lg border border-border-primary font-medium">
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5" />
+            </svg>
+            Interactive
           </span>
         </div>
 
@@ -235,28 +271,42 @@ export function CommandDashboard({
 
       {/* Breakdown Tab Switcher (Department vs Ward) */}
       <div className="space-y-4">
-        <div className="flex items-center gap-2 border-b border-border-primary pb-2">
+        <div className="flex items-center gap-1 p-1 bg-surface-secondary border border-border-primary rounded-2xl w-fit">
           <button
             type="button"
             onClick={() => setActiveTab('DEPARTMENTS')}
-            className={`px-4 py-2 rounded-lg text-sm font-bold min-h-[44px] transition-colors cursor-pointer ${
+            className={`px-5 py-2.5 rounded-xl text-sm font-semibold min-h-[40px] transition-all duration-200 cursor-pointer ${
               activeTab === 'DEPARTMENTS'
-                ? 'bg-primary text-text-inverse shadow-elevation-1'
-                : 'bg-surface-secondary text-text-secondary hover:text-text-primary'
+                ? 'bg-surface-primary text-primary shadow-elevation-1 border border-border-primary/50'
+                : 'text-text-secondary hover:text-text-primary hover:bg-surface-primary/50'
             }`}
           >
-            🏢 Departments Breakdown ({byDepartment.length})
+            Departments Breakdown
+            <span className={`ml-2 text-xs font-bold px-1.5 py-0.5 rounded-md ${
+              activeTab === 'DEPARTMENTS'
+                ? 'bg-primary/10 text-primary'
+                : 'bg-surface-tertiary text-text-tertiary'
+            }`}>
+              {byDepartment.length}
+            </span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('WARDS')}
-            className={`px-4 py-2 rounded-lg text-sm font-bold min-h-[44px] transition-colors cursor-pointer ${
+            className={`px-5 py-2.5 rounded-xl text-sm font-semibold min-h-[40px] transition-all duration-200 cursor-pointer ${
               activeTab === 'WARDS'
-                ? 'bg-primary text-text-inverse shadow-elevation-1'
-                : 'bg-surface-secondary text-text-secondary hover:text-text-primary'
+                ? 'bg-surface-primary text-primary shadow-elevation-1 border border-border-primary/50'
+                : 'text-text-secondary hover:text-text-primary hover:bg-surface-primary/50'
             }`}
           >
-            📍 Ward &amp; Jurisdiction Distribution ({byWard.length})
+            Ward Distribution
+            <span className={`ml-2 text-xs font-bold px-1.5 py-0.5 rounded-md ${
+              activeTab === 'WARDS'
+                ? 'bg-primary/10 text-primary'
+                : 'bg-surface-tertiary text-text-tertiary'
+            }`}>
+              {byWard.length}
+            </span>
           </button>
         </div>
 

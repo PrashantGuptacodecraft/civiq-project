@@ -17,39 +17,40 @@ export function FreshnessBadge({
 
   return (
     <div
-      className="flex flex-wrap items-center justify-between gap-3 p-3 bg-surface-secondary border border-border-primary rounded-xl text-xs text-text-secondary"
+      className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 bg-surface-secondary border border-border-primary/70 rounded-xl text-xs"
       aria-live="polite"
     >
       {/* Source & Freshness Metadata */}
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="flex h-2 w-2 relative">
+      <div className="flex flex-wrap items-center gap-2.5 text-text-tertiary">
+        {/* Live dot */}
+        <span className="relative flex h-2 w-2" aria-hidden="true">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-status-success opacity-75" />
           <span className="relative inline-flex rounded-full h-2 w-2 bg-status-success" />
         </span>
 
-        <span className="font-semibold text-text-primary">
+        <span className="font-semibold text-text-secondary">
           Data Freshness:
         </span>
-        <span className="font-mono text-text-secondary">
+        <span className="font-mono text-text-primary font-semibold tracking-tight">
           {formattedTime} IST
         </span>
 
-        <span className="text-border-secondary hidden sm:inline">•</span>
+        <span className="text-border-secondary hidden sm:inline" aria-hidden="true">·</span>
 
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-primary border border-border-secondary font-mono text-[10px] text-text-tertiary">
-          <svg className="w-3 h-3 text-status-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-surface-primary border border-border-primary font-mono text-[10px] text-text-tertiary">
+          <svg className="w-3 h-3 text-status-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
           </svg>
-          Source: {sourceLabel}
+          {sourceLabel}
         </span>
       </div>
 
-      {/* Manual Refresh Action */}
+      {/* Refresh Action */}
       <button
         type="button"
         onClick={onRefresh}
         disabled={isRefreshing}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border-primary bg-surface-primary hover:bg-surface-tertiary active:bg-surface-secondary text-text-primary text-xs font-semibold transition-colors disabled:opacity-50 min-h-[36px] focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
+        className="btn-press inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border-primary bg-surface-primary hover:bg-surface-tertiary text-text-primary text-xs font-semibold transition-all duration-150 disabled:opacity-50 min-h-[32px] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
         aria-label="Refresh command dashboard metrics"
       >
         <svg
@@ -65,7 +66,7 @@ export function FreshnessBadge({
             d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
           />
         </svg>
-        {isRefreshing ? 'Syncing...' : 'Sync Now'}
+        {isRefreshing ? 'Syncing…' : 'Sync Now'}
       </button>
     </div>
   );

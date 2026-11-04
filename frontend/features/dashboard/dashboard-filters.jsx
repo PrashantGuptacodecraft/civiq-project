@@ -20,7 +20,7 @@ export function DashboardFilters({
     Boolean(activeDrillDownMetric);
 
   return (
-    <div className="w-full bg-surface-primary border border-border-primary rounded-2xl p-4 sm:p-5 shadow-elevation-1 space-y-4">
+    <div className="w-full bg-surface-primary border border-border-primary/70 rounded-2xl p-4 sm:p-5 shadow-elevation-1 space-y-4">
       {/* Top Header Row with Active Drill-Down Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2">

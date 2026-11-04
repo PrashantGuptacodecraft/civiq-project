@@ -59,16 +59,16 @@ export function VerificationConsole() {
       </div>
 
       {/* Filter Tabs — horizontally scrollable on mobile */}
-      <div className="mb-6 -mx-4 px-4 md:mx-0 md:px-0">
-        <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide" role="tablist" aria-label="Filter by verification status">
+      <div className="mb-6 -mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto scrollbar-none">
+        <div className="inline-flex gap-1 p-1.5 bg-surface-secondary border border-border-primary rounded-2xl" role="tablist" aria-label="Filter by verification status">
           {FILTER_TABS.map(({ key, label }) => {
             const count = tabCounts[key] || 0;
             const isActive = activeFilter === key;
-            return (<button key={key} role="tab" aria-selected={isActive} onClick={() => setActiveFilter(key)} className={`flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${isActive
-                    ? 'bg-primary text-white shadow-elevation-1'
-                    : 'text-text-secondary hover:bg-surface-tertiary hover:text-text-primary'}`}>
+            return (<button key={key} role="tab" aria-selected={isActive} onClick={() => setActiveFilter(key)} className={`flex-shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${isActive
+                    ? 'bg-surface-primary text-primary shadow-sm border border-border-primary/60 font-bold'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-surface-tertiary/70'}`}>
                 {label}
-                <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${isActive ? 'bg-white/20 text-white' : 'bg-surface-tertiary text-text-tertiary'}`}>
+                <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold ${isActive ? 'bg-primary/10 text-primary' : 'bg-surface-tertiary text-text-tertiary'}`}>
                   {count}
                 </span>
               </button>);
@@ -80,7 +80,7 @@ export function VerificationConsole() {
       {isLoading ? (<div className="space-y-4">
           {[1, 2, 3].map((i) => <SkeletonCard key={i}/>)}
         </div>) : filteredIssues.length === 0 ? (<EmptyState filterLabel={activeFilter}/>) : (<div className="space-y-3">
-          {filteredIssues.map((issue, index) => (<button key={issue.id} onClick={() => setSelectedIssue(issue)} className="w-full text-left bg-surface-elevated rounded-xl border border-border-primary p-4 md:p-5 shadow-elevation-1 hover:shadow-elevation-2 hover:border-border-secondary transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 animate-fade-in group" style={{ animationDelay: `${Math.min(index, 4) * 50}ms`, animationFillMode: 'backwards' }} aria-label={`Review issue: ${issue.title}`}>
+          {filteredIssues.map((issue, index) => (<button key={issue.id} onClick={() => setSelectedIssue(issue)} className="w-full text-left bg-surface-elevated rounded-2xl border border-border-primary/80 p-4 md:p-5 shadow-sm hover:shadow-card-hover hover:border-primary/40 transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 animate-fade-in group cursor-pointer" style={{ animationDelay: `${Math.min(index, 4) * 50}ms`, animationFillMode: 'backwards' }} aria-label={`Review issue: ${issue.title}`}>
               {/* Top Row */}
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
                 <div className="flex items-start gap-3 min-w-0 flex-1">

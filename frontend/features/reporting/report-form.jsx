@@ -384,7 +384,7 @@ export function CitizenReportForm() {
             <label htmlFor="title-input" className="block text-sm font-bold text-text-primary mb-1">
               Title <span className="text-text-tertiary font-normal">(Optional)</span>
             </label>
-            <input id="title-input" type="text" value={values.title} onChange={(e) => handleFieldChange('title', e.target.value)} placeholder={activeCategory ? `e.g. Deep ${activeCategory.name.toLowerCase()} blocking traffic` : 'Short headline'} className="w-full px-3.5 py-2.5 rounded-lg border border-border-primary bg-surface-elevated text-sm text-text-primary placeholder:text-text-tertiary transition-colors min-h-[44px] focus:outline-none focus:ring-2 focus:ring-primary"/>
+            <input id="title-input" type="text" value={values.title} onChange={(e) => handleFieldChange('title', e.target.value)} placeholder={activeCategory ? `e.g. Deep ${activeCategory.name.toLowerCase()} blocking traffic` : 'Short headline'} className="w-full px-4 py-2.5 rounded-xl border border-border-primary bg-surface-elevated text-sm text-text-primary placeholder:text-text-tertiary transition-all duration-150 min-h-[44px] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent hover:border-border-secondary"/>
           </div>
 
           <div>
@@ -413,7 +413,7 @@ export function CitizenReportForm() {
                 </span>
               </div>
             </div>
-            <textarea id="description-input" rows={4} value={values.description} onChange={(e) => handleFieldChange('description', e.target.value)} placeholder="Provide specific details about the issue, surrounding hazards, and how long it has been present..." className={`w-full px-3.5 py-2.5 rounded-lg border bg-surface-elevated text-sm text-text-primary placeholder:text-text-tertiary transition-colors focus:outline-none focus:ring-2 focus:ring-primary ${formErrors.description ? 'border-red-500 ring-1 ring-red-500' : 'border-border-primary'}`} aria-invalid={!!formErrors.description} aria-describedby={formErrors.description ? 'description-error' : undefined}/>
+            <textarea id="description-input" rows={4} value={values.description} onChange={(e) => handleFieldChange('description', e.target.value)} placeholder="Provide specific details about the issue, surrounding hazards, and how long it has been present..." className={`w-full px-4 py-2.5 rounded-xl border bg-surface-elevated text-sm text-text-primary placeholder:text-text-tertiary transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${formErrors.description ? 'border-red-500 ring-1 ring-red-500' : 'border-border-primary hover:border-border-secondary'}`} aria-invalid={!!formErrors.description} aria-describedby={formErrors.description ? 'description-error' : undefined}/>
             {formErrors.description && (<p id="description-error" className="text-xs font-semibold text-red-600 mt-1" role="alert">
                 {formErrors.description}
               </p>)}
@@ -450,7 +450,7 @@ export function CitizenReportForm() {
 
         {/* Action Controls */}
         <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
-          <button type="submit" disabled={status === 'submitting'} className="w-full sm:flex-1 py-3.5 px-6 rounded-xl bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-bold text-sm tracking-wide transition-all shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] flex items-center justify-center gap-2">
+          <button type="submit" disabled={status === 'submitting'} className="btn-press w-full sm:flex-1 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-primary to-blue-600 hover:from-primary-hover hover:to-blue-700 active:from-primary-active text-white font-bold text-sm tracking-wide transition-all shadow-md shadow-primary/25 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] flex items-center justify-center gap-2">
             {status === 'submitting' ? (<>
                 <svg className="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -460,7 +460,7 @@ export function CitizenReportForm() {
               </>) : ('Submit Report for Verification')}
           </button>
 
-          <button type="button" onClick={handleClearDraft} className="w-full sm:w-auto py-3.5 px-5 rounded-xl bg-surface-secondary hover:bg-surface-tertiary active:bg-surface-primary text-text-secondary font-semibold text-sm transition-colors border border-border-primary min-h-[48px]">
+          <button type="button" onClick={handleClearDraft} className="btn-press w-full sm:w-auto py-3.5 px-6 rounded-2xl bg-surface-secondary hover:bg-surface-tertiary active:bg-surface-primary text-text-secondary hover:text-text-primary font-semibold text-sm transition-colors border border-border-primary min-h-[48px]">
             Discard
           </button>
         </div>

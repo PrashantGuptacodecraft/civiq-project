@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { MOCK_HOTSPOTS } from './mock-hotspot-data.js';
 import { HotspotCard } from './hotspot-card.jsx';
 import { HotspotDetailDrawer } from './hotspot-detail-drawer.jsx';
@@ -12,9 +12,25 @@ export function HotspotAnalytics({
   initialHotspots = MOCK_HOTSPOTS,
   initialRecurrenceCandidates = MOCK_RECURRENCE_CANDIDATES,
 }) {
-  const [hotspots] = useState(initialHotspots);
+  const [hotspots, setHotspots] = useState(initialHotspots);
   const [selectedHotspot, setSelectedHotspot] = useState(null);
   const [activeTab, setActiveTab] = useState('CLUSTERS'); // 'CLUSTERS' | 'TRENDS'
+
+  useEffect(() => {
+    let isMounted = true;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('civiq_session_token') : null;
+    fetch('/api/analytics/hotspots', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (isMounted && Array.isArray(data?.hotspots) && data.hotspots.length > 0) {
+          setHotspots(data.hotspots);
+        }
+      })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
 
   // Filter States
   const [filters, setFilters] = useState({

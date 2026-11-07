@@ -176,9 +176,14 @@ export function CitizenReportForm() {
             // Simulated network call with fallback for dev/offline resilience
             let resData = null;
             try {
+                const token = typeof window !== 'undefined' ? localStorage.getItem('civiq_session_token') : null;
+                const reqHeaders = { 'Content-Type': 'application/json' };
+                if (token) {
+                    reqHeaders['Authorization'] = `Bearer ${token}`;
+                }
                 const response = await fetch('/api/issues', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: reqHeaders,
                     body: JSON.stringify(payload),
                 });
                 if (response.ok) {

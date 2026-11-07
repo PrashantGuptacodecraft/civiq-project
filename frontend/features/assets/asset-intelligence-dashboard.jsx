@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { MOCK_ASSET_INTELLIGENCE } from './mock-assets-data.js';
 import { AssetTimelineDrawer } from './asset-timeline-drawer.jsx';
 import {
@@ -12,6 +12,7 @@ import {
 } from './types.js';
 
 export function AssetIntelligenceDashboard() {
+  const [assets, setAssets] = useState(MOCK_ASSET_INTELLIGENCE);
   const [jurisdiction, setJurisdiction] = useState('ALL');
   const [selectedRisk, setSelectedRisk] = useState('ALL');
   const [selectedType, setSelectedType] = useState('ALL');
@@ -19,9 +20,25 @@ export function AssetIntelligenceDashboard() {
   const [activeTab, setActiveTab] = useState('candidates'); // 'candidates' | 'trends' | 'registry'
   const [selectedAsset, setSelectedAsset] = useState(null);
 
+  useEffect(() => {
+    let isMounted = true;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('civiq_session_token') : null;
+    fetch('/api/assets', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (isMounted && Array.isArray(json?.data) && json.data.length > 0) {
+          setAssets(json.data);
+        }
+      })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
+
   // Filter assets based on jurisdiction, risk, type, and search
   const filteredAssets = useMemo(() => {
-    return MOCK_ASSET_INTELLIGENCE.filter((asset) => {
+    return assets.filter((asset) => {
       if (jurisdiction !== 'ALL' && asset.jurisdictionId !== jurisdiction) return false;
       if (selectedRisk !== 'ALL' && asset.riskLevel !== selectedRisk) return false;
       if (selectedType !== 'ALL' && asset.assetType !== selectedType) return false;

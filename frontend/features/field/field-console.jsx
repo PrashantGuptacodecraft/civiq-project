@@ -30,12 +30,15 @@ export function FieldWorkerConsole({
       const result = await mutationQueueManager.flush(async (mutations) => {
         // Try live backend API or fallback to simulated server resolution
         try {
+          const token = typeof window !== 'undefined' ? localStorage.getItem('civiq_session_token') : null;
+          const headers = {
+            'Content-Type': 'application/json',
+            'x-worker-id': worker.id,
+          };
+          if (token) headers['Authorization'] = `Bearer ${token}`;
           const res = await fetch(`${apiUrl}/sync/batch`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-worker-id': worker.id,
-            },
+            headers,
             body: JSON.stringify({ mutations }),
           });
           if (res.ok) {

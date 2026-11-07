@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { MOCK_DASHBOARD_ISSUES } from './mock-dashboard-data.js';
 import { computeDashboardKpis, filterDrillDownIssues } from './kpi-engine.js';
 import { FreshnessBadge } from './freshness-badge.jsx';
@@ -14,6 +14,7 @@ import { KPI_METRIC_KEYS, SOURCE_LABELS } from './types.js';
 export function CommandDashboard({
   initialIssues = MOCK_DASHBOARD_ISSUES,
 }) {
+  const [issues, setIssues] = useState(initialIssues);
   const [filters, setFilters] = useState({
     department: 'ALL',
     ward: 'ALL',
@@ -27,10 +28,28 @@ export function CommandDashboard({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('DEPARTMENTS'); // 'DEPARTMENTS' | 'WARDS'
 
+  // Fetch live operational issues if available
+  useEffect(() => {
+    let isMounted = true;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('civiq_session_token') : null;
+    fetch('/api/issues/operational-map?limit=200', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (isMounted && json?.data?.issues && Array.isArray(json.data.issues) && json.data.issues.length > 0) {
+          setIssues(json.data.issues);
+          setLastUpdated(new Date());
+        }
+      })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
+
   // Re-compute KPIs whenever filters or issues change
   const computedData = useMemo(() => {
-    return computeDashboardKpis(initialIssues, filters);
-  }, [initialIssues, filters]);
+    return computeDashboardKpis(issues, filters);
+  }, [issues, filters]);
 
   const { kpis, byDepartment, byWard, enrichedIssues, totalIssues } = computedData;
 
@@ -54,13 +73,26 @@ export function CommandDashboard({
     return filterDrillDownIssues(enrichedIssues, activeDrillDownMetric);
   }, [enrichedIssues, activeDrillDownMetric]);
 
-  // Simulate refresh
-  const handleRefresh = () => {
+  // Live refresh
+  const handleRefresh = async () => {
     setIsRefreshing(true);
-    setTimeout(() => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('civiq_session_token') : null;
+      const res = await fetch('/api/issues/operational-map?limit=200', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json?.data?.issues?.length > 0) {
+          setIssues(json.data.issues);
+        }
+      }
+    } catch {
+      // Keep existing data on error
+    } finally {
       setLastUpdated(new Date());
       setIsRefreshing(false);
-    }, 400);
+    }
   };
 
   const handleResetFilters = () => {

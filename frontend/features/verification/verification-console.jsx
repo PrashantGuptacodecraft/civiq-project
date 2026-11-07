@@ -1,5 +1,5 @@
 'use client';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { MOCK_ISSUES } from './mock-data.js';
 import { StatusBadge, SeverityBadge, TrustBadge, SkeletonCard, EmptyState } from './ui.jsx';
 import { IssueDetailPanel } from './issue-detail-panel.jsx';
@@ -18,6 +18,23 @@ export function VerificationConsole() {
     const [activeFilter, setActiveFilter] = useState('all');
     const [selectedIssue, setSelectedIssue] = useState(null);
     const [isLoading] = useState(false);
+
+    useEffect(() => {
+        let isMounted = true;
+        const token = typeof window !== 'undefined' ? localStorage.getItem('civiq_session_token') : null;
+        fetch('/api/issues/operational-map?limit=100', {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+        })
+            .then((res) => (res.ok ? res.json() : null))
+            .then((json) => {
+                if (isMounted && json?.data?.issues && Array.isArray(json.data.issues) && json.data.issues.length > 0) {
+                    setIssues(json.data.issues);
+                }
+            })
+            .catch(() => {});
+        return () => { isMounted = false; };
+    }, []);
+
     const filteredIssues = useMemo(() => {
         if (activeFilter === 'all')
             return issues;
@@ -30,10 +47,19 @@ export function VerificationConsole() {
         }
         return counts;
     }, [issues]);
-    const handleAction = (issueId, newStatus, reason) => {
+    const handleAction = async (issueId, newStatus, reason) => {
         setIssues((prev) => prev.map((iss) => iss.id === issueId ? { ...iss, verificationStatus: newStatus } : iss));
-        // In production, this would call the backend VerificationService.transitionStatus()
-        console.log(`[Verification] Issue ${issueId} → ${newStatus}: ${reason}`);
+        try {
+            const token = typeof window !== 'undefined' ? localStorage.getItem('civiq_session_token') : null;
+            await fetch(`/api/issues/${issueId}/verification-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+                body: JSON.stringify({ status: newStatus, reason }),
+            });
+        } catch (_) {}
     };
     const formatDate = (dateStr) => {
         return new Date(dateStr).toLocaleString('en-IN', {

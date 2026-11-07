@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useAuth } from '../../context/auth-context.jsx';
 
 // ─── Nav link definitions ────────────────────────────────────────────────────
 const NAV_LINKS = [
@@ -76,6 +77,46 @@ const NAV_LINKS = [
 
 const INCIDENT_HREF = '/incidents';
 
+function getNavLinksForRole(role) {
+  if (!role || role === 'CITIZEN') {
+    return [
+      NAV_LINKS.find((l) => l.href === '/map'),
+      NAV_LINKS.find((l) => l.href === '/dashboard'),
+    ].filter(Boolean);
+  }
+  if (role === 'VERIFICATION_OFFICER') {
+    return [
+      NAV_LINKS.find((l) => l.href === '/verification'),
+      NAV_LINKS.find((l) => l.href === '/dashboard'),
+      NAV_LINKS.find((l) => l.href === '/map'),
+    ].filter(Boolean);
+  }
+  if (role === 'FIELD_WORKER' || role === 'FIELD_SUPERVISOR') {
+    return [
+      NAV_LINKS.find((l) => l.href === '/field'),
+      NAV_LINKS.find((l) => l.href === '/map'),
+    ].filter(Boolean);
+  }
+  if (role === 'DISASTER_COORDINATOR') {
+    return [
+      {
+        href: '/situation-room',
+        label: 'Situation',
+        ariaLabel: 'Disaster situation room',
+        icon: (
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        ),
+      },
+      NAV_LINKS.find((l) => l.href === '/dashboard'),
+      NAV_LINKS.find((l) => l.href === '/map'),
+    ].filter(Boolean);
+  }
+  // Officer & Admins: All links
+  return NAV_LINKS;
+}
+
 // ─── CivIQ Logo Mark ─────────────────────────────────────────────────────────
 function LogoMark({ size = 32 }) {
   return (
@@ -83,9 +124,7 @@ function LogoMark({ size = 32 }) {
       className="relative flex items-center justify-center rounded-xl overflow-hidden shrink-0"
       style={{ width: size, height: size }}
     >
-      {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary to-accent" />
-      {/* Subtle inner shine */}
       <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white/20" />
       <svg
         className="relative w-4/6 h-4/6 text-white drop-shadow-sm"
@@ -101,6 +140,7 @@ function LogoMark({ size = 32 }) {
 export function SiteHeader() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
+  const { user, role, isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -109,6 +149,7 @@ export function SiteHeader() {
   }, []);
 
   const isActive = (href) => pathname === href || pathname?.startsWith(href + '/');
+  const visibleLinks = getNavLinksForRole(role);
 
   return (
     <header
@@ -139,7 +180,7 @@ export function SiteHeader() {
 
         {/* Desktop Nav */}
         <nav aria-label="Main navigation" className="hidden md:flex items-center gap-0.5 text-sm font-medium">
-          {NAV_LINKS.map(({ href, label, icon }) => {
+          {visibleLinks.map(({ href, label, icon }) => {
             const active = isActive(href);
             return (
               <Link
@@ -185,8 +226,36 @@ export function SiteHeader() {
           </Link>
         </nav>
 
-        {/* Right side — CTA */}
-        <div className="flex items-center gap-2">
+        {/* Right side — Auth & CTA */}
+        <div className="flex items-center gap-2.5">
+          {isAuthenticated ? (
+            <div className="flex items-center gap-2">
+              <div className="hidden sm:flex flex-col text-right">
+                <span className="text-xs font-semibold text-text-primary leading-tight">
+                  {user.name || user.phone || user.email}
+                </span>
+                <span className="text-[10px] text-primary font-medium tracking-wide">
+                  {role?.replace(/_/g, ' ')}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={logout}
+                className="btn-press text-xs font-medium text-text-tertiary hover:text-text-primary px-2.5 py-1.5 rounded-lg border border-border-primary hover:bg-surface-tertiary transition-colors"
+                aria-label="Sign out"
+              >
+                Sign out
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="btn-press text-xs font-semibold text-primary hover:text-primary-hover px-3 py-1.5 rounded-xl border border-primary/20 hover:bg-primary/5 transition-colors"
+            >
+              Sign in
+            </Link>
+          )}
+
           {/* Report button — desktop */}
           <Link
             href="/report"
@@ -219,25 +288,64 @@ export function SiteHeader() {
 // ─── Mobile Bottom Nav ────────────────────────────────────────────────────────
 export function MobileBottomNav() {
   const pathname = usePathname();
+  const { role, isAuthenticated } = useAuth();
   const isActive = (href) => pathname === href || pathname?.startsWith(href + '/');
 
-  const BOTTOM_ITEMS = [
-    NAV_LINKS[0], // Dashboard
-    NAV_LINKS[3], // Map
-    // Centre = Report FAB
-    NAV_LINKS[4], // Verify
-    {
-      href: INCIDENT_HREF,
-      label: 'Incidents',
-      ariaLabel: 'Incident emergency response',
-      icon: (
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-        </svg>
-      ),
-    },
-  ];
+  // Dynamic left and right items based on role
+  const leftItem = (role === 'FIELD_WORKER' || role === 'FIELD_SUPERVISOR')
+    ? NAV_LINKS[5] // Field
+    : (role === 'VERIFICATION_OFFICER')
+    ? NAV_LINKS[4] // Verify
+    : NAV_LINKS[0]; // Dashboard
+
+  const mapItem = NAV_LINKS[3]; // Map
+
+  const rightActionItem = (role === 'DISASTER_COORDINATOR')
+    ? {
+        href: '/situation-room',
+        label: 'Situation',
+        ariaLabel: 'Disaster situation room',
+        icon: (
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        ),
+      }
+    : (role === 'VERIFICATION_OFFICER')
+    ? NAV_LINKS[4] // Verify
+    : {
+        href: INCIDENT_HREF,
+        label: 'Incidents',
+        ariaLabel: 'Incident emergency response',
+        icon: (
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        ),
+      };
+
+  const profileItem = isAuthenticated
+    ? {
+        href: '/dashboard',
+        label: 'Account',
+        ariaLabel: 'My Account',
+        icon: (
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        ),
+      }
+    : {
+        href: '/login',
+        label: 'Sign In',
+        ariaLabel: 'Sign In',
+        icon: (
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+          </svg>
+        ),
+      };
 
   return (
     <nav
@@ -245,7 +353,7 @@ export function MobileBottomNav() {
       className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-xl border-t border-border-primary/50 shadow-elevation-3"
     >
       <div className="flex items-center justify-around px-2 py-1 pb-safe-bottom">
-        {[BOTTOM_ITEMS[0], BOTTOM_ITEMS[1]].map(({ href, label, ariaLabel, icon }) => {
+        {[leftItem, mapItem].map(({ href, label, ariaLabel, icon }) => {
           const active = isActive(href);
           return (
             <Link
@@ -277,7 +385,7 @@ export function MobileBottomNav() {
           <span className="text-[8px] font-bold leading-none mt-0.5 tracking-wide">REPORT</span>
         </Link>
 
-        {[BOTTOM_ITEMS[2], BOTTOM_ITEMS[3]].map(({ href, label, ariaLabel, icon }) => {
+        {[rightActionItem, profileItem].map(({ href, label, ariaLabel, icon }) => {
           const active = isActive(href);
           const isIncident = href === INCIDENT_HREF;
           return (
